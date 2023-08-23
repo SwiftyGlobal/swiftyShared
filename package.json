@@ -1,0 +1,36 @@
+{
+  "name": "@SwiftyGlobal/swifty-shared",
+  "version": "1.0.1",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "typings": "dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "npm run build",
+    "build": "rimraf dist && tsc"
+  },
+  "keywords": [],
+  "author": "jaxin007",
+  "license": "MIT",
+  "description": "shared repo for swifty global organization projects",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:SwiftyGlobal/swiftyShared.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SwiftyGlobal/swiftyShared/issues"
+  },
+  "homepage": "https://github.com/SwiftyGlobal/swiftyShared#readme",
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.109",
+    "@types/node": "^18.11.17",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "@middy/core": "^4.0.9",
+    "ajv": "^8.11.2",
+    "ajv-errors": "^3.0.0",
+    "libphonenumber-js": "^1.10.15"
+  }
+}
