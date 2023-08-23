@@ -1,6 +1,6 @@
 {
-  "name": "@SwiftyGlobal/swifty-shared",
-  "version": "1.0.1",
+  "name": "@swiftyglobal/swifty-shared",
+  "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "typings": "dist/index.d.ts",
@@ -28,7 +28,7 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
-    "@middy/core": "^4.0.9",
+    "@middy/core": "^3.1.1",
     "ajv": "^8.11.2",
     "ajv-errors": "^3.0.0",
     "libphonenumber-js": "^1.10.15"
