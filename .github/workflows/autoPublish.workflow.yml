@@ -11,12 +11,7 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@swiftyglobal'
       - run: npm install
       - run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_PERSONAL_TOKEN: ${{ secrets.GH_PERSONAL_TOKEN }}
