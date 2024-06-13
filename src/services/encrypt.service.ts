@@ -1,161 +1,179 @@
-import crypto from 'crypto';
+import crypto from "crypto";
 import { Nullable } from "../types";
 import { isObject } from "../utils";
 
 export class EncryptService {
-    private static instance: EncryptService;
+  private static instance: EncryptService;
 
-    private algorithm = 'aes-256-cbc'; //Using AES encryption
+  private algorithm = "aes-256-cbc"; //Using AES encryption
 
-    private encryptIv: string = process.env.encrypt_iv!;
+  private encryptIv: string = process.env.encrypt_iv!;
 
-    private encryptSecretKey: string = process.env.encrypt_secret_key!;
+  private encryptSecretKey: string = process.env.encrypt_secret_key!;
 
-    static getInstance(): EncryptService {
-        if (!EncryptService.instance) {
-            EncryptService.instance = new EncryptService();
+  static getInstance(): EncryptService {
+    if (!EncryptService.instance) {
+      EncryptService.instance = new EncryptService();
+    }
+
+    return EncryptService.instance;
+  }
+
+  encryptText(text: string | string[]) {
+    try {
+      if (Array.isArray(text)) {
+        const return_array: string[] = [];
+
+        for (let i = 0; i < text.length; i++) {
+          if (text[i]) {
+            if (typeof text[i] === "number") {
+              text[i] = text[i].toString();
+            }
+
+            return_array.push(this.encrypt(text[i]));
+          } else {
+            return_array.push(text[i]);
+          }
         }
 
-        return EncryptService.instance;
-    }
-
-    encryptText(text: string | string[]) {
-        try {
-            if (Array.isArray(text)) {
-                const return_array: string[] = [];
-
-                for (let i = 0; i < text.length; i++) {
-                    if (text[i]) {
-                        if (typeof text[i] === 'number') {
-                            text[i] = text[i].toString();
-                        }
-
-                        return_array.push(this.encrypt(text[i]));
-                    } else {
-                        return_array.push(text[i]);
-                    }
-                }
-
-                return return_array;
-            } else {
-                if (!text) {
-                    return '';
-                }
-                return this.encrypt(text);
-            }
-        } catch (e) {
-            throw new Error(e.message);
+        return return_array;
+      } else {
+        if (!text) {
+          return "";
         }
+        return this.encrypt(text);
+      }
+    } catch (e) {
+      throw new Error(e.message);
     }
+  }
 
-    encrypt(text) {
-        try {
-            const initVector = Buffer.from(this.encryptIv, 'utf-8');
+  encrypt(text) {
+    try {
+      if (text == null || text === undefined || text === "") return text;
 
-            const SecurityKey = Buffer.from(this.encryptSecretKey, 'utf-8');
+      text = text.toString();
 
-            const cipher = crypto.createCipheriv(this.algorithm, SecurityKey, initVector);
+      const initVector = Buffer.from(this.encryptIv, "utf-8");
 
-            let encrypted = cipher.update(text);
+      const SecurityKey = Buffer.from(this.encryptSecretKey, "utf-8");
 
-            encrypted = Buffer.concat([encrypted, cipher.final()]);
+      const cipher = crypto.createCipheriv(
+        this.algorithm,
+        SecurityKey,
+        initVector
+      );
 
-            return encrypted.toString('hex');
-        } catch (e) {
-            throw new Error(e.message);
+      let encrypted = cipher.update(text);
+
+      encrypted = Buffer.concat([encrypted, cipher.final()]);
+
+      return encrypted.toString("hex");
+    } catch (e) {
+      throw new Error(e.message);
+    }
+  }
+
+  decryptText(text: Nullable<string>) {
+    try {
+      if (Array.isArray(text)) {
+        const return_array: string[] = [];
+        for (let i = 0; i < text.length; i++) {
+          if (text[i]) {
+            return_array.push(this.decrypt(text[i]));
+          } else {
+            return_array.push(text[i]);
+          }
         }
+        return return_array;
+      } else {
+        if (!text) return text;
+        return this.decrypt(text);
+      }
+    } catch (e) {
+      throw new Error(e.message);
     }
+  }
 
-    decryptText(text: Nullable<string>) {
-        try {
-            if (Array.isArray(text)) {
-                const return_array: string[] = [];
-                for (let i = 0; i < text.length; i++) {
-                    if (text[i]) {
-                        return_array.push(this.decrypt(text[i]));
-                    } else {
-                        return_array.push(text[i]);
-                    }
-                }
-                return return_array;
-            } else {
-                if (!text) return text;
-                return this.decrypt(text);
-            }
-        } catch (e) {
-            throw new Error(e.message);
-        }
+  decrypt(text: string) {
+    try {
+      if (text === undefined || text === null || text === "") return text;
+
+      text = text.toString();
+
+      const initVector = Buffer.from(this.encryptIv, "utf-8");
+
+      const SecurityKey = Buffer.from(this.encryptSecretKey, "utf-8");
+
+      const decipher = crypto.createDecipheriv(
+        this.algorithm,
+        SecurityKey,
+        initVector
+      );
+
+      let decryptedData = decipher.update(text, "hex", "utf-8");
+
+      decryptedData += decipher.final("utf8");
+
+      return decryptedData;
+    } catch (e) {
+      throw new Error(e.message);
     }
+  }
 
-    decrypt(text: string) {
-        try {
-            const initVector = Buffer.from(this.encryptIv, 'utf-8');
+  encryptObject<T extends Record<any, any>>(obj: T): T {
+    return Object.keys(obj).reduce((acc, key) => {
+      let nonEncryptedValue = obj[key] as any;
 
-            const SecurityKey = Buffer.from(this.encryptSecretKey, 'utf-8');
+      if (typeof nonEncryptedValue === "number") {
+        nonEncryptedValue = nonEncryptedValue.toString();
+      }
 
-            const decipher = crypto.createDecipheriv(this.algorithm, SecurityKey, initVector);
+      const isValueObject =
+        !Array.isArray(nonEncryptedValue) &&
+        typeof nonEncryptedValue === "object" &&
+        nonEncryptedValue !== null;
 
-            let decryptedData = decipher.update(text, 'hex', 'utf-8');
+      let encryptedValue: any;
 
-            decryptedData += decipher.final('utf8');
+      if (isValueObject) {
+        encryptedValue = this.encryptObject(nonEncryptedValue);
+      } else {
+        encryptedValue = this.encryptText(nonEncryptedValue);
+      }
 
-            return decryptedData;
-        } catch (e) {
-            throw new Error(e.message);
-        }
-    }
+      acc[key] = encryptedValue;
 
-    encryptObject<T extends Record<any, any>>(obj: T): T {
-        return Object.keys(obj).reduce((acc, key) => {
-            let nonEncryptedValue = obj[key] as any;
+      return acc;
+    }, {}) as T;
+  }
 
-            if (typeof nonEncryptedValue === 'number') {
-                nonEncryptedValue = nonEncryptedValue.toString();
-            }
+  decryptObject<T extends Record<any, any>>(obj: T): T {
+    return Object.keys(obj).reduce((acc, key) => {
+      let encryptedValue = obj[key] as any;
 
-            const isValueObject =
-                !Array.isArray(nonEncryptedValue) && typeof nonEncryptedValue === 'object' && nonEncryptedValue !== null;
+      if (typeof encryptedValue === "number") {
+        encryptedValue = encryptedValue.toString();
+      }
 
-            let encryptedValue: any;
+      const isValueObject = isObject(encryptedValue);
 
-            if (isValueObject) {
-                encryptedValue = this.encryptObject(nonEncryptedValue);
-            } else {
-                encryptedValue = this.encryptText(nonEncryptedValue);
-            }
+      let decryptedValue: any;
 
-            acc[key] = encryptedValue;
+      if (isValueObject) {
+        decryptedValue = this.decryptObject(encryptedValue);
+      } else {
+        decryptedValue = this.decryptText(encryptedValue);
+      }
 
-            return acc;
-        }, {}) as T;
-    }
+      acc[key] = decryptedValue || null;
+      // try {
+      //   acc[key] = this.decryptText(encryptedValue);
+      // } catch (e) {
+      //   acc[key] = encryptedValue || null;
+      // }
 
-    decryptObject<T extends Record<any, any>>(obj: T): T {
-        return Object.keys(obj).reduce((acc, key) => {
-            let encryptedValue = obj[key] as any;
-
-            if (typeof encryptedValue === 'number') {
-                encryptedValue = encryptedValue.toString();
-            }
-
-            const isValueObject = isObject(encryptedValue);
-
-            let decryptedValue: any;
-
-            if (isValueObject) {
-                decryptedValue = this.decryptObject(encryptedValue);
-            } else {
-                decryptedValue = this.decryptText(encryptedValue);
-            }
-
-            acc[key] = decryptedValue || null;
-            // try {
-            //   acc[key] = this.decryptText(encryptedValue);
-            // } catch (e) {
-            //   acc[key] = encryptedValue || null;
-            // }
-
-            return acc;
-        }, {}) as T;
-    }
+      return acc;
+    }, {}) as T;
+  }
 }
