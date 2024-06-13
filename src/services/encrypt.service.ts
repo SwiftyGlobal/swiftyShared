@@ -50,7 +50,7 @@ export class EncryptService {
 
   encrypt(text) {
     try {
-      if (text == null || text === undefined || text === "") return text;
+      if (text == null || text === undefined || text === "") return "";
 
       text = text.toString();
 
@@ -97,7 +97,7 @@ export class EncryptService {
 
   decrypt(text: string) {
     try {
-      if (text === undefined || text === null || text === "") return text;
+      if (text === undefined || text === null || text === "") return "";
 
       text = text.toString();
 
