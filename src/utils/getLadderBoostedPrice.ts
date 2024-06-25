@@ -7,12 +7,12 @@ import { oddsKeys } from '../common';
  * @param decimal - The original decimal value to be used for the calculation of the boosted price.
  * @returns - The boosted **decimal** price based on the ladder and the decimal.
  * @example
- * getLadderBoostedPriceUtils('ladder+1', 1.5); // 1.66667
- * getLadderBoostedPriceUtils('ladder+2', 1.5); // 1.7
- * getLadderBoostedPriceUtils('ladder+3', 1.5); // 1.72727
- * getLadderBoostedPriceUtils('ladder+4', 2.8); // 3.1
+ * getLadderBoostedPrice('ladder+1', 1.5); // 1.66667
+ * getLadderBoostedPrice('ladder+2', 1.5); // 1.7
+ * getLadderBoostedPrice('ladder+3', 1.5); // 1.72727
+ * getLadderBoostedPrice('ladder+4', 2.8); // 3.1
  */
-export const getLadderBoostedPriceUtils = (ladder: Ladder, decimal: number): number => {
+export const getLadderBoostedPrice = (ladder: Ladder, decimal: number): number => {
   if (!decimal || ladder === '-1') {
     return 0;
   }

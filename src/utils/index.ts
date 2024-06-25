@@ -1,3 +1,4 @@
 export * from './isObject';
 export * from './capitalizeFirstLetter';
-export * from './getLadderBoostedPriceUtils';
+export * from './getLadderBoostedPrice';
+export * from './decimalToFractional';
