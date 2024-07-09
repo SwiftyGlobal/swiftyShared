@@ -4,3 +4,4 @@ export * from './libs';
 export * from './middlewares';
 export * from './services';
 export * from './utils';
+export * from './models';
