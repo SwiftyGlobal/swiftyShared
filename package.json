@@ -1,6 +1,6 @@
 {
   "name": "@swiftyglobal/swifty-shared",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "typings": "dist/index.d.ts",
@@ -31,6 +31,7 @@
     "@middy/core": "^3.1.1",
     "ajv": "^8.11.2",
     "ajv-errors": "^3.0.0",
-    "libphonenumber-js": "^1.10.15"
+    "libphonenumber-js": "^1.10.15",
+    "moment": "^2.30.1"
   }
 }
