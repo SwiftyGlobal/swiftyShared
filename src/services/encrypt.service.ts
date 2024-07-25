@@ -1,11 +1,12 @@
-import crypto from "crypto";
-import { Nullable } from "../types";
-import { isObject } from "../utils";
+import crypto from 'crypto';
+
+import type { Nullable } from '../types';
+import { isObject } from '../utils';
 
 export class EncryptService {
   private static instance: EncryptService;
 
-  private algorithm = "aes-256-cbc"; //Using AES encryption
+  private algorithm = 'aes-256-cbc'; //Using AES encryption
 
   private encryptIv: string = process.env.encrypt_iv!;
 
@@ -26,7 +27,7 @@ export class EncryptService {
 
         for (let i = 0; i < text.length; i++) {
           if (text[i]) {
-            if (typeof text[i] === "number") {
+            if (typeof text[i] === 'number') {
               text[i] = text[i].toString();
             }
 
@@ -39,7 +40,7 @@ export class EncryptService {
         return return_array;
       } else {
         if (!text) {
-          return "";
+          return '';
         }
         return this.encrypt(text);
       }
@@ -50,25 +51,21 @@ export class EncryptService {
 
   encrypt(text) {
     try {
-      if (text == null || text === undefined || text === "") return "";
+      if (text == null || text === undefined || text === '') return '';
 
       text = text.toString();
 
-      const initVector = Buffer.from(this.encryptIv, "utf-8");
+      const initVector = Buffer.from(this.encryptIv, 'utf-8');
 
-      const SecurityKey = Buffer.from(this.encryptSecretKey, "utf-8");
+      const SecurityKey = Buffer.from(this.encryptSecretKey, 'utf-8');
 
-      const cipher = crypto.createCipheriv(
-        this.algorithm,
-        SecurityKey,
-        initVector
-      );
+      const cipher = crypto.createCipheriv(this.algorithm, SecurityKey, initVector);
 
       let encrypted = cipher.update(text);
 
       encrypted = Buffer.concat([encrypted, cipher.final()]);
 
-      return encrypted.toString("hex");
+      return encrypted.toString('hex');
     } catch (e) {
       throw new Error(e.message);
     }
@@ -97,23 +94,19 @@ export class EncryptService {
 
   decrypt(text: string) {
     try {
-      if (text === undefined || text === null || text === "") return "";
+      if (text === undefined || text === null || text === '') return '';
 
       text = text.toString();
 
-      const initVector = Buffer.from(this.encryptIv, "utf-8");
+      const initVector = Buffer.from(this.encryptIv, 'utf-8');
 
-      const SecurityKey = Buffer.from(this.encryptSecretKey, "utf-8");
+      const SecurityKey = Buffer.from(this.encryptSecretKey, 'utf-8');
 
-      const decipher = crypto.createDecipheriv(
-        this.algorithm,
-        SecurityKey,
-        initVector
-      );
+      const decipher = crypto.createDecipheriv(this.algorithm, SecurityKey, initVector);
 
-      let decryptedData = decipher.update(text, "hex", "utf-8");
+      let decryptedData = decipher.update(text, 'hex', 'utf-8');
 
-      decryptedData += decipher.final("utf8");
+      decryptedData += decipher.final('utf8');
 
       return decryptedData;
     } catch (e) {
@@ -125,14 +118,12 @@ export class EncryptService {
     return Object.keys(obj).reduce((acc, key) => {
       let nonEncryptedValue = obj[key] as any;
 
-      if (typeof nonEncryptedValue === "number") {
+      if (typeof nonEncryptedValue === 'number') {
         nonEncryptedValue = nonEncryptedValue.toString();
       }
 
       const isValueObject =
-        !Array.isArray(nonEncryptedValue) &&
-        typeof nonEncryptedValue === "object" &&
-        nonEncryptedValue !== null;
+        !Array.isArray(nonEncryptedValue) && typeof nonEncryptedValue === 'object' && nonEncryptedValue !== null;
 
       let encryptedValue: any;
 
@@ -152,7 +143,7 @@ export class EncryptService {
     return Object.keys(obj).reduce((acc, key) => {
       let encryptedValue = obj[key] as any;
 
-      if (typeof encryptedValue === "number") {
+      if (typeof encryptedValue === 'number') {
         encryptedValue = encryptedValue.toString();
       }
 

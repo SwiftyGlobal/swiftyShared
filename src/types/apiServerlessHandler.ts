@@ -1,6 +1,7 @@
 import type { Handler } from 'aws-lambda/handler';
 import type { APIGatewayProxyEventBase, APIGatewayProxyResult } from 'aws-lambda/trigger/api-gateway-proxy';
-import { JwtModel } from './jwtModel';
+
+import type { JwtModel } from './jwtModel';
 
 export type ApiServerlessHandlerEvent<TBody, KQuery, JParams> = {
   body: TBody;

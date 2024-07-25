@@ -1,4 +1,4 @@
-import { Ladder } from '../types';
+import type { Ladder } from '../types';
 import { oddsKeys } from '../common';
 
 /**

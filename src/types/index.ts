@@ -8,3 +8,6 @@ export * from './ladder';
 export * from './objectKeys';
 export * from './objectValues';
 export * from './bodusPromotionStatuses';
+export * from './sportEventStatuses';
+export * from './sportAvailabilities';
+export * from './eventPhaseStatus';
