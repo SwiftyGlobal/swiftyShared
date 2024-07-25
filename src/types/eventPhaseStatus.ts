@@ -1,4 +1,4 @@
-import type { SportEventStatuses } from './sportEventStatuses';
+import type { SportEventStatuses } from '../common';
 import type { Nullable } from './nullable';
 
 export interface EventPhaseStatus {
