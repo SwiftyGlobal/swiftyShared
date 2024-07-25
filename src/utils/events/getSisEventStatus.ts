@@ -1,17 +1,18 @@
-import type { Nullable, SportEventStatuses } from '../../types';
+import type { Nullable } from '../../types';
+import { SportEventStatuses } from '../../common';
 
 export const getSISEventStatus = (offTime: Nullable<string>, isEventResulted: boolean): SportEventStatuses => {
   if (isEventResulted) {
-    return 'finished';
+    return SportEventStatuses.FINISHED;
   }
 
   if (offTime) {
-    return 'in_play';
+    return SportEventStatuses.IN_PLAY;
   }
 
   if (!offTime) {
-    return isEventResulted ? 'finished' : 'pre_match';
+    return isEventResulted ? SportEventStatuses.FINISHED : SportEventStatuses.PRE_MATCH;
   }
 
-  return 'pre_match';
+  return SportEventStatuses.PRE_MATCH;
 };

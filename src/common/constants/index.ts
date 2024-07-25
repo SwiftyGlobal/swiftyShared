@@ -5,3 +5,4 @@ export * from './sportIconLinks';
 export * from './transactionTypes';
 export * from './oddsConversion';
 export * from './everyMatrixPhase';
+export * from './sportEventStatuses';

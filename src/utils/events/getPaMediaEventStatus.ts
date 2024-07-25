@@ -1,4 +1,5 @@
-import type { Nullable, SportEventStatuses } from '../../types';
+import type { Nullable } from '../../types';
+import { SportEventStatuses } from '../../common';
 
 const inPlayStatuses: Set<Nullable<string>> = new Set(['Active', 'Off']);
 const abandonedStatuses: Set<Nullable<string>> = new Set(['Abandoned']);
@@ -18,24 +19,24 @@ export const getPaMediaEventStatus = (
   eventOffTime: Nullable<string>,
 ): SportEventStatuses => {
   if (eventOffTime && !finishedStatuses.has(raceStatus) && !abandonedStatuses.has(raceStatus)) {
-    return 'in_play';
+    return SportEventStatuses.IN_PLAY;
   }
 
   if (inPlayStatuses.has(raceStatus)) {
-    return 'in_play';
+    return SportEventStatuses.IN_PLAY;
   }
 
   if (abandonedStatuses.has(raceStatus)) {
-    return 'abandoned';
+    return SportEventStatuses.ABANDONED;
   }
 
   if (finishedStatuses.has(raceStatus)) {
-    return 'finished';
+    return SportEventStatuses.FINISHED;
   }
 
   if (preMatchStatuses.has(raceStatus)) {
-    return 'pre_match';
+    return SportEventStatuses.PRE_MATCH;
   }
 
-  return 'pre_match';
+  return SportEventStatuses.PRE_MATCH;
 };
