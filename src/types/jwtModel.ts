@@ -5,4 +5,5 @@ export interface JwtModel {
   exp: number;
   type: JwtTypes;
   id: number;
+  sub: string;
 }
