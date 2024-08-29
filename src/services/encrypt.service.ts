@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import * as crypto from 'crypto-browserify';
 
 import type { Nullable } from '../types';
 import { isObject } from '../utils';
