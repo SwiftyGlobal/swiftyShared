@@ -44,7 +44,9 @@ export const getLadderBoostedPriceV2 = (payload: GetLadderBoostedPriceV2Dto): nu
     return 0;
   }
 
-  const ladders = laddersMap.get(sportSlug);
+  // Get the ladders based on the sportSlug.
+  // If the ladders are not available, use the master ladders.
+  const ladders = laddersMap.get(sportSlug) || laddersMap.get('master');
 
   /**
    * @description - If the ladders are not available, return 0.
