@@ -7,3 +7,4 @@ export * from './oddsConversion';
 export * from './everyMatrixPhase';
 export * from './sportEventStatuses';
 export * from './mysqlErrorCodes';
+export * from './redisPrefixes';
