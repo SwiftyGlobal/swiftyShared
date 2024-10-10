@@ -44,4 +44,5 @@ export const excludedVenues = new Set([
   'Wexford',
   'Wetherby',
   'Wincanton',
+  'Vaal',
 ]);
