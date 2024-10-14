@@ -35,6 +35,7 @@ export const excludedVenues = new Set([
   'Navan',
   'Newbury',
   'Punchestown',
+  'Roscommon',
   'Taunton',
   'Tipperary',
   'Thurles',
