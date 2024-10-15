@@ -16,6 +16,7 @@ export const excludedVenues = new Set([
   'Down Royal',
   'Downpatrick',
   'Exeter',
+  'Fairview',
   'Fairyhouse',
   'Fakenham',
   'Galway',
