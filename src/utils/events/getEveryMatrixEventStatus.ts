@@ -1,32 +1,22 @@
-import { isMarketRace } from '../markets';
+import type { GetEveryMatrixEventStatusDto } from '../../common';
 import { SportEventStatuses } from '../../common';
 import { EveryMatrixPhase } from '../../common';
 import type { EventPhaseStatus } from '../../types';
 
-export const getEveryMatrixEventStatus = (
-  eventStatusId: string,
-  eventPartId: number,
-  eventHasLiveStatus: boolean,
-  eventStartTime: string,
-  now: string,
-  sportslug: string,
-): EventPhaseStatus => {
+export const getEveryMatrixEventStatus = (payload: GetEveryMatrixEventStatusDto): EventPhaseStatus => {
+  const { eventStatusId, eventPartId, eventStartTime, now } = payload;
+
   let current_phase: string = eventStatusId === '1' ? 'Pre Match' : EveryMatrixPhase[eventPartId];
 
   let current_status: SportEventStatuses =
     eventStatusId === '1' ? SportEventStatuses.PRE_MATCH : SportEventStatuses.IN_PLAY;
 
   if (!current_phase && current_status == 'in_play') {
-    if (!eventHasLiveStatus) {
-      // TODO - Replace with isMarketRaceV2
-      current_phase = isMarketRace(sportslug) ? 'In Play' : 'In Play (No Live Data)';
-    } else {
-      current_phase = 'In Play (Status Based)';
-    }
+    current_phase = 'In Play';
   }
 
   if (!current_phase && eventStartTime < now) {
-    current_phase = 'In Play (Time Based)';
+    current_phase = 'In Play';
     current_status = SportEventStatuses.IN_PLAY;
   }
 
