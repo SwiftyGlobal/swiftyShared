@@ -10,5 +10,8 @@ export const RedisPrefixes = {
     LIST_LADDERS: 'ladders',
     LADDERS_SETTINGS: 'ladders_settings',
     DISABLED_EVENT_MARKETS: 'disabled_event_markets',
+    MAIN_MENU: 'main_menu',
+    CSS_STYLES: 'css_styles',
+    SIDEBAR_LEFT: 'sidebar_left',
   },
 };
