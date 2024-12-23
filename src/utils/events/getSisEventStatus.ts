@@ -1,5 +1,5 @@
 import type { Nullable } from '@internal-types/nullable';
-import { SportEventStatuses } from '@common/constants';
+import { SportEventStatuses } from '@constants/sportEventStatuses';
 
 export const getSISEventStatus = (offTime: Nullable<string>, isEventResulted: boolean): SportEventStatuses => {
   if (isEventResulted) {
