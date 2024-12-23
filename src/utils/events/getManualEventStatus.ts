@@ -1,5 +1,5 @@
-import { SportEventStatuses } from '@constants/sportEventStatuses';
-import type { EventPhaseStatus } from '@internal-types/eventPhaseStatus';
+import { SportEventStatuses } from '../../common';
+import type { EventPhaseStatus } from '../../types';
 
 export const getManualEventPhaseStatus = (eventPhase: string): EventPhaseStatus => {
   let current_status: SportEventStatuses = SportEventStatuses.PRE_MATCH;

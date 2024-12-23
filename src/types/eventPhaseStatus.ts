@@ -1,5 +1,5 @@
-import type { SportEventStatuses } from '@constants/sportEventStatuses';
-import type { Nullable } from '@internal-types/nullable';
+import type { SportEventStatuses } from '../common';
+import type { Nullable } from './nullable';
 
 export interface EventPhaseStatus {
   current_phase: Nullable<string>;

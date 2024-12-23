@@ -1,4 +1,4 @@
-import type { MysqlBoolean } from '@internal-types/mysqlBoolean';
+import type { MysqlBoolean } from '../types';
 
 export const convertMysqlBoolean = (mysqlBoolean?: MysqlBoolean | boolean): boolean => {
   return Boolean(mysqlBoolean);

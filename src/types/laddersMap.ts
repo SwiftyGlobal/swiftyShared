@@ -1,3 +1,3 @@
-import type { LadderModel } from '@models/cms/ladder.model';
+import type { LadderModel } from '../models';
 
 export type LaddersMap = Map<string, LadderModel[]>;

@@ -1,4 +1,4 @@
-import { oddsConversion, oddsConversionV2, oddsKeys } from '@constants/oddsConversion';
+import { oddsConversion, oddsConversionV2, oddsKeys } from '../common';
 
 export const decimalToFractional = (value: number): string => {
   if (value === 0) {

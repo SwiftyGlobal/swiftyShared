@@ -1,6 +1,7 @@
 import moment from 'moment';
-import type { UserFreeBetModel } from '@models/betting/userFreeBet.model';
-import type { BonusPromotionStatuses } from '@internal-types/bodusPromotionStatuses';
+
+import type { UserFreeBetModel } from '../models';
+import type { BonusPromotionStatuses } from '../types';
 
 /**
  * @description Generate bonus promo status
