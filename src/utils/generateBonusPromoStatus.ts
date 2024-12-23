@@ -1,5 +1,5 @@
 import moment from 'moment';
-import type { UserFreeBetModel } from '@models/betting';
+import type { UserFreeBetModel } from '@models/betting/userFreeBet.model';
 import type { BonusPromotionStatuses } from '@internal-types/bodusPromotionStatuses';
 
 /**

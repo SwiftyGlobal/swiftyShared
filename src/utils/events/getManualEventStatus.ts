@@ -1,4 +1,4 @@
-import { SportEventStatuses } from '@common/constants';
+import { SportEventStatuses } from '@constants/sportEventStatuses';
 import type { EventPhaseStatus } from '@internal-types/eventPhaseStatus';
 
 export const getManualEventPhaseStatus = (eventPhase: string): EventPhaseStatus => {

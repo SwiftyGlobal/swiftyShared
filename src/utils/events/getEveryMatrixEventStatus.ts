@@ -1,6 +1,7 @@
-import type { GetEveryMatrixEventStatusDto } from '@common/dto';
-import { EveryMatrixPhase, SportEventStatuses } from '@common/constants';
+import type { GetEveryMatrixEventStatusDto } from '@dto/getEveryMatrixEventStatus.dto';
 import type { EventPhaseStatus } from '@internal-types/eventPhaseStatus';
+import { EveryMatrixPhase } from '@constants/everyMatrixPhase';
+import { SportEventStatuses } from '@constants/sportEventStatuses';
 
 export const getEveryMatrixEventStatus = (payload: GetEveryMatrixEventStatusDto): EventPhaseStatus => {
   const { eventStatusId, eventPartId, eventStartTime, now } = payload;
