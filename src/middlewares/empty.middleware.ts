@@ -1,4 +1,4 @@
-import type { MiddyMiddleware } from '@internal-types/middyMiddleware';
+import type { MiddyMiddleware } from '../types';
 
 /**
  * @desc this middleware needs to skip other middlewares without any checking

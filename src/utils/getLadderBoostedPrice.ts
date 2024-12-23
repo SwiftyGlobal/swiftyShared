@@ -1,6 +1,6 @@
-import type { LadderValues } from '@internal-types/ladderValues';
-import { oddsKeys } from '@constants/oddsConversion';
-import type { GetLadderBoostedPriceV2Dto } from '@dto/getLadderBoostedPrice.v2.dto';
+import type { LadderValues } from '../types';
+import type { GetLadderBoostedPriceV2Dto } from '../common';
+import { oddsKeys } from '../common';
 
 /**
  * @deprecated - No longer used since ladders are dynamic. Do not use this function and replace with getLadderBoostedPriceV2.

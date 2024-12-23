@@ -13,25 +13,11 @@
     "esModuleInterop": true,
     "pretty": true,
     "outDir": "dist",
-    "rootDir": "./src",
-    "baseUrl": "./src",
     "lib": ["es2017", "ES6"],
     "skipDefaultLibCheck": false,
     "typeRoots": [
       "node_modules/@types"
-    ],
-    "paths": {
-      "@services/*": ["services/*"],
-      "@common/*": ["common/*"],
-      "@dto/*": ["common/dto/*"],
-      "@constants/*": ["common/constants/*"],
-      "@models/*": ["models/*"],
-      "@config/*": ["config/*"],
-      "@socket-controllers/*": ["socket-controllers/*"],
-      "@helpers/*": ["helpers/*"],
-      "@utils/*": ["utils/*"],
-      "@internal-types/*": ["types/*"]
-    }
+    ]
   },
   "include": [
     "src"

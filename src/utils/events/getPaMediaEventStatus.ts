@@ -1,5 +1,5 @@
-import type { Nullable } from '@internal-types/nullable';
-import { SportEventStatuses } from '@constants/sportEventStatuses';
+import type { Nullable } from '../../types';
+import { SportEventStatuses } from '../../common';
 
 const inPlayStatuses: Set<Nullable<string>> = new Set(['Active', 'Off']);
 const abandonedStatuses: Set<Nullable<string>> = new Set(['Abandoned']);
