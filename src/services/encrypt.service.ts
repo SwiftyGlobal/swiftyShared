@@ -1,7 +1,6 @@
 import * as crypto from 'crypto-browserify';
-
-import type { Nullable } from '../types';
-import { isObject } from '../utils';
+import type { Nullable } from '@internal-types/nullable';
+import { isObject } from '@utils/isObject';
 
 export class EncryptService {
   private static instance: EncryptService;

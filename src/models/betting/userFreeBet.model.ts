@@ -1,4 +1,4 @@
-import type { Nullable } from '../../types';
+import type { Nullable } from '@internal-types/nullable';
 
 export type UserFreeBetUsages = 'sports' | 'cash' | 'casino';
 

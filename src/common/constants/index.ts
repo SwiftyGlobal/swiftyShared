@@ -9,3 +9,5 @@ export * from './sportEventStatuses';
 export * from './mysqlErrorCodes';
 export * from './redisPrefixes';
 export * from './excludedSisVenues';
+export * from './secondUnits';
+export * from './tradingStatuses';

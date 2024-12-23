@@ -1,4 +1,4 @@
-import type { JwtTypes } from '../common';
+import type { JwtTypes } from '@common/constants';
 
 export interface JwtModel {
   iat: number;

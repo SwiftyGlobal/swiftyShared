@@ -1,4 +1,4 @@
-import type { ObjectKeys } from '../../types';
+import type { ObjectKeys } from '@internal-types/objectKeys';
 
 /**
  * @deprecated

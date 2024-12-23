@@ -1,4 +1,6 @@
-import type { LaddersMap, LadderValues, Nullable } from '../../types';
+import type { LadderValues } from '@internal-types/ladderValues';
+import type { LaddersMap } from '@internal-types/laddersMap';
+import type { Nullable } from '@internal-types/nullable';
 
 export interface GetLadderBoostedPriceV2Dto {
   /**
