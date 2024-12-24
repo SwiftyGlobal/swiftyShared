@@ -11,3 +11,5 @@ export * from './bodusPromotionStatuses';
 export * from './sportAvailabilities';
 export * from './eventPhaseStatus';
 export * from './laddersMap';
+export * from './sportProviders';
+export * from './idWithProvider';
