@@ -11,3 +11,4 @@ export * from './redisPrefixes';
 export * from './excludedSisVenues';
 export * from './secondUnits';
 export * from './tradingStatuses';
+export * from './providerPrefixes';
