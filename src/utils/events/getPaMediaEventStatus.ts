@@ -7,6 +7,7 @@ const preMatchStatuses: Set<Nullable<string>> = new Set(['Dormant', null]);
 const finishedStatuses: Set<Nullable<string>> = new Set([
   'Result',
   'Race Void',
+  'RaceVoid',
   'Final Result',
   'Final',
   'Result',
