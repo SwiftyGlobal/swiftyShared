@@ -15,5 +15,9 @@ export const RedisPrefixes = {
     SIDEBAR_LEFT: 'sidebar_left',
     CMS_DASHBOAR_DATA: 'cms_dashboard_data',
     SHUTDOWN_SETTINGS: 'shutdown_settings',
+    /**
+     * @description - `maindb.custom_positions` table
+     */
+    RACING_CUSTOM_POSITIONS: 'racing_custom_positions',
   },
 };
