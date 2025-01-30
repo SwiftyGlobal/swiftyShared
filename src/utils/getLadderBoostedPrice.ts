@@ -1,6 +1,9 @@
 import type { LadderValues } from '../types';
 import type { GetLadderBoostedPriceV2Dto } from '../common';
 import { oddsKeys } from '../common';
+import { PriceBoostTypes } from '../common/constants/priceBoostTypes';
+import type { LadderModel } from '../models';
+import { parseLadderValue } from './parseLadderValue';
 
 /**
  * @deprecated - No longer used since ladders are dynamic. Do not use this function and replace with getLadderBoostedPriceV2.
@@ -34,6 +37,9 @@ export const getLadderBoostedPrice = (ladder: LadderValues, decimal: number): nu
   return parseFloat(String(foundOddsKeys[foundOddsKeys.length - 1]));
 };
 
+/**
+ * @deprecated - No longer used since we added a price boost type to indicate whether the price boost standard or super boost. Replace with getLadderBoostedPriceV3.
+ */
 export const getLadderBoostedPriceV2 = (payload: GetLadderBoostedPriceV2Dto): number => {
   const { sportSlug, decimal, ladderValue, laddersMap } = payload;
 
@@ -76,4 +82,85 @@ export const getLadderBoostedPriceV2 = (payload: GetLadderBoostedPriceV2Dto): nu
   }
 
   return parseFloat(foundActualLadder.in_decimal);
+};
+
+/**
+ * @description - Works almost the same as getLadderBoostedPriceV2, but instead returns an object with price boost type
+ * Also supports negative ladders and super boosts.
+ */
+export const getLadderBoostedPriceV3 = (
+  payload: GetLadderBoostedPriceV2Dto,
+): { decimal: number; price_boost_type: PriceBoostTypes } => {
+  const { sportSlug, decimal, ladderValue, laddersMap } = payload;
+
+  /**
+   * @description - If the decimal is not available or ladder is -1, return 0.
+   */
+  if (!decimal || ladderValue === '-1') {
+    return { decimal: 0, price_boost_type: PriceBoostTypes.STANDARD };
+  }
+
+  // Get the ladders based on the sportSlug.
+  // If the ladders are not available, use the master ladders.
+  const ladders = laddersMap.get(sportSlug) || laddersMap.get('master');
+
+  /**
+   * @description - If the ladders are not available, return 0.
+   */
+  if (!ladders) {
+    return { decimal: 0, price_boost_type: PriceBoostTypes.STANDARD };
+  }
+
+  /**
+   * @description - Get the ladder value from the ladderValue.
+   * @example
+   * - If the ladderValue is 'ladder+1', then the ladder is 1.
+   * - If the ladderValue is 'ladder+2', then the ladder is 2.
+   * - If the ladderValue is 'ladder+3', then the ladder is 3.
+   * - If the ladderValue is 'ladder+4', then the ladder is 4.
+   * - If the ladderValue is '-1', then the ladder is -1.
+   */
+  const { ladder, isNegative } = parseLadderValue(ladderValue);
+
+  const ladderNumber = +ladder;
+
+  const foundLadders = ladders.filter((x) => {
+    return isNegative ? +x.in_decimal < +decimal : +x.in_decimal > +decimal;
+  });
+
+  if (isNegative) {
+    foundLadders.reverse();
+  }
+
+  let ladderIndex = ladderNumber;
+
+  let foundActualLadder: LadderModel;
+
+  if (foundLadders?.length > ladderNumber - 1) {
+    foundActualLadder = foundLadders[ladderNumber - 1];
+  } else {
+    foundActualLadder = foundLadders[foundLadders?.length - 1];
+
+    ladderIndex = foundLadders?.length;
+  }
+
+  if (!foundActualLadder) {
+    return { decimal: 0, price_boost_type: PriceBoostTypes.STANDARD };
+  }
+
+  /**
+   * @description - If the ladder index is less than or equal to 4, then the price boost type is 'boost'.
+   * There can be a case when ladder is +4 but the ladders amount above the current decimal is less than 4.
+   * In that case, we must take the latest value with it's index and replace ladder+4 with ladder+index.
+   * Also, if ladder is negative, it's always standard boost.
+   * @example
+   * // current ladders - [1.5, 1.6, 1.7, 1.8, 1.9];
+   * const decimal = 1.8;
+   * const ladder = 'ladder+5';
+   * getLadderBoostedPriceV3({ sportSlug: 'football', decimal, ladder, laddersMap: new Map() }); // { decimal: 1.9, price_boost_type: 'boost' }
+   * Even though we have ladder+5, it's still standard boost because the amount of ladders above the current decimal is only 1
+   */
+  const priceBoostType = ladderIndex <= 4 || isNegative ? PriceBoostTypes.BOOST : PriceBoostTypes.SUPER_BOOST;
+
+  return { decimal: parseFloat(foundActualLadder.in_decimal), price_boost_type: priceBoostType };
 };
