@@ -11,3 +11,4 @@ export * from './generateOddsFormats';
 export * from './checkIfEarlyPriceIsDisabled';
 export * from './getPriceBoostFormats';
 export * from './decimalToAmerican';
+export * from './parseLadderValue';
