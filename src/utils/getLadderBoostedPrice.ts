@@ -1,7 +1,6 @@
 import type { LadderValues } from '../types';
 import type { GetLadderBoostedPriceV2Dto } from '../common';
-import { oddsKeys } from '../common';
-import { PriceBoostTypes } from '../common/constants/priceBoostTypes';
+import { oddsKeys, PriceBoostTypes } from '../common';
 import type { LadderModel } from '../models';
 import { parseLadderValue } from './parseLadderValue';
 
