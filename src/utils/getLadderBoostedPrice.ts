@@ -148,9 +148,12 @@ export const getLadderBoostedPriceV3 = (
   }
 
   /**
-   * @description - If the ladder index is less than or equal to 4, then the price boost type is 'boost'.
+   * @description
+   * If ladder is negative - no price boost.
+   * Otherwise:
+   * If the ladder index is less than or equal to 4, then the price boost type is 'boost'.
    * There can be a case when ladder is +4 but the ladders amount above the current decimal is less than 4.
-   * In that case, we must take the latest value with it's index and replace ladder+4 with ladder+index.
+   * In that case, we must take the latest value with its index and replace ladder+4 with ladder+index.
    * Also, if ladder is negative, it's always standard boost.
    * @example
    * // current ladders - [1.5, 1.6, 1.7, 1.8, 1.9];
@@ -159,7 +162,11 @@ export const getLadderBoostedPriceV3 = (
    * getLadderBoostedPriceV3({ sportSlug: 'football', decimal, ladder, laddersMap: new Map() }); // { decimal: 1.9, price_boost_type: 'boost' }
    * Even though we have ladder+5, it's still standard boost because the amount of ladders above the current decimal is only 1
    */
-  const priceBoostType = ladderIndex <= 4 || isNegative ? PriceBoostTypes.BOOST : PriceBoostTypes.SUPER_BOOST;
+  const priceBoostType = isNegative
+    ? PriceBoostTypes.STANDARD
+    : ladderIndex <= 4
+      ? PriceBoostTypes.BOOST
+      : PriceBoostTypes.SUPER_BOOST;
 
   return { decimal: parseFloat(foundActualLadder.in_decimal), price_boost_type: priceBoostType };
 };
