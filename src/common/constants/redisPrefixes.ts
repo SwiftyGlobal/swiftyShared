@@ -19,5 +19,6 @@ export const RedisPrefixes = {
      * @description - `maindb.custom_positions` table
      */
     RACING_CUSTOM_POSITIONS: 'racing_custom_positions',
+    LADDERS_MAP: 'ladders_map',
   },
 };
