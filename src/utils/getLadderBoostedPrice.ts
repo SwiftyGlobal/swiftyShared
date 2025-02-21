@@ -151,7 +151,7 @@ export const getLadderBoostedPriceV3 = (
    * @description
    * If ladder is negative - no price boost.
    * Otherwise:
-   * If the ladder index is less than or equal to 4, then the price boost type is 'boost'.
+   * If the ladder index is less than or equal to 3, then the price boost type is 'boost'.
    * There can be a case when ladder is +4 but the ladders amount above the current decimal is less than 4.
    * In that case, we must take the latest value with its index and replace ladder+4 with ladder+index.
    * Also, if ladder is negative, it's always standard boost.
@@ -164,7 +164,7 @@ export const getLadderBoostedPriceV3 = (
    */
   const priceBoostType = isNegative
     ? PriceBoostTypes.STANDARD
-    : ladderIndex <= 4
+    : ladderIndex <= 3
       ? PriceBoostTypes.BOOST
       : PriceBoostTypes.SUPER_BOOST;
 
