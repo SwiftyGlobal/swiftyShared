@@ -1,8 +1,11 @@
+import Decimal from 'decimal.js';
+
 import type { LadderValues } from '../types';
 import type { GetLadderBoostedPriceV2Dto } from '../common';
 import { oddsKeys, PriceBoostTypes } from '../common';
 import type { LadderModel } from '../models';
 import { parseLadderValue } from './parseLadderValue';
+import { stripDecimal } from './stripDecimal';
 
 /**
  * @deprecated - No longer used since ladders are dynamic. Do not use this function and replace with getLadderBoostedPriceV2.
@@ -16,6 +19,7 @@ import { parseLadderValue } from './parseLadderValue';
  * getLadderBoostedPrice('ladder+3', 1.5); // 1.72727
  * getLadderBoostedPrice('ladder+4', 2.8); // 3.1
  */
+/* istanbul ignore next */
 export const getLadderBoostedPrice = (ladder: LadderValues, decimal: number): number => {
   if (!decimal || ladder === '-1') {
     return 0;
@@ -39,6 +43,7 @@ export const getLadderBoostedPrice = (ladder: LadderValues, decimal: number): nu
 /**
  * @deprecated - No longer used since we added a price boost type to indicate whether the price boost standard or super boost. Replace with getLadderBoostedPriceV3.
  */
+/* istanbul ignore next */
 export const getLadderBoostedPriceV2 = (payload: GetLadderBoostedPriceV2Dto): number => {
   const { sportSlug, decimal, ladderValue, laddersMap } = payload;
 
@@ -90,14 +95,16 @@ export const getLadderBoostedPriceV2 = (payload: GetLadderBoostedPriceV2Dto): nu
 export const getLadderBoostedPriceV3 = (
   payload: GetLadderBoostedPriceV2Dto,
 ): { decimal: number; price_boost_type: PriceBoostTypes } => {
-  const { sportSlug, decimal, ladderValue, laddersMap } = payload;
+  const { sportSlug, decimal: originalDecimalOdd, ladderValue, laddersMap } = payload;
 
   /**
    * @description - If the decimal is not available or ladder is -1, return 0.
    */
-  if (!decimal || ladderValue === '-1') {
+  if (!originalDecimalOdd || ladderValue === '-1') {
     return { decimal: 0, price_boost_type: PriceBoostTypes.STANDARD };
   }
+
+  const decimal = stripDecimal(originalDecimalOdd);
 
   // Get the ladders based on the sportSlug.
   // If the ladders are not available, use the master ladders.
@@ -124,7 +131,9 @@ export const getLadderBoostedPriceV3 = (
   const ladderNumber = +ladder;
 
   const foundLadders = ladders.filter((x) => {
-    return isNegative ? +x.in_decimal < +decimal : +x.in_decimal > +decimal;
+    const laddersDecimal = new Decimal(x.in_decimal);
+
+    return isNegative ? laddersDecimal.lessThan(decimal) : laddersDecimal.greaterThan(decimal);
   });
 
   if (isNegative) {
