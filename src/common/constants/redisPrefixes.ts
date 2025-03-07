@@ -20,5 +20,6 @@ export const RedisPrefixes = {
      */
     RACING_CUSTOM_POSITIONS: 'racing_custom_positions',
     LADDERS_MAP: 'ladders_map',
+    USER_COMPLIANCE_INFO: 'user_compliance_info',
   },
 };
