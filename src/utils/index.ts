@@ -12,3 +12,5 @@ export * from './checkIfEarlyPriceIsDisabled';
 export * from './getPriceBoostFormats';
 export * from './decimalToAmerican';
 export * from './parseLadderValue';
+export * from './arrayFilter';
+export * from './stripDecimal';

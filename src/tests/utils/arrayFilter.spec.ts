@@ -1,4 +1,4 @@
-import { checkIsCountryAllowed } from './arrayFilter';
+import { checkIsCountryAllowed } from '../../utils';
 
 describe('checkIsCountryAllowed', () => {
   it('returns true when countries array is null', () => {
