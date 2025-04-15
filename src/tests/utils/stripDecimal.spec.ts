@@ -1,6 +1,6 @@
 import Decimal from 'decimal.js';
 
-import { stripDecimal } from './stripDecimal';
+import { stripDecimal } from '../../utils';
 
 describe('stripDecimal', () => {
   it('returns the number fixed to 5 decimals when there are 5 or fewer decimals', () => {

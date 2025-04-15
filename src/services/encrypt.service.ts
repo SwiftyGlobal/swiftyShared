@@ -20,7 +20,7 @@ export class EncryptService {
     return EncryptService.instance;
   }
 
-  encryptText(text: string | string[]) {
+  encryptText(text: unknown) {
     try {
       if (Array.isArray(text)) {
         const return_array: string[] = [];
@@ -45,11 +45,11 @@ export class EncryptService {
         return this.encrypt(text);
       }
     } catch (e) {
-      throw new Error(e.message);
+      return text;
     }
   }
 
-  encrypt(text) {
+  encrypt(text: unknown) {
     try {
       if (text == null || text === undefined || text === '') return '';
 
@@ -67,11 +67,11 @@ export class EncryptService {
 
       return encrypted.toString('hex');
     } catch (e) {
-      throw new Error(e.message);
+      return text;
     }
   }
 
-  decryptText(text: Nullable<string>) {
+  decryptText(text: Nullable<string> | unknown) {
     try {
       if (Array.isArray(text)) {
         const return_array: string[] = [];
@@ -85,10 +85,10 @@ export class EncryptService {
         return return_array;
       } else {
         if (!text) return text;
-        return this.decrypt(text);
+        return this.decrypt(text as any);
       }
     } catch (e) {
-      throw new Error(e.message);
+      return text;
     }
   }
 
@@ -110,7 +110,7 @@ export class EncryptService {
 
       return decryptedData;
     } catch (e) {
-      throw new Error(e.message);
+      return text;
     }
   }
 

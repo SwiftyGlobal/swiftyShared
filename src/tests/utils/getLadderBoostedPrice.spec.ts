@@ -1,7 +1,7 @@
-import { getLadderBoostedPriceV3 } from './getLadderBoostedPrice';
-import type { LadderModel } from '../models';
-import type { LaddersMap } from '../types';
-import { PriceBoostTypes } from '../common';
+import { getLadderBoostedPriceV3 } from '../../utils';
+import type { LadderModel } from '../../models';
+import type { LaddersMap } from '../../types';
+import { PriceBoostTypes } from '../../common';
 
 describe('getLadderBoostedPriceV3', () => {
   const ladders: LadderModel[] = [
