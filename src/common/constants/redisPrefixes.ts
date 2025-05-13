@@ -22,5 +22,10 @@ export const RedisPrefixes = {
     LADDERS_MAP: 'ladders_map',
     USER_COMPLIANCE_INFO: 'user_compliance_info',
     OPEN_BETS_LIST: 'open_bets_list',
+
+    /**
+     * @description - `maindb.markets` table
+     */
+    MARKETS_MAP: 'markets_map',
   },
 };
