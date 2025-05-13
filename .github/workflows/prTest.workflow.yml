@@ -1,0 +1,16 @@
+name: Run tests when PR is opened on master branch
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install
+      - run: npm run test
