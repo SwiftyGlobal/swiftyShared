@@ -27,5 +27,10 @@ export const RedisPrefixes = {
      * @description - `maindb.markets` table
      */
     MARKETS_MAP: 'markets_map',
+
+    /**
+     * @description - `maindb.custom_competitions` table
+     */
+    CUSTOM_COMPETITIONS_MAP: 'custom_competitions_map',
   },
 };
