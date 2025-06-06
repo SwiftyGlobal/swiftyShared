@@ -33,4 +33,7 @@ export const RedisPrefixes = {
      */
     CUSTOM_COMPETITIONS_MAP: 'custom_competitions_map',
   },
+  SET: {
+    JWT_BLACKLIST: 'jwt_blacklist',
+  },
 };
