@@ -1,3 +1,10 @@
+/**
+ * Converts a decimal odds value to American odds format.
+ *
+ * @param {number} value - The decimal odds value to convert.
+ * @returns {string} The American odds representation of the input value.
+ */
+
 export const decimalToAmerican = (value: number) => {
   let new_value = '';
   if (value > 2) {
