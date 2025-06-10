@@ -1,5 +1,12 @@
 import { oddsConversion, oddsConversionV2, oddsKeys } from '../common';
 
+/**
+ * Converts a decimal odds value to fractional odds format.
+ *
+ * @param {number} value - The decimal odds value to convert.
+ * @returns {string} The fractional odds representation of the input value.
+ */
+
 export const decimalToFractional = (value: number): string => {
   if (value === 0) {
     return 'SP';
