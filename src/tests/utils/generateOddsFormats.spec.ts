@@ -35,6 +35,25 @@ describe('generateOddsFormats', () => {
     expect(result.odds_american).toBe('american-2.5');
   });
 
+  it('should parse oddDecimal when oddsFractional is not provided', () => {
+    const decimalInput = '3.14';
+
+    const result = generateOddsFormats(decimalInput, null);
+
+    expect(result.odds_decimal).toBe('3.14');
+    expect(result.odds_fractional).toBe('fractional-3.14');
+    expect(result.odds_american).toBe('american-3.14');
+  });
+
+  it('should return SP values when oddsFractional results in NaN (e.g. "0/0")', () => {
+    const result = generateOddsFormats(null, '0/0'); // NaN from 0 / 0
+    expect(result).toEqual({
+      odds_decimal: 'SP',
+      odds_american: 'SP',
+      odds_fractional: 'SP',
+    });
+  });
+
   it('should convert decimal odds to all formats when fractional is not provided', () => {
     const decimalInput = '2.75';
     const expectedDecimal = '2.75'; // from mocked numberFormatter
