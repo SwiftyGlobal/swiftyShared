@@ -34,6 +34,11 @@ describe('decimalToFractional', () => {
     expect(decimalToFractional(2.6)).toBe('6/4'); // Closest lower: 2.5
   });
 
+  it('should return oddsConversionV2 value if value is less or equal to the first key', () => {
+    expect(decimalToFractional(1.5)).toBe('1/1');
+    expect(decimalToFractional(2.0)).toBe('1/1');
+  });
+
   it('should return value*100/100 when value exceeds known keys', () => {
     expect(decimalToFractional(4.25)).toBe('425/100');
   });
