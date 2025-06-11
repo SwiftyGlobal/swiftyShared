@@ -9,6 +9,7 @@ export default {
     "src/**/*.{ts,tsx}", // Include all TypeScript files
     "!src/**/*.d.ts", // Exclude TypeScript declaration files
     "!src/**/index.ts", // (Optional) Exclude index files
-    "!src/common/**/*" // (Optional) Exclude common files
+    "!src/common/**/*", // (Optional) Exclude common files
+    "!src/middlewares/**/*" // (Optional) Exclude middlewares files
   ],
 };
