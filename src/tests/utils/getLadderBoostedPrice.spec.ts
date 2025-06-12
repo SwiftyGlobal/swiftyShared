@@ -110,6 +110,24 @@ describe('getLadderBoostedPriceV3', () => {
     ).toEqual({ decimal: 0, price_boost_type: PriceBoostTypes.STANDARD });
   });
 
+  it('returns 0 and STANDARD boost type when foundLadders is empty', () => {
+    const laddersMapWithLowOdds = new Map<string, LadderModel[]>([
+      [
+        'soccer',
+        [{ id: 1, in_decimal: '1.1', pairing_decimal: 1, in_fraction: '', pairing_fraction: 1, sport_slug: 'soccer' }],
+      ],
+    ]);
+
+    expect(
+      getLadderBoostedPriceV3({
+        sportSlug: 'soccer',
+        decimal: 5.0,
+        ladderValue: 'ladder+1',
+        laddersMap: laddersMapWithLowOdds,
+      }),
+    ).toEqual({ decimal: 0, price_boost_type: PriceBoostTypes.STANDARD });
+  });
+
   it('returns correct price and boost type when decimal float part is more than 5 items', () => {
     expect(
       getLadderBoostedPriceV3({
