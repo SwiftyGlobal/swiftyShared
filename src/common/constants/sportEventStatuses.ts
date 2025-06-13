@@ -5,4 +5,7 @@ export enum SportEventStatuses {
   ABANDONED = 'abandoned',
   SUSPENDED = 'suspended',
   CANCELLED = 'cancelled',
+  POSTPONED = 'postponed',
+  INTERRUPTED = 'interrupted',
+  COVERAGE_LOST = 'coverage_lost',
 }
