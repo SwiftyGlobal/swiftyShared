@@ -6,7 +6,7 @@ export const isMarketRace = (sportSlug: string | null): boolean => {
 
   const sports = ['golf', 'motorsport', 'politics', 'cycling', 'specials'];
 
-  if (sports.includes(sportSlug || '')) {
+  if (sports.includes(sportSlug)) {
     return true;
   }
 

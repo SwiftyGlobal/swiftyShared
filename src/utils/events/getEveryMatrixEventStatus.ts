@@ -2,6 +2,17 @@ import type { GetEveryMatrixEventStatusDto } from '../../common';
 import { EveryMatrixPhase, SportEventStatuses } from '../../common';
 import type { EventPhaseStatus } from '../../types';
 
+/**
+ * Determines the current phase and status of an event based on the provided payload.
+ *
+ * @param {GetEveryMatrixEventStatusDto} payload - The data transfer object containing event details.
+ * @param {string} payload.eventStatusId - The ID representing the event's status.
+ * @param {string} payload.eventPartId - The ID representing the event's part/phase.
+ * @param {Date} payload.eventStartTime - The start time of the event.
+ * @param {Date} payload.now - The current time.
+ * @returns {EventPhaseStatus} An object containing the current phase and status of the event.
+ */
+
 export const getEveryMatrixEventStatus = (payload: GetEveryMatrixEventStatusDto): EventPhaseStatus => {
   const { eventStatusId, eventPartId, eventStartTime, now } = payload;
 

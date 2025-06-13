@@ -4,6 +4,14 @@ import { numberFormatter } from './numberFormatter';
 import { decimalToFractional } from './decimalToFractional';
 import { decimalToAmerican } from './decimalToAmerican';
 
+/**
+ * Generates a set of odds formats (decimal, fractional, and American) based on the provided input.
+ *
+ * @param {Nullable<string>} oddDecimal - The decimal odds as a string, or null if not provided.
+ * @param {Nullable<string>} oddsFractional - The fractional odds as a string, or null if not provided.
+ * @returns {OddsFormatsModel} An object containing the odds in decimal, fractional, and American formats.
+ */
+
 export const generateOddsFormats = (
   oddDecimal: Nullable<string>,
   oddsFractional: Nullable<string>,

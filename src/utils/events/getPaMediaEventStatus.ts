@@ -1,6 +1,14 @@
 import type { Nullable } from '../../types';
 import { SportEventStatuses } from '../../common';
 
+/**
+ * Determines the status of a PA media event based on the race status and event off time.
+ *
+ * @param {Nullable<string>} raceStatus - The current status of the race. Can be null or a string.
+ * @param {Nullable<string>} eventOffTime - The scheduled off time of the event. Can be null or a string.
+ * @returns {SportEventStatuses} - The determined status of the event, which can be one of the predefined `SportEventStatuses`.
+ */
+
 const inPlayStatuses: Set<Nullable<string>> = new Set(['Active', 'Off']);
 const abandonedStatuses: Set<Nullable<string>> = new Set(['Abandoned']);
 const preMatchStatuses: Set<Nullable<string>> = new Set(['Dormant', null]);
