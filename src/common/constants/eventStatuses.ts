@@ -1,5 +1,17 @@
 import { SportEventStatuses } from './sportEventStatuses';
 
+export const LSportEventStatuses = {
+  Pending: '1',
+  InProgress: '2',
+  Ended: '3',
+  Canceled: '4',
+  Postponed: '5',
+  Interrupted: '6',
+  Abandoned: '7',
+  CoverageLost: '8',
+  AboutToStart: '9',
+} as const;
+
 export const EventStatuses = {
   LSPORTS: {
     '1': SportEventStatuses.PRE_MATCH,
