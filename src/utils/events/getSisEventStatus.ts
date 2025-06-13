@@ -1,15 +1,17 @@
 import { SportEventStatuses } from '../../common';
-import type { Nullable } from '../../types';
+import type { GetSisEventStatusDto } from '../../common';
 
 /**
  * Determines the status of a sports event based on the provided parameters.
  *
- * @param {Nullable<string>} offTime - The off time of the event, or null if not available.
- * @param {boolean} isEventResulted - Indicates whether the event has been resulted.
+ * @param {GetSisEventStatusDto} payload
+ * @param {Nullable<string>} payload.offTime - The off time of the event, or null if not available.
+ * @param {boolean} payload.isEventResulted - Indicates whether the event has been resulted.
  * @returns {SportEventStatuses} - The status of the sports event.
  */
+export const getSISEventStatus = (payload: GetSisEventStatusDto): SportEventStatuses => {
+  const { isEventResulted, offTime } = payload;
 
-export const getSISEventStatus = (offTime: Nullable<string>, isEventResulted: boolean): SportEventStatuses => {
   if (isEventResulted) {
     return SportEventStatuses.FINISHED;
   }

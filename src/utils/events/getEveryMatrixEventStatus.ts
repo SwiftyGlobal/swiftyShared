@@ -12,7 +12,6 @@ import type { EventPhaseStatus } from '../../types';
  * @param {Date} payload.now - The current time.
  * @returns {EventPhaseStatus} An object containing the current phase and status of the event.
  */
-
 export const getEveryMatrixEventStatus = (payload: GetEveryMatrixEventStatusDto): EventPhaseStatus => {
   const { eventStatusId, eventPartId, eventStartTime, now } = payload;
 
