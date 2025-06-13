@@ -29,6 +29,32 @@ describe('EncryptService', () => {
     expect(encryptService.decryptText('')).toBe('');
   });
 
+  it('should return empty string when calling encrypt directly with null/undefined/empty', () => {
+    expect(encryptService.encrypt(null)).toBe('');
+    expect(encryptService.encrypt(undefined)).toBe('');
+    expect(encryptService.encrypt('')).toBe('');
+  });
+
+  it('should return input text if encrypt throws an error (string input)', () => {
+    jest.spyOn(encryptService as any, 'encrypt').mockImplementation(() => {
+      throw new Error('Encryption failed');
+    });
+
+    const input = 'sensitiveData';
+    const result = encryptService.encryptText(input);
+    expect(result).toBe(input);
+  });
+
+  it('should return input array if encrypt throws an error (array input)', () => {
+    jest.spyOn(encryptService as any, 'encrypt').mockImplementation(() => {
+      throw new Error('Encryption failed');
+    });
+
+    const input = ['a', 'b', 'c'];
+    const result = encryptService.encryptText(input);
+    expect(result).toBe(input);
+  });
+
   it('handles null or undefined values gracefully during encryption and decryption', () => {
     expect(encryptService.encryptText(null)).toBe('');
     expect(encryptService.decryptText(null)).toBe(null);
@@ -67,6 +93,21 @@ describe('EncryptService', () => {
 
     expect(typeof result).toBe('string');
     expect(result).not.toBe(input);
+  });
+
+  it('should return empty string when text is null', () => {
+    const result = encryptService.decrypt(null as unknown as string);
+    expect(result).toBe('');
+  });
+
+  it('should return empty string when text is undefined', () => {
+    const result = encryptService.decrypt(undefined as unknown as string);
+    expect(result).toBe('');
+  });
+
+  it('should return empty string when text is an empty string', () => {
+    const result = encryptService.decrypt('');
+    expect(result).toBe('');
   });
 
   it('returns original text when decrypt throws an error (covers catch block)', () => {
