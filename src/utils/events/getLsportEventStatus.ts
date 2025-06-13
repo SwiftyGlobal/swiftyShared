@@ -9,9 +9,9 @@ export const getLsportEventStatus = (payload: GetLSportEventStatusDto): EventPha
 
   const currentPhase = currentStatus
     ? currentStatus === SportEventStatuses.PRE_MATCH
-      ? 'pre_match'
-      : 'in_play'
-    : 'pre_match';
+      ? 'Pre Match'
+      : 'In Play'
+    : 'Pre Match';
 
   return { current_status: EventStatuses.LSPORTS[eventStatusId], current_phase: currentPhase };
 };

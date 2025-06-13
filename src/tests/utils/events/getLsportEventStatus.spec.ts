@@ -9,7 +9,7 @@ describe('getLsportEventStatus', () => {
 
     expect(result).toEqual({
       current_status: SportEventStatuses.PRE_MATCH,
-      current_phase: 'pre_match',
+      current_phase: 'Pre Match',
     });
   });
 
@@ -20,7 +20,7 @@ describe('getLsportEventStatus', () => {
 
     expect(result).toEqual({
       current_status: SportEventStatuses.IN_PLAY,
-      current_phase: 'in_play',
+      current_phase: 'In Play',
     });
   });
 });
