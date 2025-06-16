@@ -34,4 +34,10 @@ export const EventStatuses = {
     '7': SportEventStatuses.ABANDONED,
     '8': SportEventStatuses.CANCELLED,
   },
+  BET_RADAR: {
+    '0': SportEventStatuses.PRE_MATCH,
+    '1': SportEventStatuses.IN_PLAY,
+    '3': SportEventStatuses.FINISHED,
+    '4': SportEventStatuses.CLOSED,
+  },
 } as const;

@@ -8,4 +8,5 @@ export enum SportEventStatuses {
   POSTPONED = 'postponed',
   INTERRUPTED = 'interrupted',
   COVERAGE_LOST = 'coverage_lost',
+  CLOSED = 'closed',
 }

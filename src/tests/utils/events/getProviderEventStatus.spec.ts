@@ -1,9 +1,14 @@
-import { getProviderEventStatus } from '../../../utils/events/getProviderEventStatus';
-import { getManualEventPhaseStatus } from '../../../utils';
+import { getProviderEventStatus } from '../../../utils';
+import { getBetRadarEventStatus, getManualEventPhaseStatus } from '../../../utils';
 import { getLsportEventStatus } from '../../../utils';
 import { getEveryMatrixEventStatus } from '../../../utils';
 import { getProviderWithoutId } from '../../../utils';
-import type { GetEveryMatrixEventStatusDto, GetLSportEventStatusDto, GetManualEventStatusDto } from '../../../common';
+import type {
+  GetBetRadarEventStatusDto,
+  GetEveryMatrixEventStatusDto,
+  GetLSportEventStatusDto,
+  GetManualEventStatusDto,
+} from '../../../common';
 import { SportEventStatuses } from '../../../common';
 import type { EventPhaseStatus } from '../../../types';
 
@@ -11,12 +16,14 @@ jest.mock('../../../utils/getProviderWithoutId');
 jest.mock('../../../utils/events/getManualEventStatus');
 jest.mock('../../../utils/events/getLsportEventStatus');
 jest.mock('../../../utils/events/getEveryMatrixEventStatus');
+jest.mock('../../../utils/events/getBetRadarEventStatus');
 
 describe('getProviderEventStatus', () => {
   const mockGetProviderWithoutId = getProviderWithoutId as jest.Mock;
   const mockGetManualEventPhaseStatus = getManualEventPhaseStatus as jest.Mock;
   const mockGetLsportEventStatus = getLsportEventStatus as jest.Mock;
   const mockGetEveryMatrixEventStatus = getEveryMatrixEventStatus as jest.Mock;
+  const mockGetBetRadarEventStatus = getBetRadarEventStatus as jest.Mock;
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -66,6 +73,26 @@ describe('getProviderEventStatus', () => {
 
     expect(mockGetProviderWithoutId).toHaveBeenCalledWith('e-123');
     expect(mockGetEveryMatrixEventStatus).toHaveBeenCalledWith(payload);
+    expect(result).toEqual(expectedResult);
+  });
+
+  it('should call getBetRadar for provider g', () => {
+    mockGetProviderWithoutId.mockReturnValue('g');
+    const payload: GetBetRadarEventStatusDto = {
+      eventStatusId: '0',
+    };
+
+    const expectedResult: EventPhaseStatus = {
+      current_phase: 'Pre Match',
+      current_status: SportEventStatuses.PRE_MATCH,
+    };
+
+    mockGetBetRadarEventStatus.mockReturnValue(expectedResult);
+
+    const result = getProviderEventStatus('g-123', payload);
+
+    expect(mockGetProviderWithoutId).toHaveBeenCalledWith('g-123');
+    expect(mockGetBetRadarEventStatus).toHaveBeenCalledWith(payload);
     expect(result).toEqual(expectedResult);
   });
 
