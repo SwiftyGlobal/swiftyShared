@@ -1,9 +1,19 @@
+export enum Providers {
+  BETRADAR = 'betradar',
+  EVERYMATRIX = 'everymatrix',
+  LSPORT = 'lsport',
+  MANUAL = 'manual',
+  PAMEDIA = 'pamedia',
+  SIS = 'sis',
+  BETGENIUS = 'betgenius',
+}
+
 export const ProviderPrefixes = {
-  a: 'BET_GENIUS',
-  e: 'EVERY_MATRIX',
-  f: 'LSPORTS',
-  g: 'BET_RADAR',
-  c: 'SIS',
-  d: 'PA_MEDIA',
-  m: 'MANUAL',
+  a: Providers.BETGENIUS,
+  e: Providers.EVERYMATRIX,
+  f: Providers.LSPORT,
+  g: Providers.BETRADAR,
+  c: Providers.SIS,
+  d: Providers.PAMEDIA,
+  m: Providers.MANUAL,
 } as const;
