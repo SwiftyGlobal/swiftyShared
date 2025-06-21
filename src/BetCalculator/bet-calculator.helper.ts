@@ -59,17 +59,17 @@ export class BetCalculatorHelper {
       main: {
         numerator: odds.main.numerator,
         denominator: odds.main.denominator * each_way_term,
-        odd_decimal: odds.main.odd_decimal * (1 / each_way_term),
+        odd_decimal: this.roundToDecimalPlaces(odds.main.odd_decimal * (1 / each_way_term)),
       },
       sp: {
         numerator: odds.sp.numerator,
         denominator: odds.sp.denominator * each_way_term,
-        odd_decimal: odds.sp.odd_decimal * (1 / each_way_term),
+        odd_decimal: this.roundToDecimalPlaces(odds.sp.odd_decimal * (1 / each_way_term)),
       },
       bog: {
         numerator: odds.bog.numerator,
         denominator: odds.bog.denominator * each_way_term,
-        odd_decimal: odds.bog.odd_decimal * (1 / each_way_term),
+        odd_decimal: this.roundToDecimalPlaces(odds.bog.odd_decimal * (1 / each_way_term)),
       },
     };
   };
@@ -84,13 +84,13 @@ export class BetCalculatorHelper {
       ({ numerator, denominator } = { numerator: selection.odd_decimal - 1, denominator: 1 });
     }
 
-    return { numerator, denominator, odd_decimal: +numerator / +denominator };
+    return { numerator, denominator, odd_decimal: this.roundToDecimalPlaces(+numerator / +denominator) };
   };
 
   retrieveStartingPriceOdd = (selection: PlacedBetSelection): BetOdd => {
     if (selection.is_starting_price && selection.sp_odd_fractional && selection.sp_odd_fractional != 'SP') {
       const { numerator, denominator } = this.getFractionalValues(selection.sp_odd_fractional);
-      return { numerator, denominator, odd_decimal: numerator / denominator };
+      return { numerator, denominator, odd_decimal: this.roundToDecimalPlaces(+numerator / +denominator) };
     } else if (selection.sp_odd_decimal) {
       return { numerator: selection.sp_odd_decimal - 1, denominator: 1, odd_decimal: selection.sp_odd_decimal };
     }
@@ -135,7 +135,7 @@ export class BetCalculatorHelper {
     return {
       numerator: bog_odd_numerator,
       denominator: bog_odd_denominator,
-      odd_decimal: bog_odd_numerator / bog_odd_denominator,
+      odd_decimal: this.roundToDecimalPlaces(+bog_odd_numerator / +bog_odd_denominator),
     };
   };
 
@@ -206,7 +206,11 @@ export class BetCalculatorHelper {
 
     numerator = numerator - denominator;
 
-    return { numerator, denominator, odd_decimal: denominator > 0 ? numerator / denominator : 0 };
+    return {
+      numerator,
+      denominator,
+      odd_decimal: denominator > 0 ? this.roundToDecimalPlaces(numerator / denominator) : 0,
+    };
   };
 
   calculateProfit = (odds: BetOdds | null, stake: number, type: BetOddType): number => {
@@ -217,17 +221,17 @@ export class BetCalculatorHelper {
     }
 
     if (type === BetOddType.MAIN && odds.main.denominator > 0) {
-      profit = +(odds.main.numerator / odds.main.denominator) * stake;
+      profit = this.roundToDecimalPlaces((+odds.main.numerator / +odds.main.denominator) * stake);
       console.log('Main', { profit, stake, odds: odds.main });
     } else if (type === BetOddType.SP && odds.sp.denominator > 0) {
-      profit = +(odds.sp.numerator / odds.sp.denominator) * stake;
+      profit = this.roundToDecimalPlaces((+odds.sp.numerator / +odds.sp.denominator) * stake);
       console.log('SP', { profit, stake, odds: odds.sp });
     } else if (type === BetOddType.BOG && odds.bog.denominator > 0) {
-      profit = +(odds.bog.numerator / odds.bog.denominator) * stake;
+      profit = this.roundToDecimalPlaces((+odds.bog.numerator / +odds.bog.denominator) * stake);
       console.log('BOG', { profit, stake, odds: odds.bog });
     }
 
-    return +profit;
+    return profit;
   };
 
   getOdds = (odds: BetOdds | null, type: BetOddType): BetOdd => {
@@ -255,11 +259,11 @@ export class BetCalculatorHelper {
   };
 
   calculatePartialWinPercent = (profit, partial_win_percent) => {
-    return +(profit * (partial_win_percent / 100));
+    return this.roundToDecimalPlaces(+(profit * (partial_win_percent / 100)));
   };
 
   calculateRule4 = (profit, rule_4) => {
-    return Number(+(profit - (profit * rule_4) / 100));
+    return this.roundToDecimalPlaces(Number(+(profit - (profit * rule_4) / 100)));
   };
 
   getFractionalValues = (fractional) => {
@@ -291,21 +295,11 @@ export class BetCalculatorHelper {
 
     return 1;
   };
-}
-// export default BetCalculatorHelper;
 
-// module.exports = {
-//   validatePayout,
-//   retrieveSelectionOdd,
-//   retrieveStartingPriceOdd,
-//   retrieveBogOdd,
-//   retrieveOdds,
-//   retrieveEachWayOdds,
-//   calculateProfit,
-//   calculatePartialWinPercent,
-//   calculateRule4,
-//   getFractionalValues,
-//   getEachWayTerm,
-//   getSingleResultOdds,
-//   getCombinationOdds,
-// };
+  // this should get the amount with decimal places as precision, example: 1.2345 should return 1.23 or 1.333333 should return 1.33
+  roundToDecimalPlaces = (amount: number): number => {
+    const decimalPlaces = 2;
+
+    return +amount.toFixed(decimalPlaces);
+  };
+}

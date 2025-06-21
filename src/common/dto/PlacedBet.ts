@@ -47,8 +47,8 @@ export interface BetSettings {
   bog_applicable: boolean;
 }
 
-export interface ResultBet {
-  return_stake: number;
+export interface ResultSingle {
+  stake: number;
   win_profit: number;
   place_profit: number;
   profit: number;
@@ -56,4 +56,31 @@ export interface ResultBet {
   bog_odd: number;
   win_odd: number;
   place_odd: number;
+  payout: number;
+  result_type: BetResultType;
+}
+
+export interface ResultCombination {
+  stake: number;
+  payout: number;
+  win_profit: number;
+  place_profit: number;
+  profit: number;
+  bog_amount_won: number;
+  bog_odd: number;
+  win_odd: number;
+  place_odd: number;
+  result_type: BetResultType;
+  bet_type: BetSlipType;
+}
+
+export interface ResultMainBet {
+  stake: number;
+  payout: number;
+  win_profit: number;
+  place_profit: number;
+  result_type: BetResultType;
+  singles: ResultSingle[];
+  combinations: ResultCombination[];
+  accumulator_profit: number;
 }

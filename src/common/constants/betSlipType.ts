@@ -17,4 +17,5 @@ export enum BetSlipType {
   UNNAMED_FAVORITE = 'bet_slip_place_unnamed_favorite',
   FORECAST_SINGLE = 'bet_slip_place_forecast_single',
   FORECAST_REVERSE = 'bet_slip_place_forecast_reverse',
+  FOLD = 'bet_slip_place_fold',
 }
