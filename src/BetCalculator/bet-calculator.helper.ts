@@ -202,13 +202,13 @@ export class BetCalculatorHelper {
     let denominator = 1;
 
     oddsList.forEach((odd) => {
-      if (
-        (odd.numerator == 0 && odd.denominator == 0) ||
-        (odd.numerator == 1 && odd.denominator == 1) ||
-        (odd.numerator == 0 && odd.denominator == 1)
-      ) {
+      if ((odd.numerator == 0 && odd.denominator == 0) || (odd.numerator == 0 && odd.denominator == 1)) {
         numerator = 0;
         denominator = 0;
+        return;
+      }
+
+      if (odd.numerator == 1 && odd.denominator == 1) {
         return;
       }
 
