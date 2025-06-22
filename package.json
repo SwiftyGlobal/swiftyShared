@@ -1,6 +1,6 @@
 {
   "name": "@swiftyglobal/swifty-shared",
-  "version": "1.0.50",
+  "version": "1.0.51",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "typings": "dist/index.d.ts",
@@ -10,7 +10,7 @@
     "lint": "eslint src/**/*.ts",
     "test": "jest --color --verbose",
     "test:coverage": "jest --coverage --color --verbose",
-    "test:patents": "jest src/tests/BetCalculator/canadians.test.ts"
+    "test:patents": "jest src/tests/BetCalculator/patents.test.ts"
   },
   "keywords": [],
   "author": "jaxin007",
