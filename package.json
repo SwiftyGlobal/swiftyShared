@@ -9,7 +9,8 @@
     "build": "rimraf dist && tsc",
     "lint": "eslint src/**/*.ts",
     "test": "jest --color --verbose",
-    "test:coverage": "jest --coverage --color --verbose"
+    "test:coverage": "jest --coverage --color --verbose",
+    "test:patents": "jest src/tests/BetCalculator/canadians.test.ts"
   },
   "keywords": [],
   "author": "jaxin007",
