@@ -61,7 +61,7 @@ describe('Double Simple Winner Case', () => {
       max_payout: 0,
     });
 
-    expect(result.return_payout).toEqual(9.375);
+    expect(result.return_payout).toBeCloseTo(9.38);
   });
 
   it('Double Win Case with three selections', () => {

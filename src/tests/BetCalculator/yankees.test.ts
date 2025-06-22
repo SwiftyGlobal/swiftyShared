@@ -92,17 +92,9 @@ describe('Yankee Simple Winner Case', () => {
       max_payout: 0,
     });
 
-    console.log('Patent', result);
+    console.log('Patent', JSON.stringify(result));
     const doubles = result.combinations.filter((combination) => combination.bet_type === BetSlipType.DOUBLE);
     const trebles = result.combinations.filter((combination) => combination.bet_type === BetSlipType.TREBLE);
-    const doubles_payout = doubles.reduce((acc, curr) => acc + curr.payout, 0);
-    const trebles_payout = trebles.reduce((acc, curr) => acc + curr.payout, 0);
-    const singles_payout = result.singles.reduce((acc, curr) => acc + curr.payout, 0);
-
-    console.log('Doubles payout', doubles_payout);
-    console.log('Trebles payout', trebles_payout);
-    console.log('Singles payout', singles_payout);
-    console.log('Accumulator payout', result.accumulator_profit);
 
     expect(result.singles.length).toEqual(4);
     expect(trebles.length).toEqual(4);
