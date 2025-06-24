@@ -43,4 +43,20 @@ describe('getPaMediaEventStatus', () => {
       SportEventStatuses.PRE_MATCH,
     );
   });
+
+  it('should return SUSPENDED when eventOffTime has passed and suspendAtEventOffTime is true', () => {
+    const pastDate = '2020-06-24 10:00:00';
+
+    expect(getPaMediaEventStatus({ raceStatus: 'Active', eventOffTime: pastDate, suspendAtEventOffTime: true })).toBe(
+      SportEventStatuses.SUSPENDED,
+    );
+  });
+
+  it('should return IN_PLAY when eventOffTime has passed and suspendAtEventOffTime is false', () => {
+    const pastDate = '2020-06-24 10:00:00';
+
+    expect(getPaMediaEventStatus({ raceStatus: 'Active', eventOffTime: pastDate, suspendAtEventOffTime: false })).toBe(
+      SportEventStatuses.IN_PLAY,
+    );
+  });
 });

@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 import type { Nullable } from '../../types';
 import { SportEventStatuses } from '../../common';
 import type { GetPaMediaEventStatusDto } from '../../common';
@@ -21,13 +23,26 @@ const finishedStatuses: Set<Nullable<string>> = new Set([
  * @param {GetPaMediaEventStatusDto} payload - The payload
  * @param {Nullable<string>} payload.raceStatus - The current status
  * @param {Nullable<string>} payload.eventOffTime - The scheduled off time of the event. Can be null or a string.
+ * @param {boolean} [payload.suspendAtEventOffTime] - Optional flag indicating whether to suspend at event off time.
  * @returns {SportEventStatuses} - The determined status of the event, which can be one of the predefined `SportEventStatuses`.
  */
 export const getPaMediaEventStatus = (payload: GetPaMediaEventStatusDto): SportEventStatuses => {
-  const { raceStatus, eventOffTime } = payload;
+  const { raceStatus, eventOffTime, suspendAtEventOffTime } = payload;
 
-  if (eventOffTime && !finishedStatuses.has(raceStatus) && !abandonedStatuses.has(raceStatus)) {
-    return SportEventStatuses.IN_PLAY;
+  if (eventOffTime) {
+    // If event off time is provided, we check if the event off time has passed. If it has, we return SUSPENDED status if suspendAtEventOffTime is true.
+    if (suspendAtEventOffTime) {
+      const eventOffDate = moment(eventOffTime);
+      const now = moment();
+
+      if (now.isAfter(eventOffDate)) {
+        return SportEventStatuses.SUSPENDED;
+      }
+    }
+
+    if (!finishedStatuses.has(raceStatus) && !abandonedStatuses.has(raceStatus)) {
+      return SportEventStatuses.IN_PLAY;
+    }
   }
 
   if (inPlayStatuses.has(raceStatus)) {

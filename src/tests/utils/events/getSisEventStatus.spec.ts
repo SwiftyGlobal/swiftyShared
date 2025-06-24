@@ -18,4 +18,18 @@ describe('getSISEventStatus', () => {
   it('should return PRE_MATCH if offTime is null and isEventResulted is false', () => {
     expect(getSISEventStatus({ offTime: null, isEventResulted: false })).toBe(SportEventStatuses.PRE_MATCH);
   });
+
+  it('should return SUSPENDED if offTime has passed and suspendAtEventOffTime is true', () => {
+    const pastTime = '01:00:00';
+    expect(getSISEventStatus({ offTime: pastTime, isEventResulted: false, suspendAtEventOffTime: true })).toBe(
+      SportEventStatuses.SUSPENDED,
+    );
+  });
+
+  it('should return IN_PLAY if offTime has passed and suspendAtEventOffTime is false', () => {
+    const pastTime = '01:00:00';
+    expect(getSISEventStatus({ offTime: pastTime, isEventResulted: false, suspendAtEventOffTime: false })).toBe(
+      SportEventStatuses.IN_PLAY,
+    );
+  });
 });
