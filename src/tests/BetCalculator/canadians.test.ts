@@ -107,21 +107,10 @@ describe('Canadian Simple Winner Case', () => {
       max_payout: 0,
     });
 
-    console.log('Canadian', result);
+    console.log('Canadian', JSON.stringify(result));
     const doubles = result.combinations.filter((combination) => combination.bet_type === BetSlipType.DOUBLE);
     const trebles = result.combinations.filter((combination) => combination.bet_type === BetSlipType.TREBLE);
     const folds = result.combinations.filter((combination) => combination.bet_type === BetSlipType.FOLD);
-    const doubles_payout = doubles.reduce((acc, curr) => acc + curr.payout, 0);
-    const trebles_payout = trebles.reduce((acc, curr) => acc + curr.payout, 0);
-    const singles_payout = result.singles.reduce((acc, curr) => acc + curr.payout, 0);
-    const folds_payout = folds.reduce((acc, curr) => acc + curr.payout, 0);
-
-    console.log('Doubles payout', doubles_payout);
-    console.log('Trebles payout', trebles_payout);
-    console.log('Singles payout', singles_payout);
-    console.log('Folds payout', folds_payout);
-    console.log('Accumulator payout', result.accumulator_profit);
-    console.log('Return payout', doubles_payout + trebles_payout + singles_payout + folds_payout);
 
     expect(result.singles.length).toEqual(5);
     expect(doubles.length).toEqual(10);

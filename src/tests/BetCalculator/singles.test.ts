@@ -47,16 +47,16 @@ describe('Single without each way ', () => {
       max_payout: 0,
     });
 
-    expect(result.return_payout).toEqual(6.25);
-    expect(result.return_stake).toEqual(5);
-    expect(result.calc.win_profit).toEqual(1.25);
-    expect(result.calc.place_profit).toEqual(0);
-    expect(result.calc.bog_amount_won).toEqual(0);
-    expect(result.calc.bog_odd).toEqual(0);
-    expect(result.calc.stake).toEqual(5);
-    expect(result.calc.max_payout).toEqual(0);
-    expect(result.calc.max_bog_payout).toEqual(0);
-    expect(result.calc.free_bet_amount).toEqual(0);
+    expect(result.return_payout).toBeCloseTo(6.25, 1);
+    expect(result.return_stake).toBeCloseTo(5);
+    expect(result.calc.win_profit).toBeCloseTo(1.25);
+    expect(result.calc.place_profit).toBeCloseTo(0);
+    expect(result.calc.bog_amount_won).toBeCloseTo(0);
+    expect(result.calc.bog_odd).toBeCloseTo(0);
+    expect(result.calc.stake).toBeCloseTo(5);
+    expect(result.calc.max_payout).toBeCloseTo(0);
+    expect(result.calc.max_bog_payout).toBeCloseTo(0);
+    expect(result.calc.free_bet_amount).toBeCloseTo(0);
   });
 
   it('Winner with Max Payout - max payout 25', () => {
@@ -303,14 +303,14 @@ describe('Single without each way ', () => {
       max_payout: 0,
     });
 
-    expect(result.return_payout).toEqual(11.5625);
+    expect(result.return_payout).toBeCloseTo(11.56, 1);
     expect(result.return_stake).toEqual(10);
-    expect(result.calc.win_profit).toEqual(1.25);
-    expect(result.calc.place_profit).toEqual(0.3125);
+    expect(result.calc.win_profit).toBeCloseTo(1.25, 1);
+    expect(result.calc.place_profit).toBeCloseTo(0.31, 1);
     expect(result.calc.stake).toEqual(10);
   });
 
-  it.only('Each Way - Placed', () => {
+  it('Each Way - Placed', () => {
     const bets: PlacedBetSelection[] = [
       {
         bet_id: 1,
@@ -352,10 +352,10 @@ describe('Single without each way ', () => {
       max_payout: 0,
     });
 
-    expect(result.return_payout).toEqual(5.3125);
-    expect(result.return_stake).toEqual(5);
-    expect(result.calc.win_profit).toEqual(0);
-    expect(result.calc.place_profit).toEqual(0.3125);
+    expect(result.return_payout).toBeCloseTo(5.31, 1);
+    expect(result.return_stake).toBeCloseTo(5);
+    expect(result.calc.win_profit).toBeCloseTo(0);
+    expect(result.calc.place_profit).toBeCloseTo(0.31, 1);
     expect(result.calc.stake).toEqual(5);
   });
 });

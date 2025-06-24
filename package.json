@@ -10,7 +10,7 @@
     "lint": "eslint src/**/*.ts",
     "test": "jest --color --verbose",
     "test:coverage": "jest --coverage --color --verbose",
-    "test:patents": "jest src/tests/BetCalculator/patents.test.ts"
+    "test:bet-calculator": "jest --color --verbose src/tests/BetCalculator/*.test.ts"
   },
   "keywords": [],
   "author": "jaxin007",
