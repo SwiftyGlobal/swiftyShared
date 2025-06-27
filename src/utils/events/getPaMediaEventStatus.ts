@@ -37,6 +37,7 @@ export const getPaMediaEventStatus = (payload: GetPaMediaEventStatusDto): SportE
     return SportEventStatuses.FINISHED;
   }
 
+  // If event start time is provided, we check if it's in the past. If it is, then we return SUSPENDED status if suspendAtEventOffTime is true.
   if (suspendAtEventOffTime && eventStartTime) {
     const startDate = moment(eventStartTime);
     const now = moment();
@@ -47,7 +48,6 @@ export const getPaMediaEventStatus = (payload: GetPaMediaEventStatusDto): SportE
   }
 
   if (eventOffTime) {
-    // If event off time is provided, we check if the event off time has passed. If it has, we return SUSPENDED status if suspendAtEventOffTime is true.
     if (!finishedStatuses.has(raceStatus) && !abandonedStatuses.has(raceStatus)) {
       return SportEventStatuses.IN_PLAY;
     }
