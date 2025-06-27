@@ -43,7 +43,7 @@ export const getPaMediaEventStatus = (payload: GetPaMediaEventStatusDto): SportE
     const now = moment();
 
     if (now.isAfter(startDate)) {
-      return SportEventStatuses.SUSPENDED;
+      return SportEventStatuses.IN_PLAY;
     }
   }
 
