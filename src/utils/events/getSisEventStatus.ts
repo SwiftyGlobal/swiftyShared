@@ -13,23 +13,23 @@ import type { GetSisEventStatusDto } from '../../common';
  * @returns {SportEventStatuses} - The status of the sports event.
  */
 export const getSISEventStatus = (payload: GetSisEventStatusDto): SportEventStatuses => {
-  const { isEventResulted, offTime, suspendAtEventOffTime } = payload;
+  const { isEventResulted, offTime, suspendAtEventOffTime, eventStartTime } = payload;
 
   if (isEventResulted) {
     return SportEventStatuses.FINISHED;
   }
 
-  if (offTime) {
-    if (suspendAtEventOffTime) {
-      const now = moment();
+  if (suspendAtEventOffTime && eventStartTime) {
+    const now = moment();
 
-      const offDate = moment(offTime, 'HH:mm:ss');
+    const startDate = moment(eventStartTime);
 
-      if (now.isAfter(offDate)) {
-        return SportEventStatuses.SUSPENDED;
-      }
+    if (now.isAfter(startDate)) {
+      return SportEventStatuses.SUSPENDED;
     }
+  }
 
+  if (offTime) {
     return SportEventStatuses.IN_PLAY;
   }
 

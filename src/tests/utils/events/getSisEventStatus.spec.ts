@@ -19,17 +19,42 @@ describe('getSISEventStatus', () => {
     expect(getSISEventStatus({ offTime: null, isEventResulted: false })).toBe(SportEventStatuses.PRE_MATCH);
   });
 
-  it('should return SUSPENDED if offTime has passed and suspendAtEventOffTime is true', () => {
-    const pastTime = '01:00:00';
-    expect(getSISEventStatus({ offTime: pastTime, isEventResulted: false, suspendAtEventOffTime: true })).toBe(
-      SportEventStatuses.SUSPENDED,
-    );
+  it('should return SUSPENDED if start time has passed and suspendAtEventOffTime is true', () => {
+    const pastTime = '2024-06-30 01:00:00';
+
+    expect(
+      getSISEventStatus({
+        offTime: null,
+        isEventResulted: false,
+        suspendAtEventOffTime: true,
+        eventStartTime: pastTime,
+      }),
+    ).toBe(SportEventStatuses.SUSPENDED);
   });
 
-  it('should return IN_PLAY if offTime has passed and suspendAtEventOffTime is false', () => {
-    const pastTime = '01:00:00';
-    expect(getSISEventStatus({ offTime: pastTime, isEventResulted: false, suspendAtEventOffTime: false })).toBe(
-      SportEventStatuses.IN_PLAY,
-    );
+  it('should return IN_PLAY off time has passed, if start time has passed and suspendAtEventOffTime is false and is resulted is false', () => {
+    const pastTime = '2024-06-30 01:00:00';
+
+    expect(
+      getSISEventStatus({
+        offTime: pastTime,
+        isEventResulted: false,
+        suspendAtEventOffTime: false,
+        eventStartTime: pastTime,
+      }),
+    ).toBe(SportEventStatuses.IN_PLAY);
+  });
+
+  it('should return PRE_MATCH if offTime is null, event start time has passed and suspendAtEventOffTime is false', () => {
+    const pastTime = '2024-06-30 01:00:00';
+
+    expect(
+      getSISEventStatus({
+        offTime: null,
+        isEventResulted: false,
+        suspendAtEventOffTime: false,
+        eventStartTime: pastTime,
+      }),
+    ).toBe(SportEventStatuses.PRE_MATCH);
   });
 });

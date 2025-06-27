@@ -47,9 +47,14 @@ describe('getPaMediaEventStatus', () => {
   it('should return SUSPENDED when eventOffTime has passed and suspendAtEventOffTime is true', () => {
     const pastDate = '2020-06-24 10:00:00';
 
-    expect(getPaMediaEventStatus({ raceStatus: 'Active', eventOffTime: pastDate, suspendAtEventOffTime: true })).toBe(
-      SportEventStatuses.SUSPENDED,
-    );
+    expect(
+      getPaMediaEventStatus({
+        raceStatus: 'Active',
+        eventOffTime: null,
+        eventStartTime: pastDate,
+        suspendAtEventOffTime: true,
+      }),
+    ).toBe(SportEventStatuses.SUSPENDED);
   });
 
   it('should return IN_PLAY when eventOffTime has passed and suspendAtEventOffTime is false', () => {
@@ -58,5 +63,18 @@ describe('getPaMediaEventStatus', () => {
     expect(getPaMediaEventStatus({ raceStatus: 'Active', eventOffTime: pastDate, suspendAtEventOffTime: false })).toBe(
       SportEventStatuses.IN_PLAY,
     );
+  });
+
+  it('should return PRE_MATCH when eventStartTime has passed, offTime is null and suspendAtEventOffTime is false and raceStatus is Dormant', () => {
+    const pastDate = '2020-06-24 10:00:00';
+
+    expect(
+      getPaMediaEventStatus({
+        raceStatus: 'Dormant',
+        eventOffTime: null,
+        eventStartTime: pastDate,
+        suspendAtEventOffTime: false,
+      }),
+    ).toBe(SportEventStatuses.PRE_MATCH);
   });
 });

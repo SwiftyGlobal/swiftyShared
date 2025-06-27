@@ -27,27 +27,7 @@ const finishedStatuses: Set<Nullable<string>> = new Set([
  * @returns {SportEventStatuses} - The determined status of the event, which can be one of the predefined `SportEventStatuses`.
  */
 export const getPaMediaEventStatus = (payload: GetPaMediaEventStatusDto): SportEventStatuses => {
-  const { raceStatus, eventOffTime, suspendAtEventOffTime } = payload;
-
-  if (eventOffTime) {
-    // If event off time is provided, we check if the event off time has passed. If it has, we return SUSPENDED status if suspendAtEventOffTime is true.
-    if (suspendAtEventOffTime) {
-      const eventOffDate = moment(eventOffTime);
-      const now = moment();
-
-      if (now.isAfter(eventOffDate)) {
-        return SportEventStatuses.SUSPENDED;
-      }
-    }
-
-    if (!finishedStatuses.has(raceStatus) && !abandonedStatuses.has(raceStatus)) {
-      return SportEventStatuses.IN_PLAY;
-    }
-  }
-
-  if (inPlayStatuses.has(raceStatus)) {
-    return SportEventStatuses.IN_PLAY;
-  }
+  const { raceStatus, eventOffTime, suspendAtEventOffTime, eventStartTime } = payload;
 
   if (abandonedStatuses.has(raceStatus)) {
     return SportEventStatuses.ABANDONED;
@@ -55,6 +35,26 @@ export const getPaMediaEventStatus = (payload: GetPaMediaEventStatusDto): SportE
 
   if (finishedStatuses.has(raceStatus)) {
     return SportEventStatuses.FINISHED;
+  }
+
+  if (suspendAtEventOffTime && eventStartTime) {
+    const startDate = moment(eventStartTime);
+    const now = moment();
+
+    if (now.isAfter(startDate)) {
+      return SportEventStatuses.SUSPENDED;
+    }
+  }
+
+  if (eventOffTime) {
+    // If event off time is provided, we check if the event off time has passed. If it has, we return SUSPENDED status if suspendAtEventOffTime is true.
+    if (!finishedStatuses.has(raceStatus) && !abandonedStatuses.has(raceStatus)) {
+      return SportEventStatuses.IN_PLAY;
+    }
+  }
+
+  if (inPlayStatuses.has(raceStatus)) {
+    return SportEventStatuses.IN_PLAY;
   }
 
   if (preMatchStatuses.has(raceStatus)) {
