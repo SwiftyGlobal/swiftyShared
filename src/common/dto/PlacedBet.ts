@@ -72,6 +72,7 @@ export interface ResultCombination {
   place_odd: number;
   result_type: BetResultType;
   bet_type: BetSlipType;
+  adjusted_bet_type?: BetSlipType;
 }
 
 export interface ResultMainBet {
