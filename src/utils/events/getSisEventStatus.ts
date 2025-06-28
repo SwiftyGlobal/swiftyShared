@@ -22,7 +22,7 @@ export const getSISEventStatus = (payload: GetSisEventStatusDto): SportEventStat
   if (suspendAtEventOffTime && eventStartTime) {
     const now = moment();
 
-    const startDate = moment(eventStartTime);
+    const startDate = moment(eventStartTime).utc(true);
 
     if (now.isAfter(startDate)) {
       return SportEventStatuses.IN_PLAY;
