@@ -14,3 +14,4 @@ export * from './tradingStatuses';
 export * from './providerPrefixes';
 export * from './priceBoostTypes';
 export * from './eventStatuses';
+export * from './betResultType';
