@@ -144,6 +144,7 @@ export class BetCalculator {
       combinations: result?.combinations || [],
       return_payout: this.calculatorHelper.roundToDecimalPlaces(validatedPayout.payout),
       return_stake: this.calculatorHelper.roundToDecimalPlaces(validatedPayout.stake),
+      result_type: result?.result_type || BetResultType.OPEN,
       bog_amount_won: validatedPayout.bog_amount_won,
       accumulator_profit: result?.accumulator_profit || 0,
     };
@@ -366,6 +367,8 @@ export class BetCalculator {
     this.profit = +win_profit + +place_profit;
     this.payout = +this.profit + +this.stake;
 
+    const main_result_type = this.calculatorHelper.getBetResultType([first_selection, second_selection]);
+
     console.log(
       'Double Result',
       JSON.stringify({
@@ -375,13 +378,14 @@ export class BetCalculator {
         bog_odd: this.bog_odd,
         win_odd,
         place_odd,
+        main_result_type,
       }),
     );
 
     return {
       stake: this.stake,
       payout: this.payout,
-      result_type: return_result,
+      result_type: main_result_type,
       win_profit,
       place_profit,
       combinations: [
@@ -427,16 +431,14 @@ export class BetCalculator {
       return_stake += double_result.combinations
         .map((result: ResultCombination) => result.stake)
         .reduce((acc, curr) => acc + curr, 0);
-      // win_odd *= double_result.results.map((result: ResultBet) => result.win_odd).reduce((acc, curr) => acc * curr, 1);
-      // place_odd *= double_result.results
-      //   .map((result: ResultBet) => result.place_odd)
-      //   .reduce((acc, curr) => acc * curr, 1);
     });
 
     console.log('Doubles Results', JSON.stringify(results));
 
     this.profit = results.map((result) => result.profit).reduce((acc, curr) => acc + curr, 0);
     this.payout = results.map((result) => result.payout).reduce((acc, curr) => acc + curr, 0);
+
+    const main_result_type = this.calculatorHelper.getCombinationsResultType(results);
 
     console.log(
       'Doubles Result',
@@ -445,13 +447,14 @@ export class BetCalculator {
         place_profit,
         bog_amount_won: this.bog_amount_won,
         bog_odd: this.bog_odd,
+        main_result_type,
       }),
     );
 
     return {
       stake: return_stake,
       payout: this.payout,
-      result_type: BetResultType.OPEN,
+      result_type: main_result_type,
       win_profit,
       place_profit,
       combinations: results,
@@ -584,7 +587,7 @@ export class BetCalculator {
       }),
     );
 
-    const result_type = BetResultType.OPEN;
+    const result_type = this.calculatorHelper.getBetResultType([first_selection, second_selection, third_selection]);
 
     return {
       stake: return_stake,
@@ -635,16 +638,14 @@ export class BetCalculator {
       return_stake += treble_result.combinations
         .map((result: ResultCombination) => result.stake)
         .reduce((acc, curr) => acc + curr, 0);
-      // win_odd *= result.results.map((result: ResultBet) => result.win_odd).reduce((acc, curr) => acc * curr, 1);
-      // place_odd *= result.results
-      //   .map((result: ResultBet) => result.place_odd)
-      //   .reduce((acc, curr) => acc * curr, 1);
     });
 
     console.log('Trebles Results', JSON.stringify(results));
 
     this.profit = results.map((result) => result.win_profit).reduce((acc, curr) => acc + curr, 0);
     this.payout = results.map((result) => result.payout).reduce((acc, curr) => acc + curr, 0);
+
+    const main_result_type = this.calculatorHelper.getCombinationsResultType(results);
 
     console.log(
       'Trebles Result',
@@ -653,13 +654,14 @@ export class BetCalculator {
         place_profit,
         bog_amount_won: this.bog_amount_won,
         bog_odd: this.bog_odd,
+        main_result_type,
       }),
     );
 
     return {
       stake: return_stake,
       payout: this.payout,
-      result_type: BetResultType.OPEN,
+      result_type: main_result_type,
       win_profit,
       place_profit,
       combinations: results,
@@ -690,12 +692,14 @@ export class BetCalculator {
       doubles.place_profit +
       trebles.place_profit;
 
+    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles]);
+
     return {
       singles: singles.map((single) => single.singles).flat(),
       combinations: [...doubles.combinations, ...trebles.combinations],
       stake: singles_stake + doubles_stake + trebles_stake,
       payout: singles_payout + doubles_payout + trebles_payout,
-      result_type: BetResultType.OPEN,
+      result_type: main_result_type,
       win_profit,
       place_profit,
       accumulator_profit: 0,
@@ -728,12 +732,14 @@ export class BetCalculator {
     const win_profit = doubles.win_profit + trebles.win_profit + accumulator.win_profit;
     const place_profit = doubles.place_profit + trebles.place_profit + accumulator.place_profit;
 
+    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles]);
+
     return {
       singles: singles.map((single) => single.singles).flat(),
       combinations: [...doubles.combinations, ...trebles.combinations],
       stake: doubles_stake + trebles_stake + accumulator.stake,
       payout: doubles_payout + trebles_payout + accumulator_payout,
-      result_type: BetResultType.OPEN,
+      result_type: main_result_type,
       win_profit,
       place_profit,
       accumulator_profit: accumulator_payout,
@@ -761,12 +767,14 @@ export class BetCalculator {
 
     console.log('Canadian', JSON.stringify({ selections }));
 
+    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles, folds, accumulator]);
+
     return {
       singles: singles.map((single) => single.singles).flat(),
       combinations: [...doubles.combinations, ...trebles.combinations, ...folds.combinations],
       stake: doubles_stake + trebles_stake + folds_stake + accumulator.stake,
       payout: total_payout,
-      result_type: BetResultType.OPEN,
+      result_type: main_result_type,
       win_profit: this.calculatorHelper.roundToDecimalPlaces(
         doubles.win_profit + trebles.win_profit + folds.win_profit + accumulator.win_profit,
       ),
@@ -792,12 +800,14 @@ export class BetCalculator {
 
     console.log('Heinz', JSON.stringify({ selections }));
 
+    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles, accumulator]);
+
     return {
       singles: singles.map((single) => single.singles).flat(),
       combinations: [...doubles.combinations, ...trebles.combinations],
       stake: doubles_stake + trebles_stake + accumulator.stake,
       payout: doubles_payout + trebles_payout + accumulator_payout,
-      result_type: BetResultType.OPEN,
+      result_type: main_result_type,
       win_profit: doubles.win_profit + trebles.win_profit + accumulator.win_profit,
       place_profit: doubles.place_profit + trebles.place_profit + accumulator.place_profit,
       accumulator_profit: accumulator_payout,
@@ -886,10 +896,12 @@ export class BetCalculator {
     const win_profit = this.calculatorHelper.calculateProfit(odds, this.stake, BetOddType.MAIN);
     const place_profit = this.calculatorHelper.calculateProfit(eachWayOdds, this.stake, BetOddType.MAIN);
 
+    const main_result_type = this.calculatorHelper.getBetResultType(selections);
+
     return {
       stake: this.stake,
       payout: win_profit + place_profit + this.stake,
-      result_type: BetResultType.OPEN,
+      result_type: main_result_type,
       win_profit,
       place_profit,
       singles: [],
