@@ -1,7 +1,7 @@
 import { BetOddType } from '../common/constants/betOddType';
 import { BetResultType } from '../common/constants/betResultType';
 import type { BetOdd, BetOdds } from '../common/dto';
-import type { PlacedBetSelection } from '../common/dto/PlacedBet';
+import type { PlacedBetSelection, ResultCombination, ResultMainBet } from '../common/dto/PlacedBet';
 
 export class BetCalculatorHelper {
   validatePayout = ({
@@ -313,5 +313,89 @@ export class BetCalculatorHelper {
     const decimalPlaces = 2;
 
     return +amount.toFixed(decimalPlaces);
+  };
+
+  // if at least 1 combination is a winner, return Winner,
+  // if at least 1 combination is a void, no winners, return Partial,
+  // iff all same result, return that result
+  getBetResultType = (combinations: PlacedBetSelection[]): BetResultType => {
+    const result_type = BetResultType.OPEN;
+
+    if (combinations.length === 0) {
+      return result_type;
+    }
+
+    const first_result = combinations[0].result;
+
+    if (combinations.every((combination) => combination.result === first_result)) {
+      return first_result;
+    }
+
+    const has_winner = combinations.some((combination) => combination.result === BetResultType.WINNER);
+    const has_void = combinations.some((combination) => combination.result === BetResultType.VOID);
+
+    if (has_winner) {
+      return BetResultType.WINNER;
+    }
+
+    if (has_void) {
+      return BetResultType.PARTIAL;
+    }
+
+    return BetResultType.LOSER;
+  };
+
+  getCombinationsResultType = (combinations: ResultCombination[]): BetResultType => {
+    const result_type = BetResultType.OPEN;
+
+    if (combinations.length === 0) {
+      return result_type;
+    }
+
+    const first_result = combinations[0].result_type;
+
+    if (combinations.every((combination) => combination.result_type === first_result)) {
+      return first_result;
+    }
+
+    const has_winner = combinations.some((combination) => combination.result_type === BetResultType.WINNER);
+    const has_void = combinations.some((combination) => combination.result_type === BetResultType.VOID);
+
+    if (has_winner) {
+      return BetResultType.WINNER;
+    }
+
+    if (has_void) {
+      return BetResultType.PARTIAL;
+    }
+
+    return BetResultType.LOSER;
+  };
+
+  getMainResultType = (combinations: ResultMainBet[]): BetResultType => {
+    const result_type = BetResultType.OPEN;
+
+    if (combinations.length === 0) {
+      return result_type;
+    }
+
+    const first_result = combinations[0].result_type;
+
+    if (combinations.every((combination) => combination.result_type === first_result)) {
+      return first_result;
+    }
+
+    const has_winner = combinations.some((combination) => combination.result_type === BetResultType.WINNER);
+    const has_void = combinations.some((combination) => combination.result_type === BetResultType.VOID);
+
+    if (has_winner) {
+      return BetResultType.WINNER;
+    }
+
+    if (has_void) {
+      return BetResultType.PARTIAL;
+    }
+
+    return BetResultType.LOSER;
   };
 }
