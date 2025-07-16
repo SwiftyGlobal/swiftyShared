@@ -32,6 +32,10 @@ export const RedisPrefixes = {
      * @description - `maindb.custom_competitions` table
      */
     CUSTOM_COMPETITIONS_MAP: 'custom_competitions_map',
+    /**
+     * @description - `maindb.settings` table
+     */
+    SETTINGS_VARIABLES: 'settings_variables',
   },
   SET: {
     JWT_BLACKLIST: 'jwt_blacklist',
