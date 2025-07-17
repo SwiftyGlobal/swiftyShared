@@ -17,3 +17,4 @@ export * from './stripDecimal';
 export * from './getIdWithoutProvider';
 export * from './getProviderWithoutId';
 export * from './phoneNumber';
+export * from './capitalizeWords';
