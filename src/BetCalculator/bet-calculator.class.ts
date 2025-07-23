@@ -5,6 +5,7 @@ import type {
   ResultMainBet,
   Selection,
   ResultCombination,
+  BetResult,
 } from '../common/dto/PlacedBet';
 import { BetOddType } from '../common/constants/betOddType';
 import type { BetOdds } from '../common/dto/betOdd';
@@ -59,7 +60,7 @@ export class BetCalculator {
     this.payout = 0;
   };
 
-  processBet = (betSettings: BetSettings) => {
+  processBet = (betSettings: BetSettings): BetResult => {
     this.reset();
 
     const {

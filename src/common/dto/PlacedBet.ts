@@ -85,3 +85,24 @@ export interface ResultMainBet {
   combinations: ResultCombination[];
   accumulator_profit: number;
 }
+
+export interface BetResult {
+  calc: {
+    win_profit: number;
+    place_profit: number;
+    bog_amount_won: number;
+    max_payout: number;
+    max_bog_payout: number;
+    free_bet_amount: number;
+    stake: number;
+    bog_odd: number;
+    profit: number;
+  };
+  singles: ResultSingle[];
+  combinations: ResultCombination[];
+  return_payout: number;
+  return_stake: number;
+  result_type: BetResultType;
+  bog_amount_won: number;
+  accumulator_profit: number;
+}

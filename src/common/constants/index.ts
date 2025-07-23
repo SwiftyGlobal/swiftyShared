@@ -15,3 +15,4 @@ export * from './providerPrefixes';
 export * from './priceBoostTypes';
 export * from './eventStatuses';
 export * from './betResultType';
+export * from './betSlipType';
