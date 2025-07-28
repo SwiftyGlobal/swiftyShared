@@ -1,4 +1,48 @@
-import { validateAndNormalizePhoneNumber } from '../../utils';
+import { formatOnlyDigits, stripLeadingZero, validateAndNormalizePhoneNumber } from '../../utils';
+
+describe('formatOnlyDigits', () => {
+  it('returns only digits from a string with mixed characters', () => {
+    expect(formatOnlyDigits('abc123-456.7890')).toBe('1234567890');
+  });
+
+  it('returns empty string when input is empty', () => {
+    expect(formatOnlyDigits('')).toBe('');
+  });
+
+  it('returns empty string when input has no digits', () => {
+    expect(formatOnlyDigits('abc-xyz')).toBe('');
+  });
+
+  it('returns the same string if input is already only digits', () => {
+    expect(formatOnlyDigits('123456')).toBe('123456');
+  });
+});
+
+describe('stripLeadingZero', () => {
+  it('removes a single leading zero from the string', () => {
+    expect(stripLeadingZero('012345')).toBe('12345');
+  });
+
+  it('does not remove zero if it is not leading', () => {
+    expect(stripLeadingZero('120345')).toBe('120345');
+  });
+
+  it('returns the same string if there is no leading zero', () => {
+    expect(stripLeadingZero('12345')).toBe('12345');
+  });
+
+  it('removes only the first leading zero if multiple zeros', () => {
+    expect(stripLeadingZero('0012345')).toBe('012345');
+  });
+
+  it('returns empty string if input is a single zero', () => {
+    expect(stripLeadingZero('0')).toBe('');
+  });
+
+  it('returns empty string if input is empty', () => {
+    expect(stripLeadingZero('')).toBe('');
+  });
+});
 
 describe('validateAndNormalizePhoneNumber', () => {
   it('should validate and normalize a valid UK phone number', () => {

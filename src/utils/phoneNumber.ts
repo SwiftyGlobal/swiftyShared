@@ -1,4 +1,15 @@
-// ——— Helper to strip the leading zero ———
+/**
+ * @description - Utility function for phone number validation and formatting.
+ * @example
+ * validatePhoneNumber("123-456-7890", "44") // returns "1234567890"
+ */
+export const formatOnlyDigits = (value: string): string => (value ? value.replace(/\D+/g, '').toString() : '');
+
+/**
+ * @description - Utility function to remove leading zero from a string.
+ * @example
+ * stripLeadingZero("012345") // returns "12345"
+ */
 export const stripLeadingZero = (value: string) => {
   return value.replace(/^0/, '');
 };
@@ -20,5 +31,9 @@ export const validateAndNormalizePhoneNumber = (phoneNumber: string, prefix: str
     throw new Error('Invalid phone number format');
   }
 
-  return stripLeadingZero(phoneNumber);
+  const onlyDigits = formatOnlyDigits(phoneNumber);
+
+  const phoneWithoutZero = stripLeadingZero(onlyDigits);
+
+  return phoneWithoutZero;
 };
