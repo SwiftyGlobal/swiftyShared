@@ -56,8 +56,18 @@ describe('validateAndNormalizePhoneNumber', () => {
   });
 
   it('should validate and normalize a valid ZA phone number', () => {
+    const result = validateAndNormalizePhoneNumber('0612345678', '27');
+    expect(result).toBe('612345678');
+  });
+
+  it('should validate and normalize a valid ZA phone number', () => {
     const result = validateAndNormalizePhoneNumber('0712345678', '27');
     expect(result).toBe('712345678');
+  });
+
+  it('should validate and normalize a valid ZA phone number', () => {
+    const result = validateAndNormalizePhoneNumber('0812345678', '27');
+    expect(result).toBe('812345678');
   });
 
   it('should throw an error for an invalid UK phone number', () => {
@@ -69,7 +79,7 @@ describe('validateAndNormalizePhoneNumber', () => {
   });
 
   it('should throw an error for an invalid ZA phone number', () => {
-    expect(() => validateAndNormalizePhoneNumber('0812345678', '27')).toThrow('Invalid phone number format');
+    expect(() => validateAndNormalizePhoneNumber('0912345678', '27')).toThrow('Invalid phone number format');
   });
 
   it('should return the phone number without leading zero if no prefix is provided', () => {
