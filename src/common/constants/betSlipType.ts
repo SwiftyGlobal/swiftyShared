@@ -23,14 +23,14 @@ export enum BetSlipType {
   FOLD = 'bet_slip_place_fold',
 }
 
-export const CastType = {
-  FORECAST_SINGLE: 'forecast_single',
-  FORECAST_REVERSE: 'forecast_reverse',
-  FORECAST_COMBINATION: 'forecast_combination',
-  TRICAST_SINGLE: 'tricast_single',
-  TRICAST_REVERSE: 'reverse_tricast',
-  TRICAST_COMBINATION: 'tricast_combination',
-  EXACTA: 'exacta', // 1st and 2nd horses in exact order.
-  TRIFECTA: 'trifecta', //1st, 2nd and 3rd horses in exact order.
-  SWINGER: 'swinger', // Pick 2 horses to both finish in the top 3, in any order.
-};
+export enum CastType {
+  FORECAST_SINGLE = 'forecast_single',
+  FORECAST_REVERSE = 'forecast_reverse',
+  FORECAST_COMBINATION = 'forecast_combination',
+  TRICAST_SINGLE = 'tricast_single',
+  TRICAST_REVERSE = 'reverse_tricast',
+  TRICAST_COMBINATION = 'tricast_combination',
+  EXACTA = 'exacta', // 1st and 2nd horses in exact order.
+  TRIFECTA = 'trifecta', //1st, 2nd and 3rd horses in exact order.
+  SWINGER = 'swinger', // Pick 2 horses to both finish in the top 3, in any order.
+}
