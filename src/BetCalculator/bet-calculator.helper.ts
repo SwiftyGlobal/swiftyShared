@@ -346,6 +346,8 @@ export class BetCalculatorHelper {
       )
     ) {
       return BetResultType.LOSER;
+    } else if (combinations.some((combination) => combination.result === BetResultType.LOSER)) {
+      return BetResultType.LOSER;
     } else if (combinations.some((combination) => combination.result === BetResultType.VOID)) {
       return BetResultType.PARTIAL;
     }

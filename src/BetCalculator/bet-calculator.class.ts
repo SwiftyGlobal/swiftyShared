@@ -102,7 +102,7 @@ export class BetCalculator {
     } else if (this.bet_type === BetSlipType.TREBLE) {
       result = this.processTrebles(this.bets);
     } else if (this.bet_type === BetSlipType.TRIXIE) {
-      // TODO: Implement TriXie
+      result = this.processTrixieBet(this.bets);
     } else if (this.bet_type === BetSlipType.PATENT) {
       result = this.processPatentBet(this.bets);
     } else if (this.bet_type === BetSlipType.YANKEE) {
@@ -709,6 +709,33 @@ export class BetCalculator {
       place_profit,
       combinations: results,
       singles: [],
+      accumulator_profit: 0,
+    };
+  };
+
+  // 3 doubles , 1 treble
+  processTrixieBet = (selections: PlacedBetSelection[]): ResultMainBet => {
+    const doubles = this.processDoubles(selections);
+    const trebles = this.processTrebles(selections);
+
+    const doubles_payout = doubles.payout;
+    const doubles_stake = doubles.stake;
+    const trebles_payout = trebles.payout;
+    const trebles_stake = trebles.stake;
+
+    const win_profit = doubles.win_profit + trebles.win_profit;
+    const place_profit = doubles.place_profit + trebles.place_profit;
+
+    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles]);
+
+    return {
+      singles: [],
+      combinations: [...doubles.combinations, ...trebles.combinations],
+      stake: doubles_stake + trebles_stake,
+      payout: doubles_payout + trebles_payout,
+      result_type: main_result_type,
+      win_profit,
+      place_profit,
       accumulator_profit: 0,
     };
   };
