@@ -331,14 +331,22 @@ export class BetCalculatorHelper {
       return first_result;
     }
 
-    const has_winner = combinations.some((combination) => combination.result === BetResultType.WINNER);
-    const has_void = combinations.some((combination) => combination.result === BetResultType.VOID);
-
-    if (has_winner) {
+    if (
+      combinations.every(
+        (combination) =>
+          combination.result === BetResultType.WINNER ||
+          combination.result === BetResultType.PARTIAL ||
+          combination.result === BetResultType.PLACED,
+      )
+    ) {
       return BetResultType.WINNER;
-    }
-
-    if (has_void) {
+    } else if (
+      combinations.every(
+        (combination) => combination.result === BetResultType.LOSER || combination.result === BetResultType.OPEN,
+      )
+    ) {
+      return BetResultType.LOSER;
+    } else if (combinations.some((combination) => combination.result === BetResultType.VOID)) {
       return BetResultType.PARTIAL;
     }
 

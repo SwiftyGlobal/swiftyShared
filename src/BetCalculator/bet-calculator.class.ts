@@ -241,8 +241,10 @@ export class BetCalculator {
       return_stake = this.stake;
     } else if (selection.result === BetResultType.VOID) {
       win_profit = 0;
+      place_profit = 0;
       return_stake = this.stake;
-      console.log('Void single', { return_stake });
+      this.profit = 0;
+      console.log('Void single', { return_stake, profit: this.profit });
     } else if (selection.result === BetResultType.LOSER) {
       return_stake = 0;
       win_profit = 0;
@@ -371,13 +373,23 @@ export class BetCalculator {
       place_profit = +bog_place_profit;
     }
 
-    this.profit = +win_profit + +place_profit;
+    // this.profit = +win_profit + +place_profit;
 
-    return_stake = this.profit > 0 ? return_stake : 0;
-
-    this.payout = this.profit + return_stake;
+    // return_stake = this.profit > 0 ? return_stake : 0;
 
     const main_result_type = this.calculatorHelper.getBetResultType([first_selection, second_selection]);
+
+    if (main_result_type === BetResultType.VOID) {
+      win_profit = 0;
+      place_profit = 0;
+      return_stake = this.stake;
+    } else if (main_result_type === BetResultType.LOSER) {
+      win_profit = 0;
+      place_profit = 0;
+      return_stake = 0;
+    }
+    this.profit = +win_profit + +place_profit;
+    this.payout = this.profit + return_stake;
 
     console.log(
       'Double Result - ' + main_result_type,
@@ -391,6 +403,17 @@ export class BetCalculator {
         main_result_type,
       }),
     );
+
+    console.log({
+      first_selection,
+      second_selection,
+      main_result_type,
+      win_profit,
+      place_profit,
+      profit: this.profit,
+      payout: this.payout,
+      return_stake,
+    });
 
     return {
       stake: return_stake,
@@ -580,11 +603,6 @@ export class BetCalculator {
       place_profit = +bog_place_profit;
     }
 
-    this.profit = +win_profit + +place_profit;
-
-    this.payout = this.profit > 0 ? +this.profit + +this.stake : 0;
-    return_stake = this.profit > 0 ? return_stake : 0;
-
     const selection_identifier = `${first_selection.odd_fractional}x${second_selection.odd_fractional}x${third_selection.odd_fractional}`;
 
     console.log(
@@ -600,6 +618,19 @@ export class BetCalculator {
     );
 
     const result_type = this.calculatorHelper.getBetResultType([first_selection, second_selection, third_selection]);
+
+    if (result_type === BetResultType.VOID) {
+      win_profit = 0;
+      place_profit = 0;
+      return_stake = this.stake;
+    } else if (result_type === BetResultType.LOSER) {
+      win_profit = 0;
+      place_profit = 0;
+      return_stake = 0;
+    }
+
+    this.profit = +win_profit + +place_profit;
+    this.payout = this.profit + return_stake;
 
     return {
       stake: return_stake,
