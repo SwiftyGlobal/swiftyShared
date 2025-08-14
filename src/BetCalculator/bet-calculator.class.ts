@@ -160,7 +160,9 @@ export class BetCalculator {
 
     const odds = this.calculatorHelper.retrieveOdds(selection);
 
-    const each_way_odds = this.calculatorHelper.retrieveEachWayOdds(odds, selection.ew_terms);
+    const each_way_odds = selection.is_each_way
+      ? this.calculatorHelper.retrieveEachWayOdds(odds, selection.ew_terms)
+      : null;
 
     if ((odds.main.numerator === 0 || odds.main.denominator === 0) && selection.result !== BetResultType.VOID) {
       this.profit = 0;
@@ -319,8 +321,12 @@ export class BetCalculator {
     const first_odds = this.calculatorHelper.retrieveOdds(first_selection);
     const second_odds = this.calculatorHelper.retrieveOdds(second_selection);
 
-    const first_each_way_odds = this.calculatorHelper.retrieveEachWayOdds(first_odds, first_selection.ew_terms);
-    const second_each_way_odds = this.calculatorHelper.retrieveEachWayOdds(second_odds, second_selection.ew_terms);
+    const first_each_way_odds = first_selection.is_each_way
+      ? this.calculatorHelper.retrieveEachWayOdds(first_odds, first_selection.ew_terms)
+      : null;
+    const second_each_way_odds = second_selection.is_each_way
+      ? this.calculatorHelper.retrieveEachWayOdds(second_odds, second_selection.ew_terms)
+      : null;
 
     const { win_odd: first_win_odd, place_odd: first_place_odd } = this.calculatorHelper.getSingleResultOdds(
       first_selection,
@@ -526,9 +532,15 @@ export class BetCalculator {
     const second_odds = this.calculatorHelper.retrieveOdds(second_selection);
     const third_odds = this.calculatorHelper.retrieveOdds(third_selection);
 
-    const first_each_way_odds = this.calculatorHelper.retrieveEachWayOdds(first_odds, first_selection.ew_terms);
-    const second_each_way_odds = this.calculatorHelper.retrieveEachWayOdds(second_odds, second_selection.ew_terms);
-    const third_each_way_odds = this.calculatorHelper.retrieveEachWayOdds(third_odds, third_selection.ew_terms);
+    const first_each_way_odds = first_selection.is_each_way
+      ? this.calculatorHelper.retrieveEachWayOdds(first_odds, first_selection.ew_terms)
+      : null;
+    const second_each_way_odds = second_selection.is_each_way
+      ? this.calculatorHelper.retrieveEachWayOdds(second_odds, second_selection.ew_terms)
+      : null;
+    const third_each_way_odds = third_selection.is_each_way
+      ? this.calculatorHelper.retrieveEachWayOdds(third_odds, third_selection.ew_terms)
+      : null;
 
     let return_stake = this.stake;
 
