@@ -7,7 +7,7 @@ export type PreparedArrayMysqlValue<T> = T[] | [null];
  */
 export const prepareArrayToMysqlStatement = <T>(array: T[]): PreparedArrayMysqlValue<T> => {
   if (!array.length) {
-    return [null];
+    return [-1] as T[];
   }
 
   return array;

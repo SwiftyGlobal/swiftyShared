@@ -1,9 +1,9 @@
 import { prepareArrayToMysqlStatement } from '../../utils';
 
 describe('prepareArrayToMysqlStatement', () => {
-  it('returns [null] when the input array is empty', () => {
+  it('returns [-1] when the input array is empty', () => {
     const result = prepareArrayToMysqlStatement([]);
-    expect(result).toEqual([null]);
+    expect(result).toEqual([-1]);
   });
 
   it('returns the same array when the input array is not empty', () => {
@@ -24,8 +24,8 @@ describe('prepareArrayToMysqlStatement', () => {
     expect(result).toBe(input);
   });
 
-  it('returns [null] for an empty array of objects', () => {
+  it('returns [-1] for an empty array of objects', () => {
     const result = prepareArrayToMysqlStatement([]);
-    expect(result).toEqual([null]);
+    expect(result).toEqual([-1]);
   });
 });
