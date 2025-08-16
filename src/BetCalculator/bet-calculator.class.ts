@@ -115,7 +115,16 @@ export class BetCalculator {
       result = this.processSuperHeinzBet(this.bets);
     } else if (this.bet_type === BetSlipType.GOLIATH) {
       result = this.processGoliathBet(this.bets);
+    } else if (this.bet_type === BetSlipType.LUCKY_15) {
+      result = this.processLucky15Bet(this.bets);
+    } else if (this.bet_type === BetSlipType.LUCKY_31) {
+      result = this.processLucky31Bet(this.bets);
+    } else if (this.bet_type === BetSlipType.LUCKY_63) {
+      result = this.processLucky63Bet(this.bets);
     }
+    // else if (this.bet_type === BetSlipType.SUPER_GOLIATH) {
+    // result = this.processSuperGoliathBet(this.bets);
+    // }
 
     console.log('Result', JSON.stringify(result));
 
@@ -872,83 +881,336 @@ export class BetCalculator {
     const singles = selections.map((selection) => this.processSingleBet(selection));
     const doubles = this.processDoubles(selections);
     const trebles = this.processTrebles(selections);
+    const fourfolds = this.processFoldBet(selections, 4);
+    const fivefolds = this.processFoldBet(selections, 5);
     const accumulator = this.processAccumulatorBet(selections);
 
     const doubles_payout = doubles.payout;
     const doubles_stake = doubles.stake;
     const trebles_payout = trebles.payout;
     const trebles_stake = trebles.stake;
+    const fourfolds_payout = fourfolds.payout;
+    const fourfolds_stake = fourfolds.stake;
+    const fivefolds_payout = fivefolds.payout;
+    const fivefolds_stake = fivefolds.stake;
     const accumulator_payout = accumulator.payout;
 
-    console.log('Heinz', JSON.stringify({ selections }));
+    console.log(
+      'Heinz payouts',
+      JSON.stringify({
+        doubles_payout,
+        trebles_payout,
+        fourfolds_payout,
+        fivefolds_payout,
+        accumulator_payout,
+      }),
+    );
+
+    console.log('Heinz', JSON.stringify({ selections, singles, doubles, trebles, fourfolds, fivefolds, accumulator }));
 
     const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles, accumulator]);
 
     return {
       singles: singles.map((single) => single.singles).flat(),
-      combinations: [...doubles.combinations, ...trebles.combinations],
-      stake: doubles_stake + trebles_stake + accumulator.stake,
-      payout: doubles_payout + trebles_payout + accumulator_payout,
+      combinations: [
+        ...doubles.combinations,
+        ...trebles.combinations,
+        ...fourfolds.combinations,
+        ...fivefolds.combinations,
+      ],
+      stake: doubles_stake + trebles_stake + fourfolds_stake + fivefolds_stake + accumulator.stake,
+      payout: doubles_payout + trebles_payout + fourfolds_payout + fivefolds_payout + accumulator_payout,
       result_type: main_result_type,
-      win_profit: doubles.win_profit + trebles.win_profit + accumulator.win_profit,
-      place_profit: doubles.place_profit + trebles.place_profit + accumulator.place_profit,
+      win_profit:
+        doubles.win_profit + trebles.win_profit + fourfolds.win_profit + fivefolds.win_profit + accumulator.win_profit,
+      place_profit:
+        doubles.place_profit +
+        trebles.place_profit +
+        fourfolds.place_profit +
+        fivefolds.place_profit +
+        accumulator.place_profit,
       accumulator_profit: accumulator_payout,
     };
   };
 
   // 7 single, 21 double, 35 treble, 35 fourfold, 21 fivefold, 7 sixfold, 1 accumulator
   processSuperHeinzBet = (selections: PlacedBetSelection[]) => {
-    // const win_profit = 0;
-    // const place_profit = 0;
-    // const return_stake = 0;
+    const singles = selections.map((selection) => this.processSingleBet(selection));
+    const doubles = this.processDoubles(selections);
+    const trebles = this.processTrebles(selections);
+    const fourfolds = this.processFoldBet(selections, 4);
+    const fivefolds = this.processFoldBet(selections, 5);
+    const sixfolds = this.processFoldBet(selections, 6);
+    const accumulator = this.processAccumulatorBet(selections);
 
-    console.log('Super Heinz', JSON.stringify({ selections }));
+    const doubles_payout = doubles.payout;
+    const doubles_stake = doubles.stake;
+    const trebles_payout = trebles.payout;
+    const trebles_stake = trebles.stake;
+    const fourfolds_payout = fourfolds.payout;
+    const fourfolds_stake = fourfolds.stake;
+    const fivefolds_payout = fivefolds.payout;
+    const fivefolds_stake = fivefolds.stake;
+    const sixfolds_payout = sixfolds.payout;
+    const sixfolds_stake = sixfolds.stake;
+    const accumulator_payout = accumulator.payout;
+    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles, accumulator]);
 
-    return null;
+    return {
+      singles: singles.map((single) => single.singles).flat(),
+      combinations: [
+        ...doubles.combinations,
+        ...trebles.combinations,
+        ...fourfolds.combinations,
+        ...fivefolds.combinations,
+        ...sixfolds.combinations,
+      ],
+      stake: doubles_stake + trebles_stake + fourfolds_stake + fivefolds_stake + sixfolds_stake + accumulator.stake,
+      payout:
+        doubles_payout + trebles_payout + fourfolds_payout + fivefolds_payout + sixfolds_payout + accumulator_payout,
+      result_type: main_result_type,
+      win_profit:
+        doubles.win_profit +
+        trebles.win_profit +
+        fourfolds.win_profit +
+        fivefolds.win_profit +
+        sixfolds.win_profit +
+        accumulator.win_profit,
+      place_profit:
+        doubles.place_profit +
+        trebles.place_profit +
+        fourfolds.place_profit +
+        fivefolds.place_profit +
+        sixfolds.place_profit +
+        accumulator.place_profit,
+      accumulator_profit: accumulator_payout,
+    };
   };
 
   //  8 single, 28 double, 56 treble, 70 fourfold, 56 fivefold, 28 sixfold, 8 sevenfold, 1 accumulator
   processGoliathBet = (selections: PlacedBetSelection[]) => {
-    // const win_profit = 0;
-    // const place_profit = 0;
-    // const return_stake = 0;
+    const singles = selections.map((selection) => this.processSingleBet(selection));
+    const doubles = this.processDoubles(selections);
+    const trebles = this.processTrebles(selections);
+    const fourfolds = this.processFoldBet(selections, 4);
+    const fivefolds = this.processFoldBet(selections, 5);
+    const sixfolds = this.processFoldBet(selections, 6);
+    const sevenfolds = this.processFoldBet(selections, 7);
+    const accumulator = this.processAccumulatorBet(selections);
 
-    console.log('Goliath', JSON.stringify({ selections }));
+    const doubles_payout = doubles.payout;
+    const doubles_stake = doubles.stake;
+    const trebles_payout = trebles.payout;
+    const trebles_stake = trebles.stake;
+    const fourfolds_payout = fourfolds.payout;
+    const fourfolds_stake = fourfolds.stake;
+    const fivefolds_payout = fivefolds.payout;
+    const fivefolds_stake = fivefolds.stake;
+    const sixfolds_payout = sixfolds.payout;
+    const sixfolds_stake = sixfolds.stake;
+    const sevenfolds_payout = sevenfolds.payout;
+    const sevenfolds_stake = sevenfolds.stake;
+    const accumulator_payout = accumulator.payout;
+    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles, accumulator]);
 
-    return null;
+    return {
+      singles: singles.map((single) => single.singles).flat(),
+      combinations: [
+        ...doubles.combinations,
+        ...trebles.combinations,
+        ...fourfolds.combinations,
+        ...fivefolds.combinations,
+        ...sixfolds.combinations,
+        ...sevenfolds.combinations,
+      ],
+      stake:
+        doubles_stake +
+        trebles_stake +
+        fourfolds_stake +
+        fivefolds_stake +
+        sixfolds_stake +
+        sevenfolds_stake +
+        accumulator.stake,
+      payout:
+        doubles_payout +
+        trebles_payout +
+        fourfolds_payout +
+        fivefolds_payout +
+        sixfolds_payout +
+        sevenfolds_payout +
+        accumulator_payout,
+      result_type: main_result_type,
+      win_profit:
+        doubles.win_profit +
+        trebles.win_profit +
+        fourfolds.win_profit +
+        fivefolds.win_profit +
+        sixfolds.win_profit +
+        sevenfolds.win_profit +
+        accumulator.win_profit,
+      place_profit:
+        doubles.place_profit +
+        trebles.place_profit +
+        fourfolds.place_profit +
+        fivefolds.place_profit +
+        sixfolds.place_profit +
+        sevenfolds.place_profit +
+        accumulator.place_profit,
+      accumulator_profit: accumulator_payout,
+    };
   };
 
   // 4 selections: 4 single, 6 double, 4 treble, 1 accumulator
   processLucky15Bet = (selections: PlacedBetSelection[]) => {
-    // const win_profit = 0;
-    // const place_profit = 0;
-    // const return_stake = 0;
+    const singles = selections.map((selection) => this.processSingleBet(selection));
+    const doubles = this.processDoubles(selections);
+    const trebles = this.processTrebles(selections);
+    const accumulator = this.processAccumulatorBet(selections);
 
-    console.log('Lucky 15', JSON.stringify({ selections }));
+    const singles_payout = singles.map((single) => single.payout).reduce((acc, curr) => acc + curr, 0);
+    const singles_stake = singles.map((single) => single.stake).reduce((acc, curr) => acc + curr, 0);
+    const singles_win_profit = singles.map((single) => single.win_profit).reduce((acc, curr) => acc + curr, 0);
+    const singles_place_profit = singles.map((single) => single.place_profit).reduce((acc, curr) => acc + curr, 0);
+    const doubles_payout = doubles.payout;
+    const doubles_stake = doubles.stake;
+    const trebles_payout = trebles.payout;
+    const trebles_stake = trebles.stake;
+    const accumulator_payout = accumulator.payout;
+    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles, accumulator]);
 
-    return null;
+    console.log('Lucky15 Payout | Singles ' + singles_payout);
+    console.log('Lucky15 Payout | Doubles ' + doubles_payout);
+    console.log('Lucky15 Payout | Trebles ' + trebles_payout);
+    console.log('Lucky15 Payout | Accumulator ' + accumulator_payout);
+
+    return {
+      singles: singles.map((single) => single.singles).flat(),
+      combinations: [...doubles.combinations, ...trebles.combinations],
+      stake: singles_stake + doubles_stake + trebles_stake + accumulator.stake,
+      payout: singles_payout + doubles_payout + trebles_payout + accumulator_payout,
+      result_type: main_result_type,
+      win_profit: singles_win_profit + doubles.win_profit + trebles.win_profit + accumulator.win_profit,
+      place_profit: singles_place_profit + doubles.place_profit + trebles.place_profit + accumulator.place_profit,
+      accumulator_profit: accumulator_payout,
+    };
   };
 
   // 5 selections: 5 single, 10 double, 10 treble, 5 fourfold, 1 accumulator
   processLucky31Bet = (selections: PlacedBetSelection[]) => {
-    // const win_profit = 0;
-    // const place_profit = 0;
-    // const return_stake = 0;
+    const singles = selections.map((selection) => this.processSingleBet(selection));
+    const doubles = this.processDoubles(selections);
+    const trebles = this.processTrebles(selections);
+    const fourfolds = this.processFoldBet(selections, 4);
+    const accumulator = this.processAccumulatorBet(selections);
 
-    console.log('Lucky 31', JSON.stringify({ selections }));
+    const singles_payout = singles.map((single) => single.payout).reduce((acc, curr) => acc + curr, 0);
+    const singles_stake = singles.map((single) => single.stake).reduce((acc, curr) => acc + curr, 0);
+    const singles_win_profit = singles.map((single) => single.win_profit).reduce((acc, curr) => acc + curr, 0);
+    const singles_place_profit = singles.map((single) => single.place_profit).reduce((acc, curr) => acc + curr, 0);
+    const doubles_payout = doubles.payout;
+    const doubles_stake = doubles.stake;
+    const trebles_payout = trebles.payout;
+    const trebles_stake = trebles.stake;
+    const fourfolds_payout = fourfolds.payout;
+    const fourfolds_stake = fourfolds.stake;
+    const accumulator_payout = accumulator.payout;
+    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles, accumulator]);
 
-    return null;
+    return {
+      singles: singles.map((single) => single.singles).flat(),
+      combinations: [...doubles.combinations, ...trebles.combinations, ...fourfolds.combinations],
+      stake: singles_stake + doubles_stake + trebles_stake + fourfolds_stake + accumulator.stake,
+      payout: singles_payout + doubles_payout + trebles_payout + fourfolds_payout + accumulator_payout,
+      result_type: main_result_type,
+      win_profit:
+        singles_win_profit + doubles.win_profit + trebles.win_profit + fourfolds.win_profit + accumulator.win_profit,
+      place_profit:
+        singles_place_profit +
+        doubles.place_profit +
+        trebles.place_profit +
+        fourfolds.place_profit +
+        accumulator.place_profit,
+      accumulator_profit: accumulator_payout,
+    };
   };
 
   // 6 selections: 6 single, 15 double, 20 treble, 15 fourfold, 6 fivefold, 1 accumulator
   processLucky63Bet = (selections: PlacedBetSelection[]) => {
-    // const win_profit = 0;
-    // const place_profit = 0;
-    // const return_stake = 0;
+    const singles = selections.map((selection) => this.processSingleBet(selection));
+    const doubles = this.processDoubles(selections);
+    const trebles = this.processTrebles(selections);
+    const fourfolds = this.processFoldBet(selections, 4);
+    const fivefolds = this.processFoldBet(selections, 5);
+    const accumulator = this.processAccumulatorBet(selections);
 
-    console.log('Lucky 63', JSON.stringify({ selections }));
+    const singles_payout = singles.map((single) => single.payout).reduce((acc, curr) => acc + curr, 0);
+    const singles_stake = singles.map((single) => single.stake).reduce((acc, curr) => acc + curr, 0);
+    const singles_win_profit = singles.map((single) => single.win_profit).reduce((acc, curr) => acc + curr, 0);
+    const singles_place_profit = singles.map((single) => single.place_profit).reduce((acc, curr) => acc + curr, 0);
+    const doubles_payout = doubles.payout;
+    const doubles_stake = doubles.stake;
+    const trebles_payout = trebles.payout;
+    const trebles_stake = trebles.stake;
+    const fourfolds_payout = fourfolds.payout;
+    const fourfolds_stake = fourfolds.stake;
+    const fivefolds_payout = fivefolds.payout;
+    const fivefolds_stake = fivefolds.stake;
+    const accumulator_payout = accumulator.payout;
+    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles, accumulator]);
 
-    return null;
+    return {
+      singles: singles.map((single) => single.singles).flat(),
+      combinations: [
+        ...doubles.combinations,
+        ...trebles.combinations,
+        ...fourfolds.combinations,
+        ...fivefolds.combinations,
+      ],
+      stake: singles_stake + doubles_stake + trebles_stake + fourfolds_stake + fivefolds_stake + accumulator.stake,
+      payout:
+        singles_payout + doubles_payout + trebles_payout + fourfolds_payout + fivefolds_payout + accumulator_payout,
+      result_type: main_result_type,
+      win_profit:
+        singles_win_profit +
+        doubles.win_profit +
+        trebles.win_profit +
+        fourfolds.win_profit +
+        fivefolds.win_profit +
+        accumulator.win_profit,
+      place_profit:
+        singles_place_profit +
+        doubles.place_profit +
+        trebles.place_profit +
+        fourfolds.place_profit +
+        fivefolds.place_profit +
+        accumulator.place_profit,
+      accumulator_profit: accumulator_payout,
+    };
+  };
+
+  // doesnt exist
+  processSuperGoliathBet = (selections: PlacedBetSelection[]) => {
+    console.log('Super Goliath', JSON.stringify({ selections }));
+    // const singles = selections.map((selection) => this.processSingleBet(selection));
+    // const doubles = this.processDoubles(selections);
+    // const trebles = this.processTrebles(selections);
+    // const accumulator = this.processAccumulatorBet(selections);
+    // const doubles_payout = doubles.payout;
+    // const doubles_stake = doubles.stake;
+    // const trebles_payout = trebles.payout;
+    // const trebles_stake = trebles.stake;
+    // const accumulator_payout = accumulator.payout;
+    // const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles, accumulator]);
+    // return {
+    //   singles: singles.map((single) => single.singles).flat(),
+    //   combinations: [...doubles.combinations, ...trebles.combinations],
+    //   stake: doubles_stake + trebles_stake + accumulator.stake,
+    //   payout: doubles_payout + trebles_payout + accumulator_payout,
+    //   result_type: main_result_type,
+    //   win_profit: doubles.win_profit + trebles.win_profit + accumulator.win_profit,
+    //   place_profit: doubles.place_profit + trebles.place_profit + accumulator.place_profit,
+    //   accumulator_profit: accumulator_payout,
+    // };
   };
 
   // 4 selections: 4 single, 6 double, 4 treble, 1 accumulator
