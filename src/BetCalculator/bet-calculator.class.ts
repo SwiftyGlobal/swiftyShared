@@ -403,6 +403,10 @@ export class BetCalculator {
       place_profit = 0;
       return_stake = 0;
     }
+    if (first_selection.is_each_way || second_selection.is_each_way) {
+      return_stake += this.stake;
+    }
+
     this.profit = +win_profit + +place_profit;
     this.payout = this.profit + return_stake;
 
@@ -650,6 +654,10 @@ export class BetCalculator {
       return_stake = 0;
     }
 
+    if (first_selection.is_each_way || second_selection.is_each_way || third_selection.is_each_way) {
+      return_stake += this.stake;
+    }
+
     this.profit = +win_profit + +place_profit;
     this.payout = this.profit + return_stake;
 
@@ -805,8 +813,6 @@ export class BetCalculator {
     const trebles = this.processTrebles(selections);
     const accumulator = this.processAccumulatorBet(selections);
 
-    const singles_payout = singles.map((single) => single.payout).reduce((acc, curr) => acc + curr, 0);
-
     const doubles_payout = doubles.payout;
     const doubles_stake = doubles.stake;
     const trebles_payout = trebles.payout;
@@ -814,7 +820,6 @@ export class BetCalculator {
     const accumulator_payout = accumulator.payout;
 
     console.log('Yangke combination payouts', {
-      singles_payout,
       doubles_payout,
       trebles_payout,
       accumulator_payout,
@@ -1221,6 +1226,7 @@ export class BetCalculator {
   processAccumulatorBet = (selections: PlacedBetSelection[]): ResultMainBet => {
     const oddList: BetOdds[] = [];
     const eachWayOddList: BetOdds[] = [];
+    let return_stake = this.stake;
 
     for (const selection of selections) {
       const retrieved_odds = this.calculatorHelper.retrieveOdds(selection);
@@ -1242,9 +1248,13 @@ export class BetCalculator {
 
     const main_result_type = this.calculatorHelper.getBetResultType(selections);
 
+    if (selections.some((selection) => selection.is_each_way)) {
+      return_stake += this.stake;
+    }
+
     return {
-      stake: this.stake,
-      payout: win_profit + place_profit + this.stake,
+      stake: return_stake,
+      payout: win_profit + place_profit + return_stake,
       result_type: main_result_type,
       win_profit,
       place_profit,

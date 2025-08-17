@@ -1,6 +1,6 @@
 {
   "name": "@swiftyglobal/swifty-shared",
-  "version": "1.0.74",
+  "version": "1.0.75",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "typings": "dist/index.d.ts",
@@ -11,7 +11,7 @@
     "test": "jest --color --verbose",
     "test:coverage": "jest --coverage --color --verbose",
     "test:bet-calculator": "jest --color --verbose src/tests/BetCalculator/*.test.ts",
-    "test:combinations": "jest --color --verbose src/tests/BetCalculator/combinations.test.ts"
+    "test:yankees": "jest --color --verbose src/tests/BetCalculator/yankees.test.ts"
   },
   "keywords": [],
   "author": "jaxin007",
