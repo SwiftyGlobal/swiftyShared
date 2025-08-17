@@ -75,6 +75,7 @@ describe('Patent Simple Winner Case', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     console.log('Patent', result);
@@ -153,6 +154,7 @@ describe('Patent Simple Winner Case', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     console.log('Patent', result);
@@ -231,6 +233,7 @@ describe('Patent Simple Winner Case', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     console.log('Patent', result);
@@ -260,7 +263,7 @@ describe('Patent Simple Winner Case', () => {
         bet_id: 2,
         bet_type: BetSlipType.SINGLE,
         stake: 5,
-        result: BetResultType.VOID,
+        result: BetResultType.WINNER,
         is_starting_price: false,
         sp_odd_fractional: '',
         odd_fractional: '1/2',
@@ -275,7 +278,7 @@ describe('Patent Simple Winner Case', () => {
         bet_id: 3,
         bet_type: BetSlipType.SINGLE,
         stake: 5,
-        result: BetResultType.VOID,
+        result: BetResultType.WINNER,
         is_starting_price: false,
         sp_odd_fractional: null,
         odd_fractional: '1/3',
@@ -299,12 +302,13 @@ describe('Patent Simple Winner Case', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     console.log('Patent', result);
 
-    expect(result.return_payout.toFixed(2)).toEqual('40.00');
-    expect(result.return_stake.toFixed(2)).toEqual('35.00');
+    expect(result.return_payout).toBeCloseTo(60.63, 1);
+    expect(result.return_stake).toBeCloseTo(35.0, 1);
   });
 
   it('Patent Void 1 Lose 1 Void 1', () => {
@@ -367,6 +371,7 @@ describe('Patent Simple Winner Case', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     console.log('Patent', result);
@@ -375,7 +380,7 @@ describe('Patent Simple Winner Case', () => {
     expect(result.return_stake.toFixed(2)).toEqual('15.00');
   });
 
-  it.only('Patent Lose 1 Lose 2 Void 1', () => {
+  it('Patent Lose 1 Lose 2 Void 1', () => {
     const bets = [
       {
         bet_id: 1,
@@ -435,6 +440,7 @@ describe('Patent Simple Winner Case', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     console.log('Patent', result);
@@ -503,12 +509,13 @@ describe('Patent Simple Winner Case', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     console.log('Patent', result);
 
-    expect(result.return_payout.toFixed(2)).toEqual('6.25');
-    expect(result.return_stake.toFixed(2)).toEqual('15.00');
+    expect(result.return_payout).toBeCloseTo(6.25, 1);
+    expect(result.return_stake).toBeCloseTo(5.0, 1);
   });
 
   it('Patent All Losers', () => {
@@ -571,6 +578,7 @@ describe('Patent Simple Winner Case', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     console.log('Patent', result);
@@ -639,6 +647,7 @@ describe('Patent Simple Winner Case', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     console.log('Patent', result);

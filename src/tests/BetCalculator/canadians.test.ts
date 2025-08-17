@@ -105,6 +105,7 @@ describe('Canadian Simple Winner Case', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     console.log('Canadian', JSON.stringify(result));

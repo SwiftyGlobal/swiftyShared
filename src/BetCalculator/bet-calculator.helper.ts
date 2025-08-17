@@ -43,8 +43,6 @@ export class BetCalculatorHelper {
       bog: this.retrieveBogOdd(selection),
     };
 
-    console.log('retrieveOdds', JSON.stringify(retrieved_odds));
-
     return retrieved_odds;
   };
 
@@ -158,8 +156,6 @@ export class BetCalculatorHelper {
 
     let result_type = BetResultType.LOSER;
 
-    console.log('getSingleResultOdds', JSON.stringify({ selection, odds, each_way_odds, type }));
-
     if (selection.result === BetResultType.WINNER || selection.result === BetResultType.PARTIAL) {
       win_odd.main = this.getOdds(odds, type);
       win_odd.sp = this.getOdds(odds, type);
@@ -174,12 +170,12 @@ export class BetCalculatorHelper {
       place_odd.bog = this.getOdds(each_way_odds, type);
       result_type = BetResultType.PLACED;
     } else if (selection.result === BetResultType.VOID) {
-      win_odd.main = { numerator: 1, denominator: 1, odd_decimal: 1 };
-      win_odd.sp = { numerator: 1, denominator: 1, odd_decimal: 1 };
-      win_odd.bog = { numerator: 1, denominator: 1, odd_decimal: 1 };
-      place_odd.main = { numerator: 1, denominator: 1, odd_decimal: 1 };
-      place_odd.sp = { numerator: 1, denominator: 1, odd_decimal: 1 };
-      place_odd.bog = { numerator: 1, denominator: 1, odd_decimal: 1 };
+      win_odd.main = { numerator: 0, denominator: 0, odd_decimal: 0 };
+      win_odd.sp = { numerator: 0, denominator: 0, odd_decimal: 0 };
+      win_odd.bog = { numerator: 0, denominator: 0, odd_decimal: 0 };
+      place_odd.main = { numerator: 0, denominator: 0, odd_decimal: 0 };
+      place_odd.sp = { numerator: 0, denominator: 0, odd_decimal: 0 };
+      place_odd.bog = { numerator: 0, denominator: 0, odd_decimal: 0 };
       result_type = BetResultType.VOID;
     } else if (selection.result === BetResultType.LOSER) {
       // do nothing, already set to 0
@@ -202,13 +198,15 @@ export class BetCalculatorHelper {
     let denominator = 1;
 
     oddsList.forEach((odd) => {
-      if ((odd.numerator == 0 && odd.denominator == 0) || (odd.numerator == 0 && odd.denominator == 1)) {
-        numerator = 0;
-        denominator = 0;
+      // Skip void/non-runner
+      if ((odd.numerator === 0 && odd.denominator === 0) || (odd.numerator === 0 && odd.denominator === 1)) {
         return;
       }
 
-      if (odd.numerator == 1 && odd.denominator == 1) {
+      // EVS (1/1)
+      if (odd.numerator === 1 && odd.denominator === 1) {
+        numerator *= 2;
+        denominator *= 1;
         return;
       }
 
@@ -216,12 +214,18 @@ export class BetCalculatorHelper {
       denominator *= odd.denominator;
     });
 
-    numerator = numerator - denominator;
+    if (denominator === 0) {
+      return { numerator: 0, denominator: 0, odd_decimal: 0 };
+    }
+
+    const odd_decimal = numerator / denominator;
+    const profit_numerator = numerator - denominator;
+    const profit_denominator = denominator;
 
     return {
-      numerator,
-      denominator,
-      odd_decimal: denominator > 0 ? this.roundToDecimalPlaces(numerator / denominator) : 0,
+      numerator: profit_numerator,
+      denominator: profit_denominator,
+      odd_decimal: this.roundToDecimalPlaces(odd_decimal),
     };
   };
 
@@ -234,13 +238,10 @@ export class BetCalculatorHelper {
 
     if (type === BetOddType.MAIN && odds.main.denominator > 0) {
       profit = this.roundToDecimalPlaces((+odds.main.numerator / +odds.main.denominator) * stake);
-      console.log('Main', JSON.stringify({ profit, stake, odds: odds.main }));
     } else if (type === BetOddType.SP && odds.sp.denominator > 0) {
       profit = this.roundToDecimalPlaces((+odds.sp.numerator / +odds.sp.denominator) * stake);
-      console.log('SP', JSON.stringify({ profit, stake, odds: odds.sp }));
     } else if (type === BetOddType.BOG && odds.bog.denominator > 0) {
       profit = this.roundToDecimalPlaces((+odds.bog.numerator / +odds.bog.denominator) * stake);
-      console.log('BOG', JSON.stringify({ profit, stake, odds: odds.bog }));
     }
 
     return profit;

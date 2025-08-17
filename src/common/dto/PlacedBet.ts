@@ -45,6 +45,7 @@ export interface BetSettings {
   max_payout: number;
   free_bet_amount: number;
   bog_applicable: boolean;
+  each_way: boolean;
 }
 
 export interface ResultSingle {

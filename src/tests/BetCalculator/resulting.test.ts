@@ -60,6 +60,7 @@ describe('Resulting', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     console.log('Double 1 Winner 1 Loser', result);
@@ -122,6 +123,7 @@ describe('Resulting', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     console.log('Double 1 Winner 1 Loser', result);
@@ -184,6 +186,7 @@ describe('Resulting', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     console.log('Double 1 Winner 1 Loser', result);
@@ -261,6 +264,7 @@ describe('Resulting', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     console.log('Doubles with 3 selections,  2 Winners 1 Loser', result);
@@ -338,6 +342,7 @@ describe('Resulting', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     console.log('Doubles with 3 selections,  2 Voids 1 Loser', result);
@@ -415,6 +420,7 @@ describe('Resulting', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     console.log('Doubles with 3 selections,  3 Voids', result);

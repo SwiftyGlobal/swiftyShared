@@ -75,12 +75,13 @@ describe('Trixie Simple Winner Case', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     expect(result.return_payout).toEqual(40.21);
   });
 
-  it.only('Trixie Win LOSE Void', () => {
+  it('Trixie Win LOSE Void', () => {
     const bets = [
       {
         bet_id: 1,
@@ -150,6 +151,7 @@ describe('Trixie Simple Winner Case', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     expect(result.return_payout).toEqual(6.25);
@@ -225,6 +227,7 @@ describe('Trixie Simple Winner Case', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     expect(result.return_payout).toEqual(0);
