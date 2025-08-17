@@ -45,6 +45,7 @@ describe('Single without each way ', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     expect(result.return_payout).toBeCloseTo(6.25, 1);
@@ -98,6 +99,7 @@ describe('Single without each way ', () => {
       free_bet_amount: 0,
       bog_applicable: true,
       bog_max_payout: 0,
+      each_way: false,
     });
 
     expect(result.return_payout).toEqual(25);
@@ -148,6 +150,7 @@ describe('Single without each way ', () => {
       bog_applicable: true,
       bog_max_payout: 5,
       max_payout: 0,
+      each_way: false,
     });
 
     console.log({ result });
@@ -200,6 +203,7 @@ describe('Single without each way ', () => {
       bog_applicable: true,
       bog_max_payout: 5,
       max_payout: 0,
+      each_way: false,
     });
 
     console.log({ result });
@@ -252,6 +256,7 @@ describe('Single without each way ', () => {
       bog_applicable: true,
       bog_max_payout: 5,
       max_payout: 0,
+      each_way: false,
     });
 
     expect(result.return_payout).toEqual(20);
@@ -301,6 +306,7 @@ describe('Single without each way ', () => {
       bog_applicable: false,
       bog_max_payout: 5,
       max_payout: 0,
+      each_way: true,
     });
 
     expect(result.return_payout).toBeCloseTo(11.56, 1);
@@ -350,6 +356,7 @@ describe('Single without each way ', () => {
       bog_applicable: false,
       bog_max_payout: 5,
       max_payout: 0,
+      each_way: true,
     });
 
     expect(result.return_payout).toBeCloseTo(5.31, 1);

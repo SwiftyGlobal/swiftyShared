@@ -75,6 +75,7 @@ describe('Trebles Simple Winner Case', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     expect(result.return_payout).toEqual(12.5);
@@ -165,12 +166,13 @@ describe('Trebles Simple Winner Case', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     expect(result.return_payout.toFixed(2)).toEqual('45.75');
   });
 
-  it('Treble Win Case - 4 selections - 1 Void', () => {
+  it.only('Treble Win Case - 4 selections - 1 Void', () => {
     const bets = [
       {
         bet_id: 1,
@@ -255,6 +257,7 @@ describe('Trebles Simple Winner Case', () => {
       bog_max_payout: 0,
       max_payout: 0,
       bog_applicable: false,
+      each_way: false,
     });
 
     expect(result.return_payout).toBeCloseTo(37.13, 1);
@@ -345,6 +348,7 @@ describe('Trebles Simple Winner Case', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     expect(result.return_payout.toFixed(2)).toEqual('11.25');

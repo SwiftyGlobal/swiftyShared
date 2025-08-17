@@ -90,6 +90,7 @@ describe('Yankee Simple Winner Case', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: false,
     });
 
     console.log('Patent', JSON.stringify(result));
@@ -107,7 +108,7 @@ describe('Yankee Simple Winner Case', () => {
     expect(result.return_stake.toFixed(2)).toEqual('55.00');
   });
 
-  it.only('Yankee Each Way Case', () => {
+  it('Yankee Each Way Case', () => {
     const bets = [
       {
         bet_id: 1,
@@ -182,6 +183,7 @@ describe('Yankee Simple Winner Case', () => {
       bog_applicable: false,
       bog_max_payout: 0,
       max_payout: 0,
+      each_way: true,
     });
 
     console.log('Patent', JSON.stringify(result));

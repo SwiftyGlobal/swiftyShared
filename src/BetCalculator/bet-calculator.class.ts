@@ -27,6 +27,8 @@ export class BetCalculator {
 
   bog_applicable: boolean = false;
 
+  each_way: boolean = false;
+
   bog_max_payout: number = 0;
 
   max_payout: number = 0;
@@ -58,6 +60,7 @@ export class BetCalculator {
     this.max_payout = 0;
     this.free_bet_amount = 0;
     this.payout = 0;
+    this.each_way = false;
   };
 
   processBet = (betSettings: BetSettings): BetResult => {
@@ -73,6 +76,7 @@ export class BetCalculator {
       bet_type,
       free_bet_amount,
       bog_applicable,
+      each_way,
     } = betSettings;
     this.stake = +stake;
     this.total_stake = +total_stake;
@@ -83,6 +87,7 @@ export class BetCalculator {
     this.bet_type = bet_type;
     this.free_bet_amount = +free_bet_amount || 0;
     this.bog_applicable = bog_applicable || false;
+    this.each_way = each_way || false;
 
     let result: ResultMainBet | null = {
       stake: 0,
@@ -169,9 +174,7 @@ export class BetCalculator {
 
     const odds = this.calculatorHelper.retrieveOdds(selection);
 
-    const each_way_odds = selection.is_each_way
-      ? this.calculatorHelper.retrieveEachWayOdds(odds, selection.ew_terms)
-      : null;
+    const each_way_odds = this.each_way ? this.calculatorHelper.retrieveEachWayOdds(odds, selection.ew_terms) : null;
 
     if ((odds.main.numerator === 0 || odds.main.denominator === 0) && selection.result !== BetResultType.VOID) {
       this.profit = 0;
@@ -226,10 +229,10 @@ export class BetCalculator {
       }
 
       this.profit = +win_profit + +place_profit;
-      return_stake = this.stake + (selection.is_each_way ? this.stake : 0);
-    } else if (selection.result === BetResultType.PLACED && selection.is_each_way) {
+      return_stake = this.stake + (this.each_way ? this.stake : 0);
+    } else if (selection.result === BetResultType.PLACED && this.each_way) {
       place_profit = this.calculatorHelper.calculateProfit(
-        selection.is_each_way ? each_way_odds : odds,
+        this.each_way ? each_way_odds : odds,
         this.stake,
         selection.is_starting_price ? BetOddType.SP : BetOddType.MAIN,
       );
@@ -238,12 +241,12 @@ export class BetCalculator {
 
       if (this.bog_applicable) {
         const bog_place_profit = this.calculatorHelper.calculateProfit(
-          selection.is_each_way ? each_way_odds : odds,
+          this.each_way ? each_way_odds : odds,
           this.stake,
           BetOddType.BOG,
         );
         this.bog_amount_won = +place_profit - +bog_place_profit;
-        this.bog_odd = selection.is_each_way ? each_way_odds?.bog.odd_decimal || 0 : odds.bog.odd_decimal;
+        this.bog_odd = this.each_way ? each_way_odds?.bog.odd_decimal || 0 : odds.bog.odd_decimal;
 
         console.log('Placed single BOG', { place_profit, odd: this.bog_odd, bog_amount_won: this.bog_amount_won });
       }
@@ -330,10 +333,10 @@ export class BetCalculator {
     const first_odds = this.calculatorHelper.retrieveOdds(first_selection);
     const second_odds = this.calculatorHelper.retrieveOdds(second_selection);
 
-    const first_each_way_odds = first_selection.is_each_way
+    const first_each_way_odds = this.each_way
       ? this.calculatorHelper.retrieveEachWayOdds(first_odds, first_selection.ew_terms)
       : null;
-    const second_each_way_odds = second_selection.is_each_way
+    const second_each_way_odds = this.each_way
       ? this.calculatorHelper.retrieveEachWayOdds(second_odds, second_selection.ew_terms)
       : null;
 
@@ -349,13 +352,10 @@ export class BetCalculator {
       second_each_way_odds,
       BetOddType.MAIN,
     );
-    console.log('Double', JSON.stringify({ first_win_odd, first_place_odd, second_win_odd, second_place_odd }));
 
     // add stake odd to the numerator (+1)
     win_odd = this.calculatorHelper.getCombinationOdds([first_win_odd, second_win_odd]);
     place_odd = this.calculatorHelper.getCombinationOdds([first_place_odd, second_place_odd]);
-
-    console.log('Double Combination', JSON.stringify({ win_odd, place_odd }));
 
     if (this.bog_applicable) {
       const { win_odd: first_win_bog_odd, place_odd: first_place_bog_odd } = this.calculatorHelper.getSingleResultOdds(
@@ -374,8 +374,6 @@ export class BetCalculator {
 
     let win_profit = this.calculatorHelper.calculateProfit(win_odd, this.stake, BetOddType.MAIN);
     let place_profit = this.calculatorHelper.calculateProfit(place_odd, this.stake, BetOddType.MAIN);
-
-    console.log('Double calculated odds', JSON.stringify({ win_odd, place_odd, win_profit }));
 
     if (this.bog_applicable) {
       const bog_win_profit = this.calculatorHelper.calculateProfit(win_odd, this.stake, BetOddType.BOG);
@@ -403,7 +401,8 @@ export class BetCalculator {
       place_profit = 0;
       return_stake = 0;
     }
-    if (first_selection.is_each_way || second_selection.is_each_way) {
+
+    if (this.each_way) {
       return_stake += this.stake;
     }
 
@@ -411,7 +410,7 @@ export class BetCalculator {
     this.payout = this.profit + return_stake;
 
     console.log(
-      'Double Result - ' + main_result_type,
+      'Double Result - ' + first_selection.bet_id + 'x' + second_selection.bet_id + ' | ' + main_result_type,
       JSON.stringify({
         win_profit,
         place_profit,
@@ -420,19 +419,9 @@ export class BetCalculator {
         win_odd,
         place_odd,
         main_result_type,
+        stake: return_stake,
       }),
     );
-
-    console.log({
-      first_selection,
-      second_selection,
-      main_result_type,
-      win_profit,
-      place_profit,
-      profit: this.profit,
-      payout: this.payout,
-      return_stake,
-    });
 
     return {
       stake: return_stake,
@@ -545,43 +534,37 @@ export class BetCalculator {
     const second_odds = this.calculatorHelper.retrieveOdds(second_selection);
     const third_odds = this.calculatorHelper.retrieveOdds(third_selection);
 
-    const first_each_way_odds = first_selection.is_each_way
+    console.log('Treble Selections Odds', { first_odds, second_odds, third_odds });
+
+    const first_each_way_odds = this.each_way
       ? this.calculatorHelper.retrieveEachWayOdds(first_odds, first_selection.ew_terms)
       : null;
-    const second_each_way_odds = second_selection.is_each_way
+    const second_each_way_odds = this.each_way
       ? this.calculatorHelper.retrieveEachWayOdds(second_odds, second_selection.ew_terms)
       : null;
-    const third_each_way_odds = third_selection.is_each_way
+    const third_each_way_odds = this.each_way
       ? this.calculatorHelper.retrieveEachWayOdds(third_odds, third_selection.ew_terms)
       : null;
 
     let return_stake = this.stake;
 
-    const {
-      win_odd: first_win_odd,
-      place_odd: first_place_odd,
-      result_type: first_result_type,
-    } = this.calculatorHelper.getSingleResultOdds(first_selection, first_odds, first_each_way_odds, BetOddType.MAIN);
-    const {
-      win_odd: second_win_odd,
-      place_odd: second_place_odd,
-      result_type: second_result_type,
-    } = this.calculatorHelper.getSingleResultOdds(second_selection, second_odds, second_each_way_odds, BetOddType.MAIN);
-    const {
-      win_odd: third_win_odd,
-      place_odd: third_place_odd,
-      result_type: third_result_type,
-    } = this.calculatorHelper.getSingleResultOdds(third_selection, third_odds, third_each_way_odds, BetOddType.MAIN);
-
-    console.log(
-      JSON.stringify({
-        first_win_odd,
-        second_win_odd,
-        third_win_odd,
-        first_result_type,
-        second_result_type,
-        third_result_type,
-      }),
+    const { win_odd: first_win_odd, place_odd: first_place_odd } = this.calculatorHelper.getSingleResultOdds(
+      first_selection,
+      first_odds,
+      first_each_way_odds,
+      BetOddType.MAIN,
+    );
+    const { win_odd: second_win_odd, place_odd: second_place_odd } = this.calculatorHelper.getSingleResultOdds(
+      second_selection,
+      second_odds,
+      second_each_way_odds,
+      BetOddType.MAIN,
+    );
+    const { win_odd: third_win_odd, place_odd: third_place_odd } = this.calculatorHelper.getSingleResultOdds(
+      third_selection,
+      third_odds,
+      third_each_way_odds,
+      BetOddType.MAIN,
     );
 
     win_odds = this.calculatorHelper.getCombinationOdds([first_win_odd, second_win_odd, third_win_odd]);
@@ -1121,6 +1104,14 @@ export class BetCalculator {
     const accumulator_payout = accumulator.payout;
     const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles, accumulator]);
 
+    console.log('Lucky31 Payout  ', {
+      singles_payout,
+      doubles_payout,
+      trebles_payout,
+      fourfolds_payout,
+      accumulator_payout,
+    });
+
     return {
       singles: singles.map((single) => single.singles).flat(),
       combinations: [...doubles.combinations, ...trebles.combinations, ...fourfolds.combinations],
@@ -1241,8 +1232,6 @@ export class BetCalculator {
     const odds = this.calculatorHelper.getCombinationOdds(oddList);
     const eachWayOdds = this.calculatorHelper.getCombinationOdds(eachWayOddList);
 
-    console.log('Accumulator', JSON.stringify({ selections, odds }));
-
     const win_profit = this.calculatorHelper.calculateProfit(odds, this.stake, BetOddType.MAIN);
     const place_profit = this.calculatorHelper.calculateProfit(eachWayOdds, this.stake, BetOddType.MAIN);
 
@@ -1270,7 +1259,6 @@ export class BetCalculator {
     const results: ResultCombination[] = [];
 
     // TODO: Implement fold bet processing logic
-    console.log('Fold Bet', { selections, combinationSize, foldCombinations });
 
     foldCombinations.forEach((combination) => {
       const result: ResultMainBet = this.processAccumulatorBet(combination);
