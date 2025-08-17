@@ -106,4 +106,96 @@ describe('Yankee Simple Winner Case', () => {
     expect(result.return_payout.toFixed(2)).toEqual('112.96');
     expect(result.return_stake.toFixed(2)).toEqual('55.00');
   });
+
+  it.only('Yankee Each Way Case', () => {
+    const bets = [
+      {
+        bet_id: 1,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '1/5',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: true,
+        sp_odd_decimal: 0,
+        odd_decimal: 2.63,
+      },
+      {
+        bet_id: 2,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '1/5',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: true,
+        sp_odd_decimal: 0,
+        odd_decimal: 4.5,
+      },
+      {
+        bet_id: 3,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: null,
+        odd_fractional: '',
+        ew_terms: '1/4',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: true,
+        sp_odd_decimal: 0,
+        odd_decimal: 2.2,
+      },
+      {
+        bet_id: 4,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: null,
+        odd_fractional: '',
+        ew_terms: '1/4',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: true,
+        sp_odd_decimal: 0,
+        odd_decimal: 2.2,
+      },
+    ];
+    const selections = [];
+
+    const result = betCalculator.processBet({
+      stake: 1,
+      total_stake: 35,
+      bets,
+      selections,
+      bet_type: BetSlipType.YANKEE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+    });
+
+    console.log('Patent', JSON.stringify(result));
+    const doubles = result.combinations.filter((combination) => combination.bet_type === BetSlipType.DOUBLE);
+    const trebles = result.combinations.filter((combination) => combination.bet_type === BetSlipType.TREBLE);
+
+    expect(result.singles.length).toEqual(4);
+    expect(trebles.length).toEqual(4);
+    expect(doubles.length).toEqual(6);
+    expect(doubles.reduce((acc, curr) => acc + curr.payout, 0)).toBeCloseTo(59.86, 1);
+    expect(trebles.reduce((acc, curr) => acc + curr.payout, 0)).toBeCloseTo(97.56, 1);
+    expect(result.accumulator_profit).toBeCloseTo(61.09, 1);
+
+    expect(result.return_payout).toBeCloseTo(218.51, 1);
+    expect(result.return_stake).toBeCloseTo(22.0, 1);
+  });
 });
