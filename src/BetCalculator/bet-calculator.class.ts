@@ -1232,14 +1232,26 @@ export class BetCalculator {
     const odds = this.calculatorHelper.getCombinationOdds(oddList);
     const eachWayOdds = this.calculatorHelper.getCombinationOdds(eachWayOddList);
 
-    const win_profit = this.calculatorHelper.calculateProfit(odds, this.stake, BetOddType.MAIN);
-    const place_profit = this.calculatorHelper.calculateProfit(eachWayOdds, this.stake, BetOddType.MAIN);
+    let win_profit = this.calculatorHelper.calculateProfit(odds, this.stake, BetOddType.MAIN);
+    let place_profit = this.calculatorHelper.calculateProfit(eachWayOdds, this.stake, BetOddType.MAIN);
 
     const main_result_type = this.calculatorHelper.getBetResultType(selections);
 
-    if (selections.some((selection) => selection.is_each_way)) {
+    if (main_result_type === BetResultType.VOID) {
+      return_stake = this.stake;
+      win_profit = 0;
+      place_profit = 0;
+    } else if (main_result_type === BetResultType.LOSER) {
+      return_stake = 0;
+      win_profit = 0;
+      place_profit = 0;
+    }
+
+    if (this.each_way) {
       return_stake += this.stake;
     }
+
+    console.log('Accumulator', { win_profit, place_profit, return_stake });
 
     return {
       stake: return_stake,
