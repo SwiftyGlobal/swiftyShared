@@ -1,18 +1,38 @@
 name: Publish package to GitHub Packages
+
 on:
   push:
     branches:
       - master
+
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     steps:
       - uses: actions/checkout@v4
-      - run: npm install
-      - run: npm run test
-      - run: npm publish
+
+      # Setup Node + npm cache + GitHub Packages registry
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            **/package-lock.json
+          registry-url: https://npm.pkg.github.com
+
+      - name: Install
+        run: npm ci --no-audit --no-fund --progress=false --prefer-offline
+
+      - name: Test
+        run: npm test
         env:
-          GH_PERSONAL_TOKEN: ${{ secrets.GH_PERSONAL_TOKEN }}
+          CI: true
+
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # works with permissions: packages: write
+        run: npm publish --ignore-scripts
