@@ -22,7 +22,6 @@ jobs:
           cache-dependency-path: |
             package-lock.json
             **/package-lock.json
-          registry-url: https://npm.pkg.github.com
 
       - name: Install
         run: npm ci --no-audit --no-fund --progress=false --prefer-offline
@@ -34,5 +33,5 @@ jobs:
 
       - name: Publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # works with permissions: packages: write
-        run: npm publish --ignore-scripts
+          GH_PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }} # works with permissions: packages: write
+        run: npm publish
