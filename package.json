@@ -1,6 +1,6 @@
 {
   "name": "@swiftyglobal/swifty-shared",
-  "version": "1.0.77",
+  "version": "1.0.78",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "typings": "dist/index.d.ts",
@@ -35,6 +35,8 @@
   "devDependencies": {
     "@jaxin007/eslint-config-backend": "^1.0.4",
     "@jaxin007/prettier-config-backend": "^1.0.0",
+    "@swc/core": "^1.13.5",
+    "@swc/jest": "^0.2.39",
     "@types/aws-lambda": "^8.10.109",
     "@types/jest": "^29.5.14",
     "@types/node": "^18.11.17",

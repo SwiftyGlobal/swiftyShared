@@ -33,7 +33,7 @@ export const RedisPrefixes = {
      */
     CUSTOM_COMPETITIONS_MAP: 'custom_competitions_map',
     /**
-     * @description - `maindb.settings` table
+     * @description - `maindb.settings_v2` table
      */
     SETTINGS_VARIABLES: 'settings_variables',
   },
