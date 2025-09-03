@@ -1,1 +1,1 @@
-export type SportAvailabilities = 'today' | 'tomorrow';
+export type SportAvailabilities = 'today' | 'tomorrow' | string;
