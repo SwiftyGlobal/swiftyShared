@@ -126,6 +126,8 @@ export class BetCalculator {
       result = this.processLucky31Bet(this.bets);
     } else if (this.bet_type === BetSlipType.LUCKY_63) {
       result = this.processLucky63Bet(this.bets);
+    } else if (this.bet_type.includes(BetSlipType.FOLD)) {
+      result = this.processFoldBet(this.bets, this.bets.length);
     }
     // else if (this.bet_type === BetSlipType.SUPER_GOLIATH) {
     // result = this.processSuperGoliathBet(this.bets);
@@ -1223,9 +1225,16 @@ export class BetCalculator {
       const retrieved_odds = this.calculatorHelper.retrieveOdds(selection);
       const each_way_odds = this.calculatorHelper.retrieveEachWayOdds(retrieved_odds, selection.ew_terms);
 
-      oddList.push(retrieved_odds);
-      if (each_way_odds) {
-        eachWayOddList.push(each_way_odds);
+      const resultOdds = this.calculatorHelper.getSingleResultOdds(
+        selection,
+        retrieved_odds,
+        each_way_odds,
+        BetOddType.MAIN,
+      );
+
+      oddList.push(resultOdds.win_odd);
+      if (resultOdds.place_odd) {
+        eachWayOddList.push(resultOdds.place_odd);
       }
     }
 
@@ -1233,22 +1242,26 @@ export class BetCalculator {
     const eachWayOdds = this.calculatorHelper.getCombinationOdds(eachWayOddList);
 
     let win_profit = this.calculatorHelper.calculateProfit(odds, this.stake, BetOddType.MAIN);
+
     let place_profit = this.calculatorHelper.calculateProfit(eachWayOdds, this.stake, BetOddType.MAIN);
 
     const main_result_type = this.calculatorHelper.getBetResultType(selections);
 
     if (main_result_type === BetResultType.VOID) {
       return_stake = this.stake;
+      if (this.each_way) {
+        return_stake += this.stake;
+      }
       win_profit = 0;
       place_profit = 0;
     } else if (main_result_type === BetResultType.LOSER) {
       return_stake = 0;
       win_profit = 0;
       place_profit = 0;
-    }
-
-    if (this.each_way) {
-      return_stake += this.stake;
+    } else {
+      if (this.each_way) {
+        return_stake += this.stake;
+      }
     }
 
     console.log('Accumulator', { win_profit, place_profit, return_stake });
@@ -1272,8 +1285,12 @@ export class BetCalculator {
 
     // TODO: Implement fold bet processing logic
 
+    let main_result_type = BetResultType.OPEN;
+
     foldCombinations.forEach((combination) => {
       const result: ResultMainBet = this.processAccumulatorBet(combination);
+
+      const combination_result_type = this.calculatorHelper.getMainResultType([result]);
 
       results.push({
         payout: result.payout,
@@ -1284,16 +1301,34 @@ export class BetCalculator {
         bog_odd: 0,
         win_odd: 0,
         place_odd: 0,
-        result_type: result.result_type,
         bet_type: BetSlipType.FOLD,
         stake: result.stake,
+        result_type: combination_result_type,
       });
     });
+
+    if (results.some((result) => result.result_type === BetResultType.LOSER)) {
+      main_result_type = BetResultType.LOSER;
+    } else if (results.every((result) => result.result_type === BetResultType.WINNER)) {
+      main_result_type = BetResultType.WINNER;
+    } else if (results.every((result) => result.result_type === BetResultType.VOID)) {
+      main_result_type = BetResultType.VOID;
+    } else if (results.every((result) => result.result_type === BetResultType.PLACED)) {
+      main_result_type = BetResultType.PLACED;
+    } else if (
+      results.some(
+        (result) => result.result_type === BetResultType.WINNER || result.result_type === BetResultType.PARTIAL,
+      )
+    ) {
+      main_result_type = BetResultType.PARTIAL;
+    } else {
+      main_result_type = BetResultType.OPEN;
+    }
 
     return {
       stake: results.map((result) => result.stake).reduce((acc, curr) => acc + curr, 0),
       payout: results.map((result) => result.payout).reduce((acc, curr) => acc + curr, 0),
-      result_type: BetResultType.OPEN,
+      result_type: main_result_type,
       win_profit: results.map((result) => result.win_profit).reduce((acc, curr) => acc + curr, 0),
       place_profit: results.map((result) => result.place_profit).reduce((acc, curr) => acc + curr, 0),
       singles: [],

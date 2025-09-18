@@ -1,6 +1,6 @@
 {
   "name": "@swiftyglobal/swifty-shared",
-  "version": "1.0.81",
+  "version": "1.0.82",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "typings": "dist/index.d.ts",
@@ -18,7 +18,8 @@
     "test:patents": "jest --color --verbose src/tests/BetCalculator/patents.test.ts",
     "test:trebles": "jest --color --verbose src/tests/BetCalculator/trebles.test.ts",
     "test:trixie": "jest --color --verbose src/tests/BetCalculator/trixie.test.ts",
-    "test:singles": "jest --color --verbose src/tests/BetCalculator/singles.test.ts"
+    "test:singles": "jest --color --verbose src/tests/BetCalculator/singles.test.ts",
+    "test:folds": "jest --color --verbose src/tests/BetCalculator/folds.test.ts"
   },
   "keywords": [],
   "author": "jaxin007",
