@@ -23,6 +23,31 @@ export enum BetSlipType {
   FOLD = 'bet_slip_place_fold',
 }
 
+export const BetSlipTypeName: Record<BetSlipType, string> = {
+  [BetSlipType.SINGLE]: 'Single',
+  [BetSlipType.DOUBLE]: 'Double',
+  [BetSlipType.TREBLE]: 'Treble',
+  [BetSlipType.TRIXIE]: 'Trixie',
+  [BetSlipType.PATENT]: 'Patent',
+  [BetSlipType.YANKEE]: 'Yankee',
+  [BetSlipType.CANADIAN]: 'Canadian',
+  [BetSlipType.LUCKY_15]: 'Lucky 15',
+  [BetSlipType.LUCKY_31]: 'Lucky 31',
+  [BetSlipType.HEINZ]: 'Heinz',
+  [BetSlipType.LUCKY_63]: 'Lucky 63',
+  [BetSlipType.SUPER_HEINZ]: 'Super Heinz',
+  [BetSlipType.GOLIATH]: 'Goliath',
+  [BetSlipType.SUPER_GOLIATH]: 'Super Goliath',
+  [BetSlipType.EMPTY_LEG]: 'Empty Leg',
+  [BetSlipType.UNNAMED_FAVORITE]: 'Unnamed Favorite',
+  [BetSlipType.FORECAST_SINGLE]: 'Forecast Single',
+  [BetSlipType.FORECAST_REVERSE]: 'Forecast Reverse',
+  [BetSlipType.EXACTA]: 'Exacta',
+  [BetSlipType.TRIFECTA]: 'Trifecta',
+  [BetSlipType.SWINGER]: 'Swinge',
+  [BetSlipType.FOLD]: 'Fold',
+};
+
 export enum CastType {
   FORECAST_SINGLE = 'forecast_single',
   FORECAST_REVERSE = 'forecast_reverse',
