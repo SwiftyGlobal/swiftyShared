@@ -172,7 +172,7 @@ describe('Trebles Simple Winner Case', () => {
     expect(result.return_payout.toFixed(2)).toEqual('45.75');
   });
 
-  it.only('Treble Win Case - 4 selections - 1 Void', () => {
+  it('Treble Win Case - 4 selections - 1 Void', () => {
     const bets = [
       {
         bet_id: 1,

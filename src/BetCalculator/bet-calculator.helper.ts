@@ -180,6 +180,8 @@ export class BetCalculatorHelper {
     } else if (selection.result === BetResultType.LOSER) {
       // do nothing, already set to 0
       result_type = BetResultType.LOSER;
+    } else if (selection.result === BetResultType.HALF_WON) {
+    } else if (selection.result === BetResultType.HALF_LOST) {
     }
 
     return { win_odd, place_odd, result_type };
