@@ -259,6 +259,9 @@ export class BetCalculator {
       win_profit = 0;
       place_profit = 0;
       return_stake = this.stake;
+      if (this.each_way) {
+        return_stake += this.stake;
+      }
       this.profit = 0;
       console.log('Void single', { return_stake, profit: this.profit });
     } else if (selection.result === BetResultType.LOSER) {
@@ -398,14 +401,17 @@ export class BetCalculator {
       win_profit = 0;
       place_profit = 0;
       return_stake = this.stake;
+      if (this.each_way) {
+        return_stake += this.stake;
+      }
     } else if (main_result_type === BetResultType.LOSER) {
       win_profit = 0;
       place_profit = 0;
       return_stake = 0;
-    }
-
-    if (this.each_way) {
-      return_stake += this.stake;
+    } else {
+      if (this.each_way) {
+        return_stake += this.stake;
+      }
     }
 
     this.profit = +win_profit + +place_profit;
@@ -633,15 +639,22 @@ export class BetCalculator {
       win_profit = 0;
       place_profit = 0;
       return_stake = this.stake;
+      if (this.each_way) {
+        return_stake += this.stake;
+      }
     } else if (result_type === BetResultType.LOSER) {
       win_profit = 0;
       place_profit = 0;
       return_stake = 0;
+    } else {
+      if (this.each_way) {
+        return_stake += this.stake;
+      }
     }
 
-    if (first_selection.is_each_way || second_selection.is_each_way || third_selection.is_each_way) {
-      return_stake += this.stake;
-    }
+    // if (first_selection.is_each_way || second_selection.is_each_way || third_selection.is_each_way) {
+    //   return_stake += this.stake;
+    // }
 
     this.profit = +win_profit + +place_profit;
     this.payout = this.profit + return_stake;
@@ -1254,6 +1267,9 @@ export class BetCalculator {
       }
       win_profit = 0;
       place_profit = 0;
+      if (this.each_way) {
+        return_stake += this.stake;
+      }
     } else if (main_result_type === BetResultType.LOSER) {
       return_stake = 0;
       win_profit = 0;
