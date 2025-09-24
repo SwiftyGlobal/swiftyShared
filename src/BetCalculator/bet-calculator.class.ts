@@ -133,7 +133,7 @@ export class BetCalculator {
     // result = this.processSuperGoliathBet(this.bets);
     // }
 
-    console.log('Result', JSON.stringify(result));
+    console.log('Calculator Result', JSON.stringify(result));
 
     const validatedPayout = this.calculatorHelper.validatePayout({
       win_profit: result?.win_profit || 0,
@@ -227,8 +227,8 @@ export class BetCalculator {
         this.bog_amount_won = +bog_win_profit + +bog_place_profit - +win_profit - +place_profit;
         this.bog_odd = each_way_odds ? each_way_odds.bog.odd_decimal : odds.bog.odd_decimal;
 
-        win_profit = +bog_win_profit;
-        place_profit = +bog_place_profit;
+        // win_profit = +bog_win_profit;
+        // place_profit = +bog_place_profit;
       }
 
       this.profit = +win_profit + +place_profit;
@@ -388,8 +388,8 @@ export class BetCalculator {
       this.bog_amount_won = +bog_win_profit + +bog_place_profit - +win_profit - +place_profit;
       this.bog_odd = win_odd.bog.odd_decimal * (place_odd.bog.odd_decimal > 0 ? place_odd.bog.odd_decimal : 1);
 
-      win_profit = +bog_win_profit;
-      place_profit = +bog_place_profit;
+      // win_profit = +bog_win_profit;
+      // place_profit = +bog_place_profit;
     }
 
     // this.profit = +win_profit + +place_profit;
@@ -616,8 +616,8 @@ export class BetCalculator {
       this.bog_odd =
         win_bog_odds.bog.odd_decimal * (place_bog_odds.bog.odd_decimal > 0 ? place_bog_odds.bog.odd_decimal : 1);
 
-      win_profit = +bog_win_profit;
-      place_profit = +bog_place_profit;
+      // win_profit = +bog_win_profit;
+      // place_profit = +bog_place_profit;
     }
 
     const selection_identifier = `${first_selection.odd_fractional}x${second_selection.odd_fractional}x${third_selection.odd_fractional}`;
