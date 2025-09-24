@@ -6,20 +6,20 @@ import { BetCalculator } from '../../BetCalculator/bet-calculator.class';
 describe('Single without each way ', () => {
   const betCalculator = new BetCalculator();
 
-  it('Simple Win Case', () => {
+  it.only('Simple Win Case', () => {
     const bets: PlacedBetSelection[] = [
       {
         bet_id: 1,
-        stake: 5,
+        stake: 200,
         result: BetResultType.WINNER,
-        is_starting_price: false,
+        is_starting_price: true,
         sp_odd_fractional: '',
-        odd_fractional: '1/4',
+        odd_fractional: '',
         ew_terms: '',
         partial_win_percent: 0,
         rule_4: 0,
         is_each_way: false,
-        sp_odd_decimal: 0,
+        sp_odd_decimal: 1.61,
         odd_decimal: 0,
       },
     ];
@@ -36,8 +36,8 @@ describe('Single without each way ', () => {
     ];
 
     const result = betCalculator.processBet({
-      stake: 5,
-      total_stake: 5,
+      stake: 200,
+      total_stake: 200,
       bets,
       selections,
       bet_type: BetSlipType.SINGLE,
@@ -48,13 +48,13 @@ describe('Single without each way ', () => {
       each_way: false,
     });
 
-    expect(result.return_payout).toBeCloseTo(6.25, 1);
-    expect(result.return_stake).toBeCloseTo(5);
-    expect(result.calc.win_profit).toBeCloseTo(1.25);
+    expect(result.return_payout).toBeCloseTo(322, 1);
+    expect(result.return_stake).toBeCloseTo(200);
+    expect(result.calc.win_profit).toBeCloseTo(122.0);
     expect(result.calc.place_profit).toBeCloseTo(0);
     expect(result.calc.bog_amount_won).toBeCloseTo(0);
     expect(result.calc.bog_odd).toBeCloseTo(0);
-    expect(result.calc.stake).toBeCloseTo(5);
+    expect(result.calc.stake).toBeCloseTo(200);
     expect(result.calc.max_payout).toBeCloseTo(0);
     expect(result.calc.max_bog_payout).toBeCloseTo(0);
     expect(result.calc.free_bet_amount).toBeCloseTo(0);

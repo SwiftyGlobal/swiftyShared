@@ -178,7 +178,7 @@ export class BetCalculator {
 
     const each_way_odds = this.each_way ? this.calculatorHelper.retrieveEachWayOdds(odds, selection.ew_terms) : null;
 
-    if ((odds.main.numerator === 0 || odds.main.denominator === 0) && selection.result !== BetResultType.VOID) {
+    if (odds.main.odd_decimal === 0 && odds.sp.odd_decimal === 0 && selection.result !== BetResultType.VOID) {
       this.profit = 0;
       this.payout = 0;
       return_stake = 0;
@@ -213,6 +213,7 @@ export class BetCalculator {
         this.stake,
         selection.is_starting_price ? BetOddType.SP : BetOddType.MAIN,
       );
+
       place_profit = this.calculatorHelper.calculateProfit(
         each_way_odds,
         this.stake,

@@ -80,6 +80,8 @@ export class BetCalculatorHelper {
       ({ numerator, denominator } = this.getFractionalValues(selection.odd_fractional));
     } else if (selection.odd_decimal) {
       ({ numerator, denominator } = { numerator: selection.odd_decimal - 1, denominator: 1 });
+    } else if (selection.odd_decimal === 0 || selection.odd_decimal === null || selection.odd_decimal === undefined) {
+      ({ numerator, denominator } = { numerator: 0, denominator: 1 });
     }
 
     return { numerator, denominator, odd_decimal: this.roundToDecimalPlaces(+numerator / +denominator) };
