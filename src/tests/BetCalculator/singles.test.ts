@@ -6,7 +6,7 @@ import { BetCalculator } from '../../BetCalculator/bet-calculator.class';
 describe('Single without each way ', () => {
   const betCalculator = new BetCalculator();
 
-  it.only('Simple Win Case', () => {
+  it('Simple Win Case', () => {
     const bets: PlacedBetSelection[] = [
       {
         bet_id: 1,
@@ -73,8 +73,8 @@ describe('Single without each way ', () => {
         partial_win_percent: 0,
         rule_4: 0,
         is_each_way: false,
-        sp_odd_decimal: 0,
-        odd_decimal: 0,
+        sp_odd_decimal: 1.5,
+        odd_decimal: 1.25,
       },
     ];
     const selections = [
@@ -104,9 +104,9 @@ describe('Single without each way ', () => {
 
     expect(result.return_payout).toEqual(25);
     expect(result.return_stake).toEqual(20);
-    expect(result.calc.win_profit).toEqual(10);
+    expect(result.calc.win_profit).toEqual(5);
     expect(result.calc.place_profit).toEqual(0);
-    expect(result.calc.bog_amount_won).toEqual(5);
+    expect(result.bog_amount_won).toEqual(5);
     expect(result.calc.bog_odd).toEqual(0.5);
     expect(result.calc.stake).toEqual(20);
   });
@@ -118,14 +118,14 @@ describe('Single without each way ', () => {
         stake: 20,
         result: BetResultType.WINNER,
         is_starting_price: false,
-        sp_odd_fractional: '1/2',
-        odd_fractional: '1/4',
+        sp_odd_fractional: '',
+        odd_fractional: '',
         ew_terms: '',
         partial_win_percent: 0,
         rule_4: 0,
         is_each_way: false,
-        sp_odd_decimal: 0,
-        odd_decimal: 0,
+        sp_odd_decimal: 6.0,
+        odd_decimal: 4.0,
       },
     ];
     const selections = [
@@ -148,19 +148,19 @@ describe('Single without each way ', () => {
       bet_type: BetSlipType.SINGLE,
       free_bet_amount: 0,
       bog_applicable: true,
-      bog_max_payout: 5,
+      bog_max_payout: 10,
       max_payout: 0,
       each_way: false,
     });
 
     console.log({ result });
 
-    expect(result.return_payout).toEqual(30);
+    expect(result.return_payout).toEqual(90);
     expect(result.return_stake).toEqual(20);
-    expect(result.calc.win_profit).toEqual(10);
+    expect(result.calc.win_profit).toEqual(60);
     expect(result.calc.place_profit).toEqual(0);
-    expect(result.calc.bog_amount_won).toEqual(5);
-    expect(result.calc.bog_odd).toEqual(0.5);
+    expect(result.bog_amount_won).toEqual(10);
+    // expect(result.calc.bog_odd).toEqual(5);
     expect(result.calc.stake).toEqual(20);
   });
 

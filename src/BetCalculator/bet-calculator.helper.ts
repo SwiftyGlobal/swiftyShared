@@ -17,7 +17,8 @@ export class BetCalculatorHelper {
 
     if (Number(max_bog_payout) > 0 && Number(bog_amount_won) > Number(max_bog_payout)) {
       bog_amount_won = +max_bog_payout;
-      return_amount = return_amount - (+bog_amount_won - +max_bog_payout);
+      // return_amount = return_amount - (+bog_amount_won - +max_bog_payout);
+      return_amount = return_amount + bog_amount_won;
     }
 
     if (+free_bet_amount == 0 && +stake > 0) {
