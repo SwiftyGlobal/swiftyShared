@@ -167,7 +167,7 @@ export class BetCalculatorHelper {
       place_odd.sp = this.getOdds(each_way_odds, type);
       place_odd.bog = this.getOdds(each_way_odds, type);
       result_type = BetResultType.WINNER;
-    } else if (selection.result === BetResultType.PLACED && selection.is_each_way) {
+    } else if (selection.result === BetResultType.PLACED && each_way_odds) {
       place_odd.main = this.getOdds(each_way_odds, type);
       place_odd.sp = this.getOdds(each_way_odds, type);
       place_odd.bog = this.getOdds(each_way_odds, type);
@@ -203,8 +203,15 @@ export class BetCalculatorHelper {
     let denominator = 1;
 
     oddsList.forEach((odd) => {
+      // this is loser
+      if (odd.numerator === 0 && odd.denominator === 1) {
+        numerator *= 0;
+        denominator *= 0;
+        return;
+      }
+
       // Skip void/non-runner
-      if ((odd.numerator === 0 && odd.denominator === 0) || (odd.numerator === 0 && odd.denominator === 1)) {
+      if (odd.numerator === 0 && odd.denominator === 0) {
         return;
       }
 

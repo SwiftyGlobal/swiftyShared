@@ -43,6 +43,8 @@ export class BetCalculator {
 
   profit: number = 0;
 
+  fold_type: number = 0;
+
   calculatorHelper: BetCalculatorHelper = new BetCalculatorHelper();
 
   reset = () => {
@@ -77,6 +79,7 @@ export class BetCalculator {
       free_bet_amount,
       bog_applicable,
       each_way,
+      fold_type,
     } = betSettings;
     this.stake = +stake;
     this.total_stake = +total_stake;
@@ -88,7 +91,7 @@ export class BetCalculator {
     this.free_bet_amount = +free_bet_amount || 0;
     this.bog_applicable = bog_applicable || false;
     this.each_way = each_way || false;
-
+    this.fold_type = fold_type || 0;
     let result: ResultMainBet | null = {
       stake: 0,
       payout: 0,
@@ -127,7 +130,7 @@ export class BetCalculator {
     } else if (this.bet_type === BetSlipType.LUCKY_63) {
       result = this.processLucky63Bet(this.bets);
     } else if (this.bet_type.includes(BetSlipType.FOLD)) {
-      result = this.processFoldBet(this.bets, this.bets.length);
+      result = this.processFoldBet(this.bets, this.fold_type);
     }
     // else if (this.bet_type === BetSlipType.SUPER_GOLIATH) {
     // result = this.processSuperGoliathBet(this.bets);
@@ -1237,7 +1240,9 @@ export class BetCalculator {
 
     for (const selection of selections) {
       const retrieved_odds = this.calculatorHelper.retrieveOdds(selection);
-      const each_way_odds = this.calculatorHelper.retrieveEachWayOdds(retrieved_odds, selection.ew_terms);
+      const each_way_odds = this.each_way
+        ? this.calculatorHelper.retrieveEachWayOdds(retrieved_odds, selection.ew_terms)
+        : null;
 
       const resultOdds = this.calculatorHelper.getSingleResultOdds(
         selection,
@@ -1261,6 +1266,12 @@ export class BetCalculator {
 
     const main_result_type = this.calculatorHelper.getBetResultType(selections);
 
+    if (main_result_type === BetResultType.WINNER) {
+      console.log('Accumulator Winner', { win_profit, place_profit, odds, eachWayOdds });
+      console.log(oddList);
+      console.log(eachWayOddList);
+    }
+
     if (main_result_type === BetResultType.VOID) {
       return_stake = this.stake;
       if (this.each_way) {
@@ -1276,12 +1287,12 @@ export class BetCalculator {
       win_profit = 0;
       place_profit = 0;
     } else {
-      if (this.each_way) {
+      if (this.each_way && win_profit > 0) {
         return_stake += this.stake;
       }
     }
 
-    console.log('Accumulator', { win_profit, place_profit, return_stake });
+    // console.log('Accumulator', { win_profit, place_profit, return_stake });
 
     return {
       stake: return_stake,
@@ -1298,6 +1309,7 @@ export class BetCalculator {
   // combinations is of how many selections to be combined together
   processFoldBet = (selections: PlacedBetSelection[], combinationSize: number): ResultMainBet => {
     const foldCombinations = this.generateFoldCombinations(selections, combinationSize);
+
     const results: ResultCombination[] = [];
 
     // TODO: Implement fold bet processing logic

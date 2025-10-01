@@ -42,6 +42,7 @@ export interface BetSettings {
   stake: number;
   total_stake: number;
   bet_type: BetSlipType;
+  fold_type?: number;
   max_payout: number;
   free_bet_amount: number;
   bog_applicable: boolean;
