@@ -1336,7 +1336,9 @@ export class BetCalculator {
       });
     });
 
-    if (results.some((result) => result.result_type === BetResultType.LOSER)) {
+    const payout = results.map((result) => result.payout).reduce((acc, curr) => acc + curr, 0);
+
+    if (results.some((result) => result.result_type === BetResultType.LOSER) && selections.length === combinationSize) {
       main_result_type = BetResultType.LOSER;
     } else if (results.every((result) => result.result_type === BetResultType.WINNER)) {
       main_result_type = BetResultType.WINNER;
@@ -1344,6 +1346,8 @@ export class BetCalculator {
       main_result_type = BetResultType.VOID;
     } else if (results.every((result) => result.result_type === BetResultType.PLACED)) {
       main_result_type = BetResultType.PLACED;
+    } else if (payout > 0) {
+      main_result_type = BetResultType.WINNER;
     } else if (
       results.some(
         (result) => result.result_type === BetResultType.WINNER || result.result_type === BetResultType.PARTIAL,

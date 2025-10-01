@@ -423,6 +423,7 @@ describe('Folds Simple Winner Case', () => {
     // 243.60
     expect(result.return_payout.toFixed(2)).toEqual('34.68');
     expect(result.return_stake.toFixed(2)).toEqual('5.00');
+    expect(result.result_type).toEqual(BetResultType.WINNER);
   });
 
   it('Folds Win Case With Each Way - 4 Selections', () => {
