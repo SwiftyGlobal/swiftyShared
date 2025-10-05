@@ -415,4 +415,106 @@ describe('Single without each way ', () => {
     expect(result.calc.place_profit).toBeCloseTo(0);
     expect(result.calc.stake).toBeCloseTo(10);
   });
+
+  it('Partial Win - Win Only', () => {
+    const bets: PlacedBetSelection[] = [
+      {
+        bet_id: 1,
+        stake: 5,
+        result: BetResultType.PARTIAL,
+        is_starting_price: false,
+        sp_odd_fractional: '1/2',
+        odd_fractional: '1/4',
+        ew_terms: '1/4',
+        partial_win_percent: 50,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 0,
+      },
+    ];
+
+    const selections = [
+      {
+        selection_id: 1,
+        position: 1,
+        result: BetResultType.PARTIAL,
+        dead_heat_count: null,
+        partial_percent: null,
+        each_way_places: null,
+        each_way_terms: null,
+      },
+    ];
+
+    const result = betCalculator.processBet({
+      stake: 5,
+      total_stake: 5,
+      bets,
+      selections,
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 5,
+      max_payout: 0,
+      each_way: false,
+    });
+
+    expect(result.return_payout).toBeCloseTo(3.13, 1);
+    expect(result.return_stake).toBeCloseTo(2.5);
+    expect(result.calc.win_profit).toBeCloseTo(0.63, 1);
+    expect(result.calc.place_profit).toBeCloseTo(0);
+    expect(result.calc.stake).toBeCloseTo(2.5);
+    expect(result.result_type).toBe(BetResultType.PARTIAL);
+  });
+
+  it('Partial Win - Each Way', () => {
+    const bets: PlacedBetSelection[] = [
+      {
+        bet_id: 1,
+        stake: 5,
+        result: BetResultType.PARTIAL,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '1/4',
+        partial_win_percent: 50,
+        rule_4: 0,
+        is_each_way: true,
+        sp_odd_decimal: 0,
+        odd_decimal: 1.25,
+      },
+    ];
+
+    const selections = [
+      {
+        selection_id: 1,
+        position: 1,
+        result: BetResultType.PARTIAL,
+        dead_heat_count: null,
+        partial_percent: null,
+        each_way_places: null,
+        each_way_terms: null,
+      },
+    ];
+
+    const result = betCalculator.processBet({
+      stake: 5,
+      total_stake: 10,
+      bets,
+      selections,
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 5,
+      max_payout: 0,
+      each_way: true,
+    });
+
+    expect(result.return_payout).toBeCloseTo(8.44, 1);
+    expect(result.return_stake).toBeCloseTo(7.5);
+    expect(result.calc.win_profit).toBeCloseTo(0.63, 1);
+    expect(result.calc.place_profit).toBeCloseTo(0.31, 1);
+    expect(result.calc.stake).toBeCloseTo(7.5);
+    expect(result.result_type).toBe(BetResultType.PARTIAL);
+  });
 });
