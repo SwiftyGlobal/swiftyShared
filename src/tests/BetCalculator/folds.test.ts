@@ -101,7 +101,7 @@ describe('Folds Simple Winner Case', () => {
     expect(result.return_stake.toFixed(2)).toEqual('4.00');
   });
 
-  it.only('Folds Win Case - Partial Win', () => {
+  it('Folds Win Case - Partial Win', () => {
     const bets = [
       {
         bet_id: 1,

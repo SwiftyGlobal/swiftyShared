@@ -158,7 +158,7 @@ describe('Trebles Simple Winner Case', () => {
     expect(result.result_type).toBe(BetResultType.WINNER);
   });
 
-  it.only('Treble Win Case - Void', () => {
+  it('Treble Win Case - Void', () => {
     const bets = [
       {
         bet_id: 1,
