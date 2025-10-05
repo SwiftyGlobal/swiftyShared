@@ -65,6 +65,66 @@ describe('Double Simple Winner Case', () => {
     expect(result.return_payout).toBeCloseTo(9.38);
   });
 
+  it('Double Win Case - Partial Win', () => {
+    const bets: PlacedBetSelection[] = [
+      {
+        bet_id: 1,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 2,
+      },
+      {
+        bet_id: 2,
+        stake: 5,
+        result: BetResultType.PARTIAL,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 50,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 2,
+      },
+    ];
+    const selections = [
+      {
+        selection_id: 1,
+        position: 1,
+        result: BetResultType.WINNER,
+        dead_heat_count: null,
+        partial_percent: null,
+        each_way_places: null,
+        each_way_terms: null,
+      },
+    ];
+
+    const result = betCalculator.processBet({
+      stake: 5,
+      total_stake: 5,
+      bets,
+      selections,
+      bet_type: BetSlipType.DOUBLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+
+    expect(result.return_payout).toBeCloseTo(10.0);
+    expect(result.result_type).toBe(BetResultType.PARTIAL);
+  });
+
   it('Double Win Case - Loser', () => {
     const bets: PlacedBetSelection[] = [
       {
@@ -521,7 +581,7 @@ describe('Double Simple Winner Case', () => {
     expect(result.result_type).toBe(BetResultType.LOSER);
   });
 
-  it.only('Double Win Case - One Placed', () => {
+  it('Double Win Case - One Placed', () => {
     const bets: PlacedBetSelection[] = [
       {
         bet_id: 1,
