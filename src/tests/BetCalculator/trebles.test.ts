@@ -261,6 +261,7 @@ describe('Trebles Simple Winner Case', () => {
     });
 
     expect(result.return_payout).toBeCloseTo(37.13, 1);
+    expect(result.result_type).toBe(BetResultType.WINNER);
   });
 
   it('Treble Win Case - 4 selections - 1 Loser', () => {
@@ -352,5 +353,334 @@ describe('Trebles Simple Winner Case', () => {
     });
 
     expect(result.return_payout.toFixed(2)).toEqual('11.25');
+    expect(result.result_type).toBe(BetResultType.WINNER);
+  });
+
+  it('Treble Win Case - 4 selections - 2 Loser', () => {
+    const bets = [
+      {
+        bet_id: 1,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 2,
+      },
+      {
+        bet_id: 2,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 2.25,
+      },
+      {
+        bet_id: 3,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.LOSER,
+        is_starting_price: false,
+        sp_odd_fractional: null,
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 2.5,
+      },
+      {
+        bet_id: 4,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.LOSER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 3,
+      },
+    ];
+    const selections = [];
+
+    const result = betCalculator.processBet({
+      stake: 5,
+      total_stake: 20,
+      bets,
+      selections,
+      bet_type: BetSlipType.TREBLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+
+    expect(result.return_payout.toFixed(2)).toEqual('0.00');
+    expect(result.result_type).toBe(BetResultType.LOSER);
+  });
+
+  it('Treble Win Case - 4 selections - 1 Loser - 1 Void', () => {
+    const bets = [
+      {
+        bet_id: 1,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 2,
+      },
+      {
+        bet_id: 2,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 2.25,
+      },
+      {
+        bet_id: 3,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.VOID,
+        is_starting_price: false,
+        sp_odd_fractional: null,
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 2.5,
+      },
+      {
+        bet_id: 4,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.LOSER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 3,
+      },
+    ];
+    const selections = [];
+
+    const result = betCalculator.processBet({
+      stake: 5,
+      total_stake: 20,
+      bets,
+      selections,
+      bet_type: BetSlipType.TREBLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+
+    expect(result.return_payout.toFixed(2)).toEqual('22.50');
+    expect(result.result_type).toBe(BetResultType.PARTIAL);
+  });
+
+  it('Treble Win Case - EW- 4 selections - 1 Loser - 1 Void', () => {
+    const bets = [
+      {
+        bet_id: 1,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '1/4',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 2,
+      },
+      {
+        bet_id: 2,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '1/4',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 2.25,
+      },
+      {
+        bet_id: 3,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.VOID,
+        is_starting_price: false,
+        sp_odd_fractional: null,
+        odd_fractional: '',
+        ew_terms: '1/4',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 2.5,
+      },
+      {
+        bet_id: 4,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.LOSER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '1/4',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 3,
+      },
+    ];
+    const selections = [];
+
+    const result = betCalculator.processBet({
+      stake: 5,
+      total_stake: 20,
+      bets,
+      selections,
+      bet_type: BetSlipType.TREBLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: true,
+    });
+
+    expect(result.return_payout.toFixed(2)).toEqual('30.70');
+    expect(result.result_type).toBe(BetResultType.PARTIAL);
+  });
+
+  it('Treble Win Case - EW- 4 selections - 1 Loser - 1 Void', () => {
+    const bets = [
+      {
+        bet_id: 1,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '1/4',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 2,
+      },
+      {
+        bet_id: 2,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.PLACED,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '1/4',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 2.25,
+      },
+      {
+        bet_id: 3,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.VOID,
+        is_starting_price: false,
+        sp_odd_fractional: null,
+        odd_fractional: '',
+        ew_terms: '1/4',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 2.5,
+      },
+      {
+        bet_id: 4,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.LOSER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '1/4',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 3,
+      },
+    ];
+    const selections = [];
+
+    const result = betCalculator.processBet({
+      stake: 5,
+      total_stake: 20,
+      bets,
+      selections,
+      bet_type: BetSlipType.TREBLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: true,
+    });
+
+    expect(result.return_payout.toFixed(2)).toEqual('8.20');
+    expect(result.result_type).toBe(BetResultType.PARTIAL);
   });
 });
