@@ -85,18 +85,40 @@ export class BetCalculatorHelper {
       ({ numerator, denominator } = { numerator: 0, denominator: 1 });
     }
 
+    if (selection.rule_4) {
+      ({ numerator, denominator } = this.calculateRule4Odds(
+        { numerator, denominator, odd_decimal: this.roundToDecimalPlaces(+numerator / +denominator) },
+        selection.rule_4,
+      ));
+    }
+
     return { numerator, denominator, odd_decimal: this.roundToDecimalPlaces(+numerator / +denominator) };
   };
 
   retrieveStartingPriceOdd = (selection: PlacedBetSelection): BetOdd => {
+    let numerator = 0;
+    let denominator = 1;
+
     if (selection.is_starting_price && selection.sp_odd_fractional && selection.sp_odd_fractional != 'SP') {
-      const { numerator, denominator } = this.getFractionalValues(selection.sp_odd_fractional);
-      return { numerator, denominator, odd_decimal: this.roundToDecimalPlaces(+numerator / +denominator) };
+      ({ numerator, denominator } = this.getFractionalValues(selection.sp_odd_fractional));
     } else if (selection.sp_odd_decimal) {
-      return { numerator: selection.sp_odd_decimal - 1, denominator: 1, odd_decimal: selection.sp_odd_decimal };
+      ({ numerator, denominator } = { numerator: selection.sp_odd_decimal - 1, denominator: 1 });
+    } else if (
+      selection.sp_odd_decimal === 0 ||
+      selection.sp_odd_decimal === null ||
+      selection.sp_odd_decimal === undefined
+    ) {
+      ({ numerator, denominator } = { numerator: 0, denominator: 1 });
     }
 
-    return { numerator: 0, denominator: 1, odd_decimal: 1 };
+    if (selection.rule_4) {
+      ({ numerator, denominator } = this.calculateRule4Odds(
+        { numerator, denominator, odd_decimal: this.roundToDecimalPlaces(+numerator / +denominator) },
+        selection.rule_4,
+      ));
+    }
+
+    return { numerator, denominator, odd_decimal: this.roundToDecimalPlaces(+numerator / +denominator) };
   };
 
   retrieveBogOdd = (selection: PlacedBetSelection): BetOdd => {
@@ -131,6 +153,17 @@ export class BetCalculatorHelper {
         bog_odd_numerator = selection.odd_decimal - 1;
         bog_odd_denominator = 1;
       }
+    }
+
+    if (selection.rule_4) {
+      ({ numerator: bog_odd_numerator, denominator: bog_odd_denominator } = this.calculateRule4Odds(
+        {
+          numerator: bog_odd_numerator,
+          denominator: bog_odd_denominator,
+          odd_decimal: this.roundToDecimalPlaces(+bog_odd_numerator / +bog_odd_denominator),
+        },
+        selection.rule_4,
+      ));
     }
 
     return {
@@ -283,12 +316,20 @@ export class BetCalculatorHelper {
     }
   };
 
-  calculatePartialWinPercent = (profit, partial_win_percent) => {
+  calculatePartialWinPercent = (profit: number, partial_win_percent: number): number => {
     return this.roundToDecimalPlaces(+(profit * (partial_win_percent / 100)));
   };
 
-  calculateRule4 = (profit, rule_4) => {
+  calculateRule4 = (profit: number, rule_4: number): number => {
     return this.roundToDecimalPlaces(Number(+(profit - (profit * rule_4) / 100)));
+  };
+
+  calculateRule4Odds = (odd: BetOdd, rule_4: number): BetOdd => {
+    return {
+      numerator: this.roundToDecimalPlaces(Number(+(odd.numerator - (odd.numerator * rule_4) / 100))),
+      denominator: odd.denominator,
+      odd_decimal: this.roundToDecimalPlaces(Number(+(odd.numerator - (odd.numerator * rule_4) / 100))),
+    };
   };
 
   getFractionalValues = (fractional) => {
@@ -383,9 +424,19 @@ export class BetCalculatorHelper {
 
     const has_winner = combinations.some((combination) => combination.result_type === BetResultType.WINNER);
     const has_void = combinations.some((combination) => combination.result_type === BetResultType.VOID);
+    const has_placed = combinations.some((combination) => combination.result_type === BetResultType.PLACED);
+    const has_partial = combinations.some((combination) => combination.result_type === BetResultType.PARTIAL);
 
     if (has_winner) {
       return BetResultType.WINNER;
+    }
+
+    if (has_partial) {
+      return BetResultType.PARTIAL;
+    }
+
+    if (has_placed) {
+      return BetResultType.PLACED;
     }
 
     if (has_void) {

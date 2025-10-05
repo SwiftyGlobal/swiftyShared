@@ -390,14 +390,7 @@ export class BetCalculator {
 
       this.bog_amount_won = +bog_win_profit + +bog_place_profit - +win_profit - +place_profit;
       this.bog_odd = win_odd.bog.odd_decimal * (place_odd.bog.odd_decimal > 0 ? place_odd.bog.odd_decimal : 1);
-
-      // win_profit = +bog_win_profit;
-      // place_profit = +bog_place_profit;
     }
-
-    // this.profit = +win_profit + +place_profit;
-
-    // return_stake = this.profit > 0 ? return_stake : 0;
 
     const main_result_type = this.calculatorHelper.getBetResultType([first_selection, second_selection]);
 
@@ -412,10 +405,8 @@ export class BetCalculator {
       win_profit = 0;
       place_profit = 0;
       return_stake = 0;
-    } else {
-      if (this.each_way) {
-        return_stake += this.stake;
-      }
+    } else if (this.each_way && win_profit > 0) {
+      return_stake += this.stake;
     }
 
     this.profit = +win_profit + +place_profit;
@@ -498,6 +489,7 @@ export class BetCalculator {
       JSON.stringify({
         win_profit,
         place_profit,
+        return_stake,
         bog_amount_won: this.bog_amount_won,
         bog_odd: this.bog_odd,
         main_result_type,
@@ -650,10 +642,8 @@ export class BetCalculator {
       win_profit = 0;
       place_profit = 0;
       return_stake = 0;
-    } else {
-      if (this.each_way) {
-        return_stake += this.stake;
-      }
+    } else if (this.each_way && win_profit > 0) {
+      return_stake += this.stake;
     }
 
     // if (first_selection.is_each_way || second_selection.is_each_way || third_selection.is_each_way) {
@@ -1083,12 +1073,13 @@ export class BetCalculator {
     const trebles_payout = trebles.payout;
     const trebles_stake = trebles.stake;
     const accumulator_payout = accumulator.payout;
-    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles, accumulator]);
+    const main_result_type = this.calculatorHelper.getMainResultType([...singles, doubles, trebles, accumulator]);
 
     console.log('Lucky15 Payout | Singles ' + singles_payout);
     console.log('Lucky15 Payout | Doubles ' + doubles_payout);
     console.log('Lucky15 Payout | Trebles ' + trebles_payout);
     console.log('Lucky15 Payout | Accumulator ' + accumulator_payout);
+    console.log('Lucky15 Payout | Main Result Type ' + main_result_type);
 
     return {
       singles: singles.map((single) => single.singles).flat(),
