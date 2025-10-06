@@ -9,7 +9,7 @@ describe('getLadderBoostedPriceV3', () => {
       id: 1,
       in_decimal: '1.1',
       pairing_decimal: 1,
-      in_fraction: '1/1',
+      in_fraction: '1/10',
       pairing_fraction: 1,
       sport_slug: 'soccer',
     },
@@ -17,7 +17,7 @@ describe('getLadderBoostedPriceV3', () => {
       id: 1,
       in_decimal: '1.33333',
       pairing_decimal: 1,
-      in_fraction: '1/1',
+      in_fraction: '1/3',
       pairing_fraction: 1,
       sport_slug: 'soccer',
     },
@@ -33,7 +33,7 @@ describe('getLadderBoostedPriceV3', () => {
       id: 1,
       in_decimal: '3',
       pairing_decimal: 1,
-      in_fraction: '1/1',
+      in_fraction: '2/1',
       pairing_fraction: 1,
       sport_slug: 'soccer',
     },
@@ -41,7 +41,7 @@ describe('getLadderBoostedPriceV3', () => {
       id: 1,
       in_decimal: '4',
       pairing_decimal: 1,
-      in_fraction: '1/1',
+      in_fraction: '3/1',
       pairing_fraction: 1,
       sport_slug: 'soccer',
     },
@@ -49,7 +49,7 @@ describe('getLadderBoostedPriceV3', () => {
       id: 1,
       in_decimal: '5',
       pairing_decimal: 1,
-      in_fraction: '1/1',
+      in_fraction: '4/1',
       pairing_fraction: 1,
       sport_slug: 'soccer',
     },
@@ -57,7 +57,7 @@ describe('getLadderBoostedPriceV3', () => {
       id: 1,
       in_decimal: '6',
       pairing_decimal: 1,
-      in_fraction: '1/1',
+      in_fraction: '5/1',
       pairing_fraction: 1,
       sport_slug: 'soccer',
     },
@@ -68,38 +68,38 @@ describe('getLadderBoostedPriceV3', () => {
   it('returns 0 and standard boost type when decimal is not available or ladder is -1', () => {
     expect(
       getLadderBoostedPriceV3({ sportSlug: 'soccer', decimal: 0, ladderValue: 'ladder+1', laddersMap: new Map() }),
-    ).toEqual({ decimal: 0, price_boost_type: PriceBoostTypes.STANDARD });
+    ).toEqual({ decimal: 0, fractional: '0/1', price_boost_type: PriceBoostTypes.STANDARD });
 
     expect(
       getLadderBoostedPriceV3({ sportSlug: 'soccer', decimal: 1.5, ladderValue: '-1', laddersMap: new Map() }),
-    ).toEqual({ decimal: 0, price_boost_type: PriceBoostTypes.STANDARD });
+    ).toEqual({ decimal: 0, fractional: '0/1', price_boost_type: PriceBoostTypes.STANDARD });
   });
 
   it('returns 0 and standard boost type if no ladders are found', () => {
     expect(
       getLadderBoostedPriceV3({ sportSlug: 'soccer', decimal: 1.5, ladderValue: 'ladder+1', laddersMap: new Map() }),
-    ).toEqual({ decimal: 0, price_boost_type: PriceBoostTypes.STANDARD });
+    ).toEqual({ decimal: 0, fractional: '0/1', price_boost_type: PriceBoostTypes.STANDARD });
   });
 
   it('returns the boosted price and boost type based on the ladder and decimal', () => {
     expect(getLadderBoostedPriceV3({ sportSlug: 'soccer', decimal: 1.5, ladderValue: 'ladder+1', laddersMap })).toEqual(
-      { decimal: 2, price_boost_type: PriceBoostTypes.BOOST },
+      { decimal: 2, fractional: '1/1', price_boost_type: PriceBoostTypes.BOOST },
     );
 
     expect(getLadderBoostedPriceV3({ sportSlug: 'soccer', decimal: 1.5, ladderValue: 'ladder+4', laddersMap })).toEqual(
-      { decimal: 5, price_boost_type: PriceBoostTypes.SUPER_BOOST },
+      { decimal: 5, fractional: '4/1', price_boost_type: PriceBoostTypes.SUPER_BOOST },
     );
   });
 
   it('returns the correct boosted price and boost type for negative ladders', () => {
     expect(getLadderBoostedPriceV3({ sportSlug: 'soccer', decimal: 1.5, ladderValue: 'ladder-1', laddersMap })).toEqual(
-      { decimal: 1.33333, price_boost_type: PriceBoostTypes.STANDARD },
+      { decimal: 1.33333, fractional: '1/3', price_boost_type: PriceBoostTypes.STANDARD },
     );
   });
 
   it('returns the correct boosted price and boost type when ladders are less than requested', () => {
     expect(getLadderBoostedPriceV3({ sportSlug: 'soccer', decimal: 1.5, ladderValue: 'ladder-8', laddersMap })).toEqual(
-      { decimal: 1.1, price_boost_type: PriceBoostTypes.STANDARD },
+      { decimal: 1.1, fractional: '1/10', price_boost_type: PriceBoostTypes.STANDARD },
     );
   });
 
@@ -107,7 +107,7 @@ describe('getLadderBoostedPriceV3', () => {
     // Put wrong sport slug for the ladders to test if it falls back to the standard boost
     expect(
       getLadderBoostedPriceV3({ sportSlug: 'socccer', decimal: 1.5, ladderValue: 'ladder+8', laddersMap }),
-    ).toEqual({ decimal: 0, price_boost_type: PriceBoostTypes.STANDARD });
+    ).toEqual({ decimal: 0, fractional: '0/1', price_boost_type: PriceBoostTypes.STANDARD });
   });
 
   it('returns 0 and STANDARD boost type when foundLadders is empty', () => {
@@ -125,7 +125,7 @@ describe('getLadderBoostedPriceV3', () => {
         ladderValue: 'ladder+1',
         laddersMap: laddersMapWithLowOdds,
       }),
-    ).toEqual({ decimal: 0, price_boost_type: PriceBoostTypes.STANDARD });
+    ).toEqual({ decimal: 0, fractional: '0/1', price_boost_type: PriceBoostTypes.STANDARD });
   });
 
   it('returns correct price and boost type when decimal float part is more than 5 items', () => {
@@ -137,7 +137,7 @@ describe('getLadderBoostedPriceV3', () => {
         ladderValue: 'ladder+1',
         laddersMap,
       }),
-    ).toEqual({ decimal: 2, price_boost_type: PriceBoostTypes.BOOST });
+    ).toEqual({ decimal: 2, fractional: '1/1', price_boost_type: PriceBoostTypes.BOOST });
 
     expect(
       getLadderBoostedPriceV3({
@@ -147,7 +147,7 @@ describe('getLadderBoostedPriceV3', () => {
         ladderValue: 'ladder-1',
         laddersMap,
       }),
-    ).toEqual({ decimal: 1.1, price_boost_type: PriceBoostTypes.STANDARD });
+    ).toEqual({ decimal: 1.1, fractional: '1/10', price_boost_type: PriceBoostTypes.STANDARD });
 
     expect(
       getLadderBoostedPriceV3({
@@ -156,6 +156,6 @@ describe('getLadderBoostedPriceV3', () => {
         ladderValue: 'ladder+1',
         laddersMap,
       }),
-    ).toEqual({ decimal: 2, price_boost_type: PriceBoostTypes.BOOST });
+    ).toEqual({ decimal: 2, fractional: '1/1', price_boost_type: PriceBoostTypes.BOOST });
   });
 });
