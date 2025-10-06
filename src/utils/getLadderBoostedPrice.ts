@@ -94,14 +94,14 @@ export const getLadderBoostedPriceV2 = (payload: GetLadderBoostedPriceV2Dto): nu
  */
 export const getLadderBoostedPriceV3 = (
   payload: GetLadderBoostedPriceV2Dto,
-): { decimal: number; price_boost_type: PriceBoostTypes } => {
+): { decimal: number; price_boost_type: PriceBoostTypes; fractional: string } => {
   const { sportSlug, decimal: originalDecimalOdd, ladderValue, laddersMap } = payload;
 
   /**
    * @description - If the decimal is not available or ladder is -1, return 0.
    */
   if (!originalDecimalOdd || ladderValue === '-1') {
-    return { decimal: 0, price_boost_type: PriceBoostTypes.STANDARD };
+    return { decimal: 0, fractional: '0/1', price_boost_type: PriceBoostTypes.STANDARD };
   }
 
   const decimal = stripDecimal(originalDecimalOdd);
@@ -114,7 +114,7 @@ export const getLadderBoostedPriceV3 = (
    * @description - If the ladders are not available, return 0.
    */
   if (!ladders) {
-    return { decimal: 0, price_boost_type: PriceBoostTypes.STANDARD };
+    return { decimal: 0, fractional: '0/1', price_boost_type: PriceBoostTypes.STANDARD };
   }
 
   /**
@@ -153,7 +153,7 @@ export const getLadderBoostedPriceV3 = (
   }
 
   if (!foundActualLadder) {
-    return { decimal: 0, price_boost_type: PriceBoostTypes.STANDARD };
+    return { decimal: 0, fractional: '0/1', price_boost_type: PriceBoostTypes.STANDARD };
   }
 
   /**
@@ -177,5 +177,9 @@ export const getLadderBoostedPriceV3 = (
       ? PriceBoostTypes.BOOST
       : PriceBoostTypes.SUPER_BOOST;
 
-  return { decimal: parseFloat(foundActualLadder.in_decimal), price_boost_type: priceBoostType };
+  return {
+    decimal: parseFloat(foundActualLadder.in_decimal),
+    fractional: foundActualLadder.in_fraction,
+    price_boost_type: priceBoostType,
+  };
 };
