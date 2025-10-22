@@ -20,3 +20,4 @@ export * from './phoneNumber';
 export * from './capitalizeWords';
 export * from './checkIfSportIsRace';
 export * from './prepareArrayToMysqlStatement';
+export * from './generateUniqueNumber';
