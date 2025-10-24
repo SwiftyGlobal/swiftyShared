@@ -25,7 +25,6 @@ describe('generateUniqueNumber', () => {
   it('always returns safe integers for many negative calls', () => {
     const results = Array.from({ length: 1000 }, () => generateUniqueNumber(true));
     for (const r of results) {
-      console.log(r);
       expect(Number.isSafeInteger(r)).toBe(true);
       expect(r).toBeLessThanOrEqual(Number.MAX_SAFE_INTEGER);
       expect(r).toBeGreaterThanOrEqual(Number.MIN_SAFE_INTEGER);
