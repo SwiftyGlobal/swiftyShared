@@ -791,7 +791,7 @@ export class BetCalculator {
       doubles.place_profit +
       trebles.place_profit;
 
-    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles]);
+    const main_result_type = this.calculatorHelper.getMainResultType([...singles, doubles, trebles]);
 
     return {
       singles: singles.map((single) => single.singles).flat(),
@@ -1120,7 +1120,7 @@ export class BetCalculator {
     const fourfolds_payout = fourfolds.payout;
     const fourfolds_stake = fourfolds.stake;
     const accumulator_payout = accumulator.payout;
-    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles, accumulator]);
+    const main_result_type = this.calculatorHelper.getMainResultType([...singles, doubles, trebles, accumulator]);
 
     console.log('Lucky31 Payout  ', {
       singles_payout,
@@ -1170,7 +1170,7 @@ export class BetCalculator {
     const fivefolds_payout = fivefolds.payout;
     const fivefolds_stake = fivefolds.stake;
     const accumulator_payout = accumulator.payout;
-    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles, accumulator]);
+    const main_result_type = this.calculatorHelper.getMainResultType([...singles, doubles, trebles, accumulator]);
 
     return {
       singles: singles.map((single) => single.singles).flat(),
