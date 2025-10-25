@@ -939,6 +939,111 @@ describe('Other combinations ', () => {
     expect(result.return_stake).toBeCloseTo(7.0, 1);
   });
 
+  // case with all losers expect one void
+  it.only('Lucky31 Win Case - All Losers Except One Void', () => {
+    const bets = [
+      {
+        bet_id: 1,
+        bet_type: BetSlipType.SINGLE,
+        stake: 1,
+        result: BetResultType.LOSER,
+        is_starting_price: false,
+        sp_odd_fractional: null,
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 0,
+      },
+      {
+        bet_id: 2,
+        bet_type: BetSlipType.SINGLE,
+        stake: 1,
+        result: BetResultType.LOSER,
+        is_starting_price: false,
+        sp_odd_fractional: null,
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 0,
+      },
+      {
+        bet_id: 3,
+        bet_type: BetSlipType.SINGLE,
+        stake: 1,
+        result: BetResultType.LOSER,
+        is_starting_price: false,
+        sp_odd_fractional: null,
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 0,
+      },
+      {
+        bet_id: 4,
+        bet_type: BetSlipType.SINGLE,
+        stake: 1,
+        result: BetResultType.LOSER,
+        is_starting_price: false,
+        sp_odd_fractional: null,
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 0,
+      },
+      {
+        bet_id: 5,
+        bet_type: BetSlipType.SINGLE,
+        stake: 1,
+        result: BetResultType.VOID,
+        is_starting_price: false,
+        sp_odd_fractional: null,
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 0,
+      },
+    ];
+    const selections = [];
+    const result = betCalculator.processBet({
+      stake: 1,
+      total_stake: 35,
+      bets,
+      selections,
+      bet_type: BetSlipType.LUCKY_31,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+    console.log('Lucky31', JSON.stringify(result));
+    const doubles = result.combinations.filter((combination) => combination.bet_type === BetSlipType.DOUBLE);
+    const trebles = result.combinations.filter((combination) => combination.bet_type === BetSlipType.TREBLE);
+
+    expect(result.singles.length).toEqual(5);
+    expect(doubles.length).toEqual(10);
+    expect(trebles.length).toEqual(10);
+
+    expect(result.return_payout).toBeCloseTo(1, 1);
+    expect(result.return_stake).toBeCloseTo(1, 1);
+    expect(result.result_type).toBe(BetResultType.PARTIAL);
+  });
+
   it('Lucky63 Win Case', () => {
     const bets = [
       {
