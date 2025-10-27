@@ -38,6 +38,8 @@ export enum LegacyBetResultType {
   WON = 'won',
   PLACED = 'placed',
   PLACE = 'place',
+  HALF_WON = 'half_won',
+  HALF_LOST = 'half_lost',
 }
 
 export const BetResultMap: Record<LegacyBetResultType, BetResultType> = {
@@ -56,4 +58,6 @@ export const BetResultMap: Record<LegacyBetResultType, BetResultType> = {
   [LegacyBetResultType.WON]: BetResultType.WINNER,
   [LegacyBetResultType.PLACED]: BetResultType.PLACED,
   [LegacyBetResultType.PLACE]: BetResultType.PLACED,
+  [LegacyBetResultType.HALF_WON]: BetResultType.HALF_WON,
+  [LegacyBetResultType.HALF_LOST]: BetResultType.HALF_LOST,
 };
