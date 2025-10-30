@@ -36,7 +36,7 @@ export interface Selection {
 }
 
 export interface BetSettings {
-  selections: Selection[];
+  selections?: Selection[];
   bets: PlacedBetSelection[];
   bog_max_payout: number;
   stake: number;

@@ -21,7 +21,7 @@ export class BetCalculator {
 
   bets: PlacedBetSelection[] = [];
 
-  selections: Selection[] = [];
+  selections?: Selection[] = [];
 
   bet_type: BetSlipType = BetSlipType.SINGLE;
 
@@ -65,6 +65,66 @@ export class BetCalculator {
     this.each_way = false;
   };
 
+  private sanitizeNumber = (value: unknown, fallback: number = 0): number => {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) {
+      return fallback;
+    }
+    return numeric;
+  };
+
+  private clamp = (value: number, min: number, max: number): number => {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+  };
+
+  private validateBetsAndSettings = () => {
+    // sanitize settings
+    this.stake = this.sanitizeNumber(this.stake, 0);
+    this.total_stake = this.sanitizeNumber(this.total_stake, 0);
+    this.free_bet_amount = this.sanitizeNumber(this.free_bet_amount, 0);
+    this.max_payout = this.sanitizeNumber(this.max_payout, 0);
+    this.bog_max_payout = this.sanitizeNumber(this.bog_max_payout, 0);
+
+    // clamp negatives to zero
+    if (this.stake < 0) this.stake = 0;
+    if (this.total_stake < 0) this.total_stake = 0;
+    if (this.free_bet_amount < 0) this.free_bet_amount = 0;
+    if (this.max_payout < 0) this.max_payout = 0;
+    if (this.bog_max_payout < 0) this.bog_max_payout = 0;
+
+    // sanitize bets
+    this.bets = (this.bets || []).map((bet) => {
+      const sanitized = { ...bet };
+
+      // stake per bet (not primary driver, but keep sane)
+      sanitized.stake = this.sanitizeNumber(sanitized.stake, 0);
+      if (sanitized.stake < 0) sanitized.stake = 0;
+
+      // odds decimal: any value <= 1 is non-profitable (or invalid); set to 0 to yield neutral outcome
+      sanitized.odd_decimal = this.sanitizeNumber(sanitized.odd_decimal, 0);
+      if (sanitized.odd_decimal <= 1) sanitized.odd_decimal = 0;
+
+      sanitized.sp_odd_decimal = this.sanitizeNumber(sanitized.sp_odd_decimal, 0);
+      if (sanitized.sp_odd_decimal <= 1) sanitized.sp_odd_decimal = 0;
+
+      // partial and rule_4 bounds
+      sanitized.partial_win_percent = this.sanitizeNumber(sanitized.partial_win_percent, 0);
+      sanitized.partial_win_percent = this.clamp(sanitized.partial_win_percent || 0, 0, 100);
+
+      sanitized.rule_4 = this.sanitizeNumber(sanitized.rule_4, 0);
+      sanitized.rule_4 = this.clamp(sanitized.rule_4 || 0, 0, 100);
+
+      // normalize strings possibly null
+      sanitized.sp_odd_fractional = sanitized.sp_odd_fractional || '';
+      sanitized.odd_fractional = sanitized.odd_fractional || '';
+      sanitized.ew_terms = sanitized.ew_terms || '';
+
+      return sanitized;
+    });
+  };
+
   processBet = (betSettings: BetSettings): BetResult => {
     this.reset();
 
@@ -92,6 +152,7 @@ export class BetCalculator {
     this.bog_applicable = bog_applicable || false;
     this.each_way = each_way || false;
     this.fold_type = fold_type || 0;
+    this.validateBetsAndSettings();
     let result: ResultMainBet | null = {
       stake: 0,
       payout: 0,
@@ -863,7 +924,13 @@ export class BetCalculator {
 
     console.log('Canadian', JSON.stringify({ selections }));
 
-    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles, folds, accumulator]);
+    const main_result_type = this.calculatorHelper.getMainResultType([
+      ...singles,
+      doubles,
+      trebles,
+      folds,
+      accumulator,
+    ]);
 
     return {
       singles: singles.map((single) => single.singles).flat(),

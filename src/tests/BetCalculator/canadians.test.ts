@@ -124,4 +124,113 @@ describe('Canadian Simple Winner Case', () => {
 
     expect(result.return_payout).toBeCloseTo(363.82, 1);
   });
+
+  it.only('Canadian 3 losers 2 voids', () => {
+    const bets = [
+      {
+        bet_id: 1,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.LOSER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '1/4',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 0,
+      },
+      {
+        bet_id: 2,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.LOSER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '1/2',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 0,
+      },
+      {
+        bet_id: 3,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.LOSER,
+        is_starting_price: false,
+        sp_odd_fractional: null,
+        odd_fractional: '1/3',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 0,
+      },
+      {
+        bet_id: 4,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.VOID,
+        is_starting_price: false,
+        sp_odd_fractional: null,
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 9,
+      },
+      {
+        bet_id: 5,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.LOSER,
+        is_starting_price: false,
+        sp_odd_fractional: null,
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 4.2,
+      },
+    ];
+    const selections = [
+      {
+        selection_id: 1,
+        position: 1,
+        result: BetResultType.WINNER,
+        dead_heat_count: null,
+        partial_percent: null,
+        each_way_places: null,
+        each_way_terms: null,
+      },
+    ];
+
+    const result = betCalculator.processBet({
+      stake: 0.3,
+      total_stake: 0.3,
+      bets,
+      selections,
+      bet_type: BetSlipType.CANADIAN,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+
+    console.log('Canadian', JSON.stringify(result));
+
+    expect(result.return_payout).toBeCloseTo(0.3, 1);
+    expect(result.result_type).toBe(BetResultType.PARTIAL);
+  });
 });

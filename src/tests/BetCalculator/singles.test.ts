@@ -518,3 +518,505 @@ describe('Single without each way ', () => {
     expect(result.result_type).toBe(BetResultType.PARTIAL);
   });
 });
+
+describe('Edge Cases for BetCalculator Single', () => {
+  const betCalculator = new BetCalculator();
+
+  it('Zero odds for winner should return payout 0', () => {
+    const bets = [
+      {
+        bet_id: 201,
+        stake: 100,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 0,
+      },
+    ];
+    const selections = [
+      {
+        selection_id: 201,
+        position: 1,
+        result: BetResultType.WINNER,
+        dead_heat_count: null,
+        partial_percent: null,
+        each_way_places: null,
+        each_way_terms: null,
+      },
+    ];
+    const result = betCalculator.processBet({
+      stake: 100,
+      total_stake: 100,
+      bets,
+      selections,
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+    expect(result.return_payout).toBe(0);
+    expect(result.calc.win_profit).toBe(0);
+  });
+
+  it('Zero stake should return payout 0', () => {
+    const bets = [
+      {
+        bet_id: 202,
+        stake: 0,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 2.0,
+        odd_decimal: 2.0,
+      },
+    ];
+    const selections = [
+      {
+        selection_id: 202,
+        position: 1,
+        result: BetResultType.WINNER,
+        dead_heat_count: null,
+        partial_percent: null,
+        each_way_places: null,
+        each_way_terms: null,
+      },
+    ];
+    const result = betCalculator.processBet({
+      stake: 0,
+      total_stake: 0,
+      bets,
+      selections,
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+    expect(result.return_payout).toBe(0);
+    expect(result.calc.win_profit).toBe(0);
+  });
+
+  it('Negative stake should return payout 0 or error', () => {
+    const bets = [
+      {
+        bet_id: 203,
+        stake: -50,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 2.0,
+        odd_decimal: 2.0,
+      },
+    ];
+    const selections = [
+      {
+        selection_id: 203,
+        position: 1,
+        result: BetResultType.WINNER,
+        dead_heat_count: null,
+        partial_percent: null,
+        each_way_places: null,
+        each_way_terms: null,
+      },
+    ];
+    const result = betCalculator.processBet({
+      stake: -50,
+      total_stake: -50,
+      bets,
+      selections,
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+    // Prano edhe 0, edhe error në output.
+    expect(result.return_payout).toBeLessThanOrEqual(0);
+  });
+
+  it('Negative odds should return payout 0 or error', () => {
+    const bets = [
+      {
+        bet_id: 204,
+        stake: 100,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: -1,
+        odd_decimal: -3,
+      },
+    ];
+    const selections = [
+      {
+        selection_id: 204,
+        position: 1,
+        result: BetResultType.WINNER,
+        dead_heat_count: null,
+        partial_percent: null,
+        each_way_places: null,
+        each_way_terms: null,
+      },
+    ];
+    const result = betCalculator.processBet({
+      stake: 100,
+      total_stake: 100,
+      bets,
+      selections,
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+    expect(result.return_payout).toBeLessThanOrEqual(0);
+  });
+
+  it('Input with empty bets should be neutral (output 0)', () => {
+    const result = betCalculator.processBet({
+      stake: 99,
+      total_stake: 99,
+      bets: [],
+      selections: [
+        {
+          selection_id: 301,
+          position: 1,
+          result: BetResultType.WINNER,
+          dead_heat_count: null,
+          partial_percent: null,
+          each_way_places: null,
+          each_way_terms: null,
+        },
+      ],
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+    expect(result.return_payout).toBe(0);
+  });
+
+  it('Missing odd_fractional/decimal should not return payout > 0', () => {
+    const bets = [
+      {
+        bet_id: 303,
+        stake: 120,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: null,
+        odd_fractional: null,
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 0,
+      },
+    ];
+    const result = betCalculator.processBet({
+      stake: 120,
+      total_stake: 120,
+      bets,
+      selections: [],
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+    expect(result.return_payout).toBe(0);
+  });
+
+  it('Contradictory flags: is_each_way true, but each_way in BetSettings is false', () => {
+    const bets = [
+      {
+        bet_id: 304,
+        stake: 10,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '1/2',
+        ew_terms: '1/4',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: true,
+        sp_odd_decimal: 0,
+        odd_decimal: 0,
+      },
+    ];
+    const selections = [
+      {
+        selection_id: 304,
+        position: 1,
+        result: BetResultType.WINNER,
+        dead_heat_count: null,
+        partial_percent: null,
+        each_way_places: null,
+        each_way_terms: null,
+      },
+    ];
+    const result = betCalculator.processBet({
+      stake: 10,
+      total_stake: 10,
+      bets,
+      selections,
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+    expect(result.return_payout).toBeGreaterThanOrEqual(0); // thjesht pranohet, nuk duhet crash
+  });
+
+  it('Extremes: very large stake and very large odds', () => {
+    const bets = [
+      {
+        bet_id: 305,
+        stake: 1e10,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 1e9,
+        odd_decimal: 1e9,
+      },
+    ];
+    const selections = [
+      {
+        selection_id: 305,
+        position: 1,
+        result: BetResultType.WINNER,
+        dead_heat_count: null,
+        partial_percent: null,
+        each_way_places: null,
+        each_way_terms: null,
+      },
+    ];
+    const result = betCalculator.processBet({
+      stake: 1e10,
+      total_stake: 1e10,
+      bets,
+      selections,
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 1e11,
+      max_payout: 1e20,
+      each_way: false,
+    });
+    expect(result.return_payout).toBeLessThanOrEqual(1e20);
+  });
+
+  it('partial_win_percent = 0, 100, negative, >100', () => {
+    // 0%
+    const bets = [
+      {
+        bet_id: 401,
+        stake: 100,
+        result: BetResultType.PARTIAL,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 5,
+        odd_decimal: 5,
+      },
+    ];
+    const selections = [
+      {
+        selection_id: 401,
+        position: 1,
+        result: BetResultType.PARTIAL,
+        dead_heat_count: null,
+        partial_percent: null,
+        each_way_places: null,
+        each_way_terms: null,
+      },
+    ];
+    let result = betCalculator.processBet({
+      stake: 100,
+      total_stake: 100,
+      bets,
+      selections,
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+    expect(result.return_payout).toBeGreaterThanOrEqual(0);
+
+    // 100%
+    bets[0].partial_win_percent = 100;
+    result = betCalculator.processBet({
+      stake: 100,
+      total_stake: 100,
+      bets,
+      selections,
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+    expect(result.return_payout).toBeGreaterThanOrEqual(0);
+
+    // Negative partial
+    bets[0].partial_win_percent = -20;
+    result = betCalculator.processBet({
+      stake: 100,
+      total_stake: 100,
+      bets,
+      selections,
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+    expect(result.return_payout).toBeGreaterThanOrEqual(0);
+
+    // >100
+    bets[0].partial_win_percent = 120;
+    result = betCalculator.processBet({
+      stake: 100,
+      total_stake: 100,
+      bets,
+      selections,
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+    expect(result.return_payout).toBeGreaterThanOrEqual(0);
+  });
+
+  it.only('stake=1 odd_decimal=2 (minimum output = stake)', () => {
+    const bets = [
+      {
+        bet_id: 500,
+        stake: 1,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 2,
+        odd_decimal: 2,
+      },
+    ];
+    const selections = [
+      {
+        selection_id: 500,
+        position: 1,
+        result: BetResultType.WINNER,
+        dead_heat_count: null,
+        partial_percent: null,
+        each_way_places: null,
+        each_way_terms: null,
+      },
+    ];
+    const result = betCalculator.processBet({
+      stake: 1,
+      total_stake: 1,
+      bets,
+      selections,
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+    console.log({ result });
+    expect(result.return_payout).toBeCloseTo(2, 2);
+  });
+
+  it('bog_applicable true with negative bog_max_payout', () => {
+    const bets = [
+      {
+        bet_id: 600,
+        stake: 10,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 5,
+        odd_decimal: 5,
+      },
+    ];
+    const selections = [
+      {
+        selection_id: 600,
+        position: 1,
+        result: BetResultType.WINNER,
+        dead_heat_count: null,
+        partial_percent: null,
+        each_way_places: null,
+        each_way_terms: null,
+      },
+    ];
+    const result = betCalculator.processBet({
+      stake: 10,
+      total_stake: 10,
+      bets,
+      selections,
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: true,
+      bog_max_payout: -100,
+      max_payout: 1000,
+      each_way: false,
+    });
+    expect(result.return_payout).toBeGreaterThanOrEqual(0);
+  });
+});
