@@ -15,10 +15,14 @@ export class BetCalculatorHelper {
   }) => {
     let return_amount = +win_profit + +place_profit;
 
-    if (Number(max_bog_payout) > 0 && Number(bog_amount_won) > Number(max_bog_payout)) {
-      bog_amount_won = +max_bog_payout;
-      // return_amount = return_amount - (+bog_amount_won - +max_bog_payout);
-      return_amount = return_amount + bog_amount_won;
+    if (+bog_amount_won > 0) {
+      if (+max_bog_payout > 0 && +bog_amount_won > +max_bog_payout) {
+        bog_amount_won = +max_bog_payout;
+        // return_amount = return_amount - (+bog_amount_won - +max_bog_payout);
+        return_amount = return_amount + bog_amount_won;
+      } else {
+        return_amount = return_amount + bog_amount_won;
+      }
     }
 
     if (+free_bet_amount == 0 && +stake > 0) {
@@ -177,7 +181,6 @@ export class BetCalculatorHelper {
     selection: PlacedBetSelection,
     odds: BetOdds,
     each_way_odds: BetOdds | null,
-    type: BetOddType,
   ): { win_odd: BetOdds; place_odd: BetOdds; result_type: BetResultType } => {
     const win_odd: BetOdds = {
       main: { numerator: 0, denominator: 1, odd_decimal: 0 },
@@ -193,17 +196,17 @@ export class BetCalculatorHelper {
     let result_type = BetResultType.LOSER;
 
     if (selection.result === BetResultType.WINNER || selection.result === BetResultType.PARTIAL) {
-      win_odd.main = this.getOdds(odds, type);
-      win_odd.sp = this.getOdds(odds, type);
-      win_odd.bog = this.getOdds(odds, type);
-      place_odd.main = this.getOdds(each_way_odds, type);
-      place_odd.sp = this.getOdds(each_way_odds, type);
-      place_odd.bog = this.getOdds(each_way_odds, type);
+      win_odd.main = this.getOdds(odds, BetOddType.MAIN);
+      win_odd.sp = this.getOdds(odds, BetOddType.SP);
+      win_odd.bog = this.getOdds(odds, BetOddType.BOG);
+      place_odd.main = this.getOdds(each_way_odds, BetOddType.MAIN);
+      place_odd.sp = this.getOdds(each_way_odds, BetOddType.SP);
+      place_odd.bog = this.getOdds(each_way_odds, BetOddType.BOG);
       result_type = BetResultType.WINNER;
     } else if (selection.result === BetResultType.PLACED && each_way_odds) {
-      place_odd.main = this.getOdds(each_way_odds, type);
-      place_odd.sp = this.getOdds(each_way_odds, type);
-      place_odd.bog = this.getOdds(each_way_odds, type);
+      place_odd.main = this.getOdds(each_way_odds, BetOddType.MAIN);
+      place_odd.sp = this.getOdds(each_way_odds, BetOddType.SP);
+      place_odd.bog = this.getOdds(each_way_odds, BetOddType.BOG);
       result_type = BetResultType.PLACED;
     } else if (selection.result === BetResultType.VOID) {
       win_odd.main = { numerator: 0, denominator: 0, odd_decimal: 0 };
@@ -372,7 +375,7 @@ export class BetCalculatorHelper {
   // if at least 1 combination is a winner, return Winner,
   // if at least 1 combination is a void, no winners, return Partial,
   // iff all same result, return that result
-  getBetResultType = (combinations: PlacedBetSelection[]): BetResultType => {
+  getBetResultType = (combinations: PlacedBetSelection[], each_way: boolean): BetResultType => {
     const result_type = BetResultType.OPEN;
 
     if (combinations.length === 0) {
@@ -390,7 +393,7 @@ export class BetCalculatorHelper {
         (combination) =>
           combination.result === BetResultType.WINNER ||
           combination.result === BetResultType.PARTIAL ||
-          combination.result === BetResultType.PLACED,
+          (combination.result === BetResultType.PLACED && each_way),
       )
     ) {
       return BetResultType.WINNER;
@@ -409,7 +412,7 @@ export class BetCalculatorHelper {
     return BetResultType.LOSER;
   };
 
-  getCombinationsResultType = (combinations: ResultCombination[]): BetResultType => {
+  getCombinationsResultType = (combinations: ResultCombination[], each_way: boolean): BetResultType => {
     const result_type = BetResultType.OPEN;
 
     if (combinations.length === 0) {
@@ -424,7 +427,9 @@ export class BetCalculatorHelper {
 
     const has_winner = combinations.some((combination) => combination.result_type === BetResultType.WINNER);
     const has_void = combinations.some((combination) => combination.result_type === BetResultType.VOID);
-    const has_placed = combinations.some((combination) => combination.result_type === BetResultType.PLACED);
+    const has_placed = combinations.some(
+      (combination) => combination.result_type === BetResultType.PLACED && !each_way,
+    );
     const has_partial = combinations.some((combination) => combination.result_type === BetResultType.PARTIAL);
 
     if (has_winner) {

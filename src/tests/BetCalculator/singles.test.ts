@@ -1019,4 +1019,49 @@ describe('Edge Cases for BetCalculator Single', () => {
     });
     expect(result.return_payout).toBeGreaterThanOrEqual(0);
   });
+
+  it('Single: BOG with SP odds higher than main odds → expect result_type WINNER with BOG benefit', () => {
+    const bets: PlacedBetSelection[] = [
+      {
+        bet_id: 1,
+        stake: 10,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 4,
+        odd_decimal: 3,
+      },
+    ];
+    const selections = [
+      {
+        selection_id: 1,
+        position: 1,
+        result: BetResultType.WINNER,
+        dead_heat_count: null,
+        partial_percent: null,
+        each_way_places: null,
+        each_way_terms: null,
+      },
+    ];
+    const result = betCalculator.processBet({
+      stake: 10,
+      total_stake: 10,
+      bets,
+      selections,
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: true,
+      bog_max_payout: 100,
+      max_payout: 0,
+      each_way: false,
+    });
+    expect(result.return_payout).toBeCloseTo(40, 1);
+    expect(result.result_type).toBe(BetResultType.WINNER);
+    expect(result.bog_amount_won).toBeCloseTo(10, 1);
+  });
 });

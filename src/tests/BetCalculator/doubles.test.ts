@@ -124,7 +124,7 @@ describe('DOUBLE - Core scenarios (deterministic expectations)', () => {
     });
 
     expect(result.return_payout).toBeCloseTo(10.0);
-    expect(result.result_type).toBe(BetResultType.PARTIAL);
+    expect(result.result_type).toBe(BetResultType.WINNER);
   });
 
   // One WINNER + one LOSER → expect LOSER (double voided by losing leg)
@@ -378,17 +378,7 @@ describe('DOUBLE - Core scenarios (deterministic expectations)', () => {
         odd_decimal: 3,
       },
     ];
-    const selections = [
-      {
-        selection_id: 1,
-        position: 1,
-        result: BetResultType.WINNER,
-        dead_heat_count: null,
-        partial_percent: null,
-        each_way_places: null,
-        each_way_terms: null,
-      },
-    ];
+    const selections = [];
 
     const result = betCalculator.processBet({
       stake: 5,
@@ -404,7 +394,7 @@ describe('DOUBLE - Core scenarios (deterministic expectations)', () => {
     });
 
     expect(result.return_payout).toBeCloseTo(10.31, 1);
-    expect(result.result_type).toBe(BetResultType.PARTIAL);
+    expect(result.result_type).toBe(BetResultType.WINNER);
   });
 
   // EW: both VOID → expect VOID (stake returned under EW settings)
@@ -526,7 +516,7 @@ describe('DOUBLE - Core scenarios (deterministic expectations)', () => {
     });
 
     expect(result.return_payout).toBeCloseTo(22.5, 1);
-    expect(result.result_type).toBe(BetResultType.WINNER);
+    expect(result.result_type).toBe(BetResultType.PARTIAL);
   });
 
   // EW: one LOSER + one VOID → expect LOSER
@@ -622,17 +612,7 @@ describe('DOUBLE - Core scenarios (deterministic expectations)', () => {
         odd_decimal: 2.25,
       },
     ];
-    const selections = [
-      {
-        selection_id: 1,
-        position: 1,
-        result: BetResultType.VOID,
-        dead_heat_count: null,
-        partial_percent: null,
-        each_way_places: null,
-        each_way_terms: null,
-      },
-    ];
+    const selections = [];
 
     const result = betCalculator.processBet({
       stake: 5,
@@ -648,7 +628,7 @@ describe('DOUBLE - Core scenarios (deterministic expectations)', () => {
     });
 
     expect(result.return_payout).toBeCloseTo(7.5, 1);
-    expect(result.result_type).toBe(BetResultType.PLACED);
+    expect(result.result_type).toBe(BetResultType.PARTIAL);
   });
 
   // Rule 4 reductions on both legs (both WINNER) → expect WINNER with reduced payout
@@ -798,7 +778,7 @@ describe('Edge Cases for DOUBLE bet type (odds > 1, inputs sanitized)', () => {
       clone(baseBet, { bet_id: 2, result: BetResultType.VOID }),
     ];
     const result = betCalculator.processBet({
-      stake: 10,
+      stake: 5,
       total_stake: 10,
       bets,
       selections: [],
@@ -809,12 +789,12 @@ describe('Edge Cases for DOUBLE bet type (odds > 1, inputs sanitized)', () => {
       max_payout: 0,
       each_way: false,
     });
-    expect(result.return_payout).toBeGreaterThanOrEqual(0); // payout may be 0 for VOID
-    expect(result.result_type).toBe(BetResultType.WINNER);
+    expect(result.return_payout).toBeCloseTo(12.5, 1);
+    expect(result.result_type).toBe(BetResultType.PARTIAL);
   });
 
   // WINNER + PLACED → expect PARTIAL (placed leg contributes, not a full win)
-  it('Double: WINNER + PLACED → expect result_type PARTIAL', () => {
+  it('Double: WINNER + PLACED → expect result_type Loser if each is false', () => {
     const bets = [
       clone(baseBet, { bet_id: 1, result: BetResultType.WINNER }),
       clone(baseBet, { bet_id: 2, result: BetResultType.PLACED }),
@@ -831,8 +811,8 @@ describe('Edge Cases for DOUBLE bet type (odds > 1, inputs sanitized)', () => {
       max_payout: 0,
       each_way: false,
     });
-    expect(result.return_payout).toBeGreaterThanOrEqual(0);
-    expect(result.result_type).toBe(BetResultType.PARTIAL);
+    expect(result.result_type).toBe(BetResultType.LOSER);
+    expect(result.return_payout).toBeCloseTo(0, 1);
   });
 
   // WINNER + PARTIAL → expect PARTIAL (partial downgrades overall)
@@ -854,7 +834,7 @@ describe('Edge Cases for DOUBLE bet type (odds > 1, inputs sanitized)', () => {
       each_way: false,
     });
     expect(result.return_payout).toBeGreaterThanOrEqual(0);
-    expect(result.result_type).toBe(BetResultType.PARTIAL);
+    expect(result.result_type).toBe(BetResultType.WINNER);
   });
 
   // WINNER + LOSER → expect LOSER (one losing leg voids the double)
@@ -941,8 +921,8 @@ describe('Edge Cases for DOUBLE bet type (odds > 1, inputs sanitized)', () => {
       max_payout: 0,
       each_way: false,
     });
-    expect(result.return_payout).toBeGreaterThanOrEqual(0);
-    expect(result.result_type).toBe(BetResultType.PLACED);
+    expect(result.return_payout).toBeCloseTo(0, 1);
+    expect(result.result_type).toBe(BetResultType.LOSER);
   });
 
   // Stake=0 on one leg (both results WINNER) → expect WINNER (stake sanitized per settings, combo still wins)
@@ -1052,7 +1032,7 @@ describe('Edge Cases for DOUBLE bet type (odds > 1, inputs sanitized)', () => {
       each_way: false,
     });
     expect(result.return_payout).toBeGreaterThanOrEqual(0);
-    expect(result.result_type).toBe(BetResultType.PARTIAL);
+    expect(result.result_type).toBe(BetResultType.WINNER);
 
     bets = [
       clone(baseBet, { bet_id: 1, result: BetResultType.PARTIAL, partial_win_percent: 0 }),
@@ -1071,7 +1051,7 @@ describe('Edge Cases for DOUBLE bet type (odds > 1, inputs sanitized)', () => {
       each_way: false,
     });
     expect(result.return_payout).toBeGreaterThanOrEqual(0);
-    expect(result.result_type).toBe(BetResultType.PARTIAL);
+    expect(result.result_type).toBe(BetResultType.WINNER);
   });
 
   // rule_4 out-of-bounds is clamped to [0,100]; both legs WINNER → expect WINNER
@@ -1199,6 +1179,56 @@ describe('Edge Cases for DOUBLE bet type (odds > 1, inputs sanitized)', () => {
       each_way: true,
     });
     expect(result.return_payout).toBeGreaterThanOrEqual(0);
+    expect(result.result_type).toBe(BetResultType.WINNER);
+  });
+
+  it('Double: BOG with SP odds higher than main odds (both WINNER) → expect result_type WINNER', () => {
+    const bets = [
+      // clone(baseBet, { bet_id: 1, result: BetResultType.WINNER }),
+      // clone(baseBet, { bet_id: 2, result: BetResultType.WINNER }),
+      {
+        bet_id: 1,
+        stake: 10,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        sp_odd_decimal: 4,
+        odd_decimal: 3,
+        is_each_way: false,
+        partial_win_percent: 0,
+        rule_4: 0,
+      },
+      {
+        bet_id: 2,
+        stake: 10,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        sp_odd_decimal: 3,
+        odd_decimal: 2,
+        ew_terms: '',
+        is_each_way: false,
+        partial_win_percent: 0,
+        rule_4: 0,
+      },
+    ];
+    const result = betCalculator.processBet({
+      stake: 5,
+      total_stake: 5,
+      bets,
+      selections: [],
+      bet_type: BetSlipType.DOUBLE,
+      free_bet_amount: 0,
+      bog_applicable: true,
+      bog_max_payout: 100,
+      max_payout: 0,
+      each_way: false,
+    });
+    expect(result.return_payout).toBeCloseTo(60, 1);
+    expect(result.bog_amount_won).toBeCloseTo(30, 1);
     expect(result.result_type).toBe(BetResultType.WINNER);
   });
 });

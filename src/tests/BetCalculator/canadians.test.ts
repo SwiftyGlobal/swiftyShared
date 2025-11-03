@@ -439,4 +439,94 @@ describe('Canadian Simple Winner Case', () => {
     expect(result.return_payout).toBeCloseTo(0.3, 1);
     expect(result.result_type).toBe(BetResultType.PARTIAL);
   });
+
+  it('CANADIAN: BOG with SP odds higher than main odds (WINNER×5) → expect result_type WINNER with BOG benefit', () => {
+    const bets = [
+      {
+        bet_id: 1,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 4,
+        odd_decimal: 3,
+      },
+      {
+        bet_id: 2,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 3.5,
+        odd_decimal: 2.5,
+      },
+      {
+        bet_id: 3,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 3,
+        odd_decimal: 2,
+      },
+      {
+        bet_id: 4,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 2.5,
+        odd_decimal: 2,
+      },
+      {
+        bet_id: 5,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 2.2,
+        odd_decimal: 2,
+      },
+    ];
+    const result = betCalculator.processBet({
+      stake: 5,
+      total_stake: 155,
+      bets,
+      selections: [],
+      bet_type: BetSlipType.CANADIAN,
+      free_bet_amount: 0,
+      bog_applicable: true,
+      bog_max_payout: 100,
+      max_payout: 0,
+      each_way: false,
+    });
+    expect(result.result_type).toBe(BetResultType.WINNER);
+    expect(result.return_payout).toBeCloseTo(1927.5, 1);
+    expect(result.bog_amount_won).toBeCloseTo(100, 1);
+  });
 });

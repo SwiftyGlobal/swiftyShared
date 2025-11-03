@@ -1067,4 +1067,66 @@ describe('Trebles Simple Winner Case', () => {
     expect(result.return_payout.toFixed(2)).toEqual('8.20');
     expect(result.result_type).toBe(BetResultType.PARTIAL);
   });
+
+  it('TREBLES: BOG with SP odds higher than main odds (WINNER×3) → expect result_type WINNER with BOG benefit', () => {
+    const bets = [
+      {
+        bet_id: 1,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 4,
+        odd_decimal: 3,
+      },
+      {
+        bet_id: 2,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 3,
+        odd_decimal: 2,
+      },
+      {
+        bet_id: 3,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 2.5,
+        odd_decimal: 2,
+      },
+    ];
+    const result = betCalculator.processBet({
+      stake: 5,
+      total_stake: 5,
+      bets,
+      selections: [],
+      bet_type: BetSlipType.TREBLE,
+      free_bet_amount: 0,
+      bog_applicable: true,
+      bog_max_payout: 50,
+      max_payout: 0,
+      each_way: false,
+    });
+    expect(result.result_type).toBe(BetResultType.WINNER);
+    expect(result.return_payout).toBeCloseTo(110, 1);
+    expect(result.bog_amount_won).toBeCloseTo(50, 1);
+  });
 });

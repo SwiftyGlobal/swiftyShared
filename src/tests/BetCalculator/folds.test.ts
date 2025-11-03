@@ -627,6 +627,87 @@ describe('FOLD-4 - Core scenarios (deterministic expectations)', () => {
     expect(result.return_stake).toBeCloseTo(5, 1);
     expect(result.result_type).toBe(BetResultType.WINNER);
   });
+
+  it('FOLD-4: BOG with SP odds higher than main odds (WINNER×4) → expect result_type WINNER with BOG benefit', () => {
+    const bets = [
+      {
+        bet_id: 1,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 4,
+        odd_decimal: 3,
+      },
+      {
+        bet_id: 2,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 3,
+        odd_decimal: 2,
+      },
+      {
+        bet_id: 3,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: null,
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 2.5,
+        odd_decimal: 2,
+      },
+      {
+        bet_id: 4,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 2.2,
+        odd_decimal: 2,
+      },
+    ];
+    const result = betCalculator.processBet({
+      stake: 5,
+      total_stake: 5,
+      bets,
+      selections: [],
+      bet_type: BetSlipType.FOLD,
+      fold_type: 4,
+      free_bet_amount: 0,
+      bog_applicable: true,
+      bog_max_payout: 100,
+      max_payout: 0,
+      each_way: false,
+    });
+    expect(result.result_type).toBe(BetResultType.WINNER);
+    expect(result.return_payout).toBeGreaterThan(0);
+    expect(result.bog_amount_won).toBeGreaterThan(0);
+  });
 });
 
 describe('FOLD-5 - Core and edge scenarios', () => {
@@ -805,6 +886,102 @@ describe('FOLD-5 - Core and edge scenarios', () => {
     expect(result.result_type).toBe(BetResultType.PLACED);
     expect(result.return_payout).toBeCloseTo(24.57, 1);
   });
+
+  it('FOLD-5: BOG with SP odds higher than main odds (WINNER×5) → expect result_type WINNER with BOG benefit', () => {
+    const bets = [
+      {
+        bet_id: 1,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 4,
+        odd_decimal: 3,
+      },
+      {
+        bet_id: 2,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 3.5,
+        odd_decimal: 2.5,
+      },
+      {
+        bet_id: 3,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 3,
+        odd_decimal: 2,
+      },
+      {
+        bet_id: 4,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 2.5,
+        odd_decimal: 2,
+      },
+      {
+        bet_id: 5,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 2.2,
+        odd_decimal: 2,
+      },
+    ];
+    const result = betCalculator.processBet({
+      stake: 5,
+      total_stake: 25,
+      bets,
+      selections: [],
+      bet_type: BetSlipType.FOLD,
+      fold_type: 5,
+      free_bet_amount: 0,
+      bog_applicable: true,
+      bog_max_payout: 100,
+      max_payout: 0,
+      each_way: false,
+    });
+    expect(result.result_type).toBe(BetResultType.WINNER);
+    expect(result.return_payout).toBeGreaterThan(0);
+    expect(result.bog_amount_won).toBeGreaterThan(0);
+  });
 });
 
 describe('FOLD-6 - Core and edge scenarios', () => {
@@ -933,5 +1110,116 @@ describe('FOLD-6 - Core and edge scenarios', () => {
 
     expect(result.result_type).toBe(BetResultType.PLACED);
     expect(result.return_payout).toBeCloseTo(33.79, 1);
+  });
+
+  it('FOLD-6: BOG with SP odds higher than main odds (WINNER×6) → expect result_type WINNER with BOG benefit', () => {
+    const bets = [
+      {
+        bet_id: 1,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 4,
+        odd_decimal: 3,
+      },
+      {
+        bet_id: 2,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 3.5,
+        odd_decimal: 2.5,
+      },
+      {
+        bet_id: 3,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 3,
+        odd_decimal: 2,
+      },
+      {
+        bet_id: 4,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 2.5,
+        odd_decimal: 2,
+      },
+      {
+        bet_id: 5,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 2.2,
+        odd_decimal: 2,
+      },
+      {
+        bet_id: 6,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 2.1,
+        odd_decimal: 2,
+      },
+    ];
+    const result = betCalculator.processBet({
+      stake: 5,
+      total_stake: 30,
+      bets,
+      selections: [],
+      bet_type: BetSlipType.FOLD,
+      fold_type: 6,
+      free_bet_amount: 0,
+      bog_applicable: true,
+      bog_max_payout: 100,
+      max_payout: 0,
+      each_way: false,
+    });
+    expect(result.result_type).toBe(BetResultType.WINNER);
+    expect(result.return_payout).toBeCloseTo(700.0, 1);
+    expect(result.bog_amount_won).toBeCloseTo(100, 1);
   });
 });

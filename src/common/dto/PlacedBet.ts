@@ -82,6 +82,8 @@ export interface ResultMainBet {
   payout: number;
   win_profit: number;
   place_profit: number;
+  profit: number;
+  bog_amount_won: number;
   result_type: BetResultType;
   singles: ResultSingle[];
   combinations: ResultCombination[];

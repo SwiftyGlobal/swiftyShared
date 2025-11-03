@@ -19,7 +19,8 @@
     "test:trebles": "jest --color --verbose src/tests/BetCalculator/trebles.test.ts",
     "test:trixie": "jest --color --verbose src/tests/BetCalculator/trixie.test.ts",
     "test:singles": "jest --color --verbose src/tests/BetCalculator/singles.test.ts",
-    "test:folds": "jest --color --verbose src/tests/BetCalculator/folds.test.ts"
+    "test:folds": "jest --color --verbose src/tests/BetCalculator/folds.test.ts",
+    "test:resulting": "jest --color --verbose src/tests/BetCalculator/resulting.test.ts"
   },
   "keywords": [],
   "author": "jaxin007",
