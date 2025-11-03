@@ -933,7 +933,7 @@ describe('Edge Cases for BetCalculator Single', () => {
     expect(result.return_payout).toBeGreaterThanOrEqual(0);
   });
 
-  it.only('stake=1 odd_decimal=2 (minimum output = stake)', () => {
+  it('stake=1 odd_decimal=2 (minimum output = stake)', () => {
     const bets = [
       {
         bet_id: 500,

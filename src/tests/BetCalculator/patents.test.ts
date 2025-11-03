@@ -5,7 +5,7 @@ import { BetResultType } from '../../common/constants/betResultType';
 describe('Patent Simple Winner Case', () => {
   const betCalculator = new BetCalculator();
 
-  it('Patent Win Case', () => {
+  it('Patent Win Case → expect WINNER with exact payout/stake', () => {
     const bets = [
       {
         bet_id: 1,
@@ -82,9 +82,10 @@ describe('Patent Simple Winner Case', () => {
 
     expect(result.return_payout.toFixed(2)).toEqual('60.63');
     expect(result.return_stake.toFixed(2)).toEqual('35.00');
+    expect(result.result_type).toBe(BetResultType.WINNER);
   });
 
-  it.only('Patent Win Case - Partial Win', () => {
+  it('Patent Win Case - Partial Win', () => {
     const bets = [
       {
         bet_id: 1,
@@ -460,7 +461,7 @@ describe('Patent Simple Winner Case', () => {
     expect(result.return_stake.toFixed(2)).toEqual('15.00');
   });
 
-  it.only('Patent Lose 1 Lose 2 Void 1', () => {
+  it('Patent Lose 1 Lose 2 Void 1', () => {
     const bets = [
       {
         bet_id: 1,
@@ -735,5 +736,233 @@ describe('Patent Simple Winner Case', () => {
 
     expect(result.return_payout.toFixed(2)).toEqual('35.00');
     expect(result.return_stake.toFixed(2)).toEqual('35.00');
+  });
+});
+
+describe('Patent - Each Way, cap and clamps', () => {
+  const betCalculator = new BetCalculator();
+
+  it('EW: WINNER + WINNER + PLACED → expect WINNER', () => {
+    const bets = [
+      {
+        bet_id: 1,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '1/4',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: true,
+        sp_odd_decimal: 0,
+        odd_decimal: 3,
+      },
+      {
+        bet_id: 2,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '1/4',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: true,
+        sp_odd_decimal: 0,
+        odd_decimal: 2.5,
+      },
+      {
+        bet_id: 3,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.PLACED,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '1/4',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: true,
+        sp_odd_decimal: 0,
+        odd_decimal: 2,
+      },
+    ];
+    const result = betCalculator.processBet({
+      stake: 5,
+      total_stake: 35,
+      bets,
+      selections: [],
+      bet_type: BetSlipType.PATENT,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: true,
+    });
+    expect(result.result_type).toBe(BetResultType.WINNER);
+    expect(result.return_payout).toBeCloseTo(126.8, 1);
+  });
+
+  it('EW: PLACED + PLACED + PLACED → expect PLACED', () => {
+    const bets = [1, 2, 3].map((id) => ({
+      bet_id: id,
+      bet_type: BetSlipType.SINGLE,
+      stake: 5,
+      result: BetResultType.PLACED,
+      is_starting_price: false,
+      sp_odd_fractional: '',
+      odd_fractional: '',
+      ew_terms: '1/4',
+      partial_win_percent: 0,
+      rule_4: 0,
+      is_each_way: true,
+      sp_odd_decimal: 0,
+      odd_decimal: 2.5,
+    }));
+    const result = betCalculator.processBet({
+      stake: 5,
+      total_stake: 35,
+      bets,
+      selections: [],
+      bet_type: BetSlipType.PATENT,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: true,
+    });
+    expect(result.result_type).toBe(BetResultType.PLACED);
+    expect(result.return_payout).toBeCloseTo(61.98, 1);
+  });
+
+  it('max_payout cap applied → payout capped, still WINNER', () => {
+    const bets = [
+      {
+        bet_id: 1,
+        bet_type: BetSlipType.SINGLE,
+        stake: 10,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: null,
+        rule_4: null,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 10,
+      },
+      {
+        bet_id: 2,
+        bet_type: BetSlipType.SINGLE,
+        stake: 10,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: null,
+        rule_4: null,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 8,
+      },
+      {
+        bet_id: 3,
+        bet_type: BetSlipType.SINGLE,
+        stake: 10,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: null,
+        rule_4: null,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 6,
+      },
+    ];
+    const result = betCalculator.processBet({
+      stake: 10,
+      total_stake: 70,
+      bets,
+      selections: [],
+      bet_type: BetSlipType.PATENT,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 200,
+      each_way: false,
+    });
+    expect(result.result_type).toBe(BetResultType.WINNER);
+    expect(result.return_payout).toBeCloseTo(200, 1);
+  });
+
+  it('partial_win_percent and rule_4 out of bounds are clamped', () => {
+    const bets = [
+      {
+        bet_id: 1,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.PARTIAL,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: -20,
+        rule_4: -10,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 4,
+      },
+      {
+        bet_id: 2,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 200,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 3,
+      },
+      {
+        bet_id: 3,
+        bet_type: BetSlipType.SINGLE,
+        stake: 5,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 150,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 2.5,
+      },
+    ];
+    const result = betCalculator.processBet({
+      stake: 5,
+      total_stake: 35,
+      bets,
+      selections: [],
+      bet_type: BetSlipType.PATENT,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+    expect(result.result_type).toBe(BetResultType.WINNER);
+    expect(result.return_payout).toBeCloseTo(345.0, 1);
   });
 });

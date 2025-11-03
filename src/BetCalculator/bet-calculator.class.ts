@@ -152,7 +152,9 @@ export class BetCalculator {
     this.bog_applicable = bog_applicable || false;
     this.each_way = each_way || false;
     this.fold_type = fold_type || 0;
+
     this.validateBetsAndSettings();
+
     let result: ResultMainBet | null = {
       stake: 0,
       payout: 0,
@@ -240,7 +242,7 @@ export class BetCalculator {
     const place_stake = this.each_way ? this.stake : 0;
 
     // only is appliied to win stake
-    if (selection.partial_win_percent) {
+    if (selection.partial_win_percent && selection.partial_win_percent > 0 && selection.partial_win_percent < 100) {
       win_stake = win_stake - win_stake * (selection.partial_win_percent / 100);
     }
 
@@ -339,7 +341,7 @@ export class BetCalculator {
       console.log('Lost single', { win_stake, place_stake, win_profit, place_profit });
     }
 
-    if (selection.rule_4) {
+    if (selection.rule_4 && selection.rule_4 > 0 && selection.rule_4 < 100) {
       this.profit = this.calculatorHelper.calculateRule4(this.profit, selection.rule_4);
       console.log('Rule 4', { profit: this.profit });
     }
@@ -396,10 +398,18 @@ export class BetCalculator {
     let win_stake = this.stake;
     const place_stake = this.each_way ? this.stake : 0;
 
-    if (first_selection.partial_win_percent) {
+    if (
+      first_selection.partial_win_percent &&
+      first_selection.partial_win_percent > 0 &&
+      first_selection.partial_win_percent < 100
+    ) {
       win_stake = win_stake - win_stake * (first_selection.partial_win_percent / 100);
     }
-    if (second_selection.partial_win_percent) {
+    if (
+      second_selection.partial_win_percent &&
+      second_selection.partial_win_percent > 0 &&
+      second_selection.partial_win_percent < 100
+    ) {
       win_stake = win_stake - win_stake * (second_selection.partial_win_percent / 100);
     }
 
@@ -603,13 +613,25 @@ export class BetCalculator {
     let win_stake = this.stake;
     const place_stake = this.each_way ? this.stake : 0;
 
-    if (first_selection.partial_win_percent) {
+    if (
+      first_selection.partial_win_percent &&
+      first_selection.partial_win_percent > 0 &&
+      first_selection.partial_win_percent < 100
+    ) {
       win_stake = win_stake - win_stake * (first_selection.partial_win_percent / 100);
     }
-    if (second_selection.partial_win_percent) {
+    if (
+      second_selection.partial_win_percent &&
+      second_selection.partial_win_percent > 0 &&
+      second_selection.partial_win_percent < 100
+    ) {
       win_stake = win_stake - win_stake * (second_selection.partial_win_percent / 100);
     }
-    if (third_selection.partial_win_percent) {
+    if (
+      third_selection.partial_win_percent &&
+      third_selection.partial_win_percent > 0 &&
+      third_selection.partial_win_percent < 100
+    ) {
       win_stake = win_stake - win_stake * (third_selection.partial_win_percent / 100);
     }
 
@@ -833,6 +855,7 @@ export class BetCalculator {
   // 3 single, 3 double, 1 treble
   processPatentBet = (selections: PlacedBetSelection[]): ResultMainBet => {
     const singles = selections.map((selection) => this.processSingleBet(selection));
+
     const doubles = this.processDoubles(selections);
     const trebles = this.processTrebles(selections);
 
@@ -880,12 +903,6 @@ export class BetCalculator {
     const trebles_stake = trebles.stake;
     const accumulator_payout = accumulator.payout;
 
-    console.log('Yangke combination payouts', {
-      doubles_payout,
-      trebles_payout,
-      accumulator_payout,
-    });
-
     const win_profit = doubles.win_profit + trebles.win_profit + accumulator.win_profit;
     const place_profit = doubles.place_profit + trebles.place_profit + accumulator.place_profit;
 
@@ -921,8 +938,6 @@ export class BetCalculator {
     const total_payout = this.calculatorHelper.roundToDecimalPlaces(
       doubles_payout + trebles_payout + folds_payout + accumulator_payout,
     );
-
-    console.log('Canadian', JSON.stringify({ selections }));
 
     const main_result_type = this.calculatorHelper.getMainResultType([
       ...singles,
@@ -1307,7 +1322,7 @@ export class BetCalculator {
     const place_stake = this.each_way ? this.stake : 0;
 
     for (const selection of selections) {
-      if (selection.partial_win_percent) {
+      if (selection.partial_win_percent && selection.partial_win_percent > 0 && selection.partial_win_percent < 100) {
         win_stake = win_stake - win_stake * (selection.partial_win_percent / 100);
       }
     }

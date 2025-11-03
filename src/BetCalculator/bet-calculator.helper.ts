@@ -85,7 +85,7 @@ export class BetCalculatorHelper {
       ({ numerator, denominator } = { numerator: 0, denominator: 1 });
     }
 
-    if (selection.rule_4) {
+    if (selection.rule_4 && selection.rule_4 > 0 && selection.rule_4 < 100) {
       ({ numerator, denominator } = this.calculateRule4Odds(
         { numerator, denominator, odd_decimal: this.roundToDecimalPlaces(+numerator / +denominator) },
         selection.rule_4,
@@ -111,7 +111,7 @@ export class BetCalculatorHelper {
       ({ numerator, denominator } = { numerator: 0, denominator: 1 });
     }
 
-    if (selection.rule_4) {
+    if (selection.rule_4 && selection.rule_4 > 0 && selection.rule_4 < 100) {
       ({ numerator, denominator } = this.calculateRule4Odds(
         { numerator, denominator, odd_decimal: this.roundToDecimalPlaces(+numerator / +denominator) },
         selection.rule_4,
@@ -155,7 +155,7 @@ export class BetCalculatorHelper {
       }
     }
 
-    if (selection.rule_4) {
+    if (selection.rule_4 && selection.rule_4 > 0 && selection.rule_4 < 100) {
       ({ numerator: bog_odd_numerator, denominator: bog_odd_denominator } = this.calculateRule4Odds(
         {
           numerator: bog_odd_numerator,
