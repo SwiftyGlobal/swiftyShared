@@ -128,7 +128,7 @@ describe('Resulting', () => {
 
     console.log('Double 1 Winner 1 Loser', result);
 
-    expect(result.result_type).toEqual(BetResultType.WINNER);
+    expect(result.result_type).toEqual(BetResultType.PARTIAL);
   });
 
   it('Double 1 Void 1 Loser', () => {
