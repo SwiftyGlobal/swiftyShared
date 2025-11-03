@@ -940,7 +940,7 @@ describe('Other combinations ', () => {
   });
 
   // case with all losers expect one void
-  it.only('Lucky31 Win Case - All Losers Except One Void', () => {
+  it('Lucky31 Win Case - All Losers Except One Void', () => {
     const bets = [
       {
         bet_id: 1,
