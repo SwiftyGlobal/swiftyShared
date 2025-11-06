@@ -1,4 +1,5 @@
 import type { OddsFormatsModel } from '../../models';
+import type { Nullable } from '../../types';
 
 /**
  * Finds the "Evens" market (spread) from a list of selections.
@@ -13,7 +14,7 @@ import type { OddsFormatsModel } from '../../models';
  * that form the "Evens" market. Returns an empty array
  * if no complete pair is found.
  */
-export const findEvensSelections = <T extends { handicap: string; outcome_id: string } & OddsFormatsModel>(
+export const findEvensSelections = <T extends { handicap?: Nullable<string>; outcome_id?: number } & OddsFormatsModel>(
   selections: T[],
 ): T[] => {
   // 1. Group selections by handicap
