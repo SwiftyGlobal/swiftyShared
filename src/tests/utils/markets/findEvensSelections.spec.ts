@@ -1,4 +1,4 @@
-import { findEvensSelections } from '../../../utils/markets/findEvensSelections';
+import { findEvensSelections } from '../../../utils';
 import type { OddsFormatsModel } from '../../../models';
 
 type TestSelection = OddsFormatsModel & {
