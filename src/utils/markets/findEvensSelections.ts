@@ -1,6 +1,36 @@
 import type { OddsFormatsModel } from '../../models';
 import type { Nullable } from '../../types';
 
+const areValidOpposingSelections = <
+  T extends {
+    participant_role_id?: Nullable<string>;
+    outcome_id?: Nullable<number>;
+  },
+>(
+  line: T[],
+  evensType: 'participant' | 'outcome',
+): boolean => {
+  const [first, second] = line;
+
+  if (evensType === 'participant') {
+    if (!first.participant_role_id || !second.participant_role_id) {
+      return false;
+    }
+
+    return first.participant_role_id !== second.participant_role_id;
+  }
+
+  if (first.outcome_id === undefined || second.outcome_id === undefined) {
+    return false;
+  }
+
+  if (first.outcome_id === null || second.outcome_id === null) {
+    return false;
+  }
+
+  return first.outcome_id !== second.outcome_id;
+};
+
 /**
  * Finds the "Evens" market (spread) from a list of selections.
  *
@@ -15,9 +45,14 @@ import type { Nullable } from '../../types';
  * if no complete pair is found.
  */
 export const findEvensSelections = <
-  T extends { handicap?: Nullable<string>; participant_role_id?: string } & OddsFormatsModel,
+  T extends {
+    handicap?: Nullable<string>;
+    participant_role_id?: Nullable<string>;
+    outcome_id?: Nullable<number>;
+  } & OddsFormatsModel,
 >(
   selections: T[],
+  evensType: 'participant' | 'outcome' = 'participant',
 ): T[] => {
   // 1. Group selections by handicap
   // We now store selections in an array for each handicap line.
@@ -46,8 +81,8 @@ export const findEvensSelections = <
   // Loop through all the grouped handicap lines (which are now arrays)
   for (const line of marketLines.values()) {
     // A valid pair must consist of exactly two selections (e.g., Over and Under)
-    // and they must have different participant_role_id values.
-    if (line.length === 2 && line[0].participant_role_id !== line[1].participant_role_id) {
+    // and they must have different identifiers based on the evensType.
+    if (line.length === 2 && areValidOpposingSelections(line, evensType)) {
       // Get the two selections for this line
       const selectionOne = line[0];
       const selectionTwo = line[1];
