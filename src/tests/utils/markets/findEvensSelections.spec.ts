@@ -129,7 +129,7 @@ describe('findEvensSelections', () => {
   it('returns the pair with the smallest odds gap (2.75 Over/Under)', () => {
     const allSelections: TestSelection[] = buildSelectionsPayload();
 
-    const result = findEvensSelections(allSelections);
+    const result = findEvensSelections(allSelections, 'outcome');
 
     expect(Array.isArray(result)).toBe(true);
     expect(result).toHaveLength(2);
@@ -209,6 +209,67 @@ describe('findEvensSelections', () => {
     const [a, b] = result;
     expect([a.handicap, b.handicap]).toEqual(['2.75', '2.75']);
     expect([a.name, b.name].sort()).toEqual(['Over 2.75', 'Under 2.75'].sort());
+  });
+
+  it('skips selections when handicap is null', () => {
+    const payload: TestSelection[] = [
+      {
+        bet_id: 'e-nh-002',
+        trading_status: 'open',
+        outcome_type: 'draw',
+        participant_role_id: '13',
+        outcome_id: 13,
+        handicap: null as unknown as string,
+        odds_decimal: '9.50',
+        odds_american: '+850',
+        odds_fractional: '17/2',
+        is_allowed: true,
+        price_boost: false,
+        is_manual: false,
+        price_boost_odds: null,
+        name: 'Null handicap',
+        price_boost_type: 'standard',
+      },
+      {
+        bet_id: 'e-null-101',
+        trading_status: 'open',
+        outcome_type: 'draw',
+        participant_role_id: '13',
+        outcome_id: 13,
+        handicap: '1.0',
+        odds_decimal: '1.80',
+        odds_american: '-125',
+        odds_fractional: '4/5',
+        is_allowed: true,
+        price_boost: false,
+        is_manual: false,
+        price_boost_odds: null,
+        name: 'Over 1.0',
+        price_boost_type: 'standard',
+      },
+      {
+        bet_id: 'e-null-102',
+        trading_status: 'open',
+        outcome_type: 'draw',
+        participant_role_id: '14',
+        outcome_id: 14,
+        handicap: '1.0',
+        odds_decimal: '1.95',
+        odds_american: '-105',
+        odds_fractional: '20/21',
+        is_allowed: true,
+        price_boost: false,
+        is_manual: false,
+        price_boost_odds: null,
+        name: 'Under 1.0',
+        price_boost_type: 'standard',
+      },
+    ];
+
+    const result = findEvensSelections(payload, 'outcome');
+    expect(result).toHaveLength(2);
+    const [first, second] = result;
+    expect([first.handicap, second.handicap]).toEqual(['1.0', '1.0']);
   });
 
   it('returns an empty array when no valid opposing pair exists', () => {
@@ -455,7 +516,7 @@ describe('findEvensSelections', () => {
       },
     ];
 
-    expect(findEvensSelections(payload)).toEqual([]);
+    expect(findEvensSelections(payload, 'participant')).toEqual([]);
   });
 
   it('ignores pairs when outcome identifiers are undefined in outcome mode', () => {
@@ -839,5 +900,313 @@ describe('findEvensSelections', () => {
     expect(result).toHaveLength(2);
     const [x, y] = result;
     expect([x.handicap, y.handicap]).toEqual(['2.0', '2.0']);
+  });
+
+  describe('participant evens (opposite handicaps)', () => {
+    it('pairs +1 and -1 for different participants and chooses smallest odds gap', () => {
+      const payload: TestSelection[] = [
+        // +1 vs -1 candidate A (gap 0.20)
+        {
+          bet_id: 'pa-1',
+          trading_status: 'open',
+          outcome_type: 'hcap',
+          participant_role_id: 'home',
+          outcome_id: 10,
+          handicap: '+1',
+          odds_decimal: '1.80',
+          odds_american: '-125',
+          odds_fractional: '4/5',
+          is_allowed: true,
+          price_boost: false,
+          is_manual: false,
+          price_boost_odds: null,
+          name: 'Home -1',
+          price_boost_type: 'standard',
+        },
+        {
+          bet_id: 'pa-2',
+          trading_status: 'open',
+          outcome_type: 'hcap',
+          participant_role_id: 'away',
+          outcome_id: 11,
+          handicap: '-1',
+          odds_decimal: '2.00',
+          odds_american: '+100',
+          odds_fractional: '1/1',
+          is_allowed: true,
+          price_boost: false,
+          is_manual: false,
+          price_boost_odds: null,
+          name: 'Away +1',
+          price_boost_type: 'standard',
+        },
+
+        // +2 vs -2 candidate B (gap 0.05) -> should win
+        {
+          bet_id: 'pb-1',
+          trading_status: 'open',
+          outcome_type: 'hcap',
+          participant_role_id: 'home',
+          outcome_id: 20,
+          handicap: '+2',
+          odds_decimal: '1.95',
+          odds_american: '-105',
+          odds_fractional: '20/21',
+          is_allowed: true,
+          price_boost: false,
+          is_manual: false,
+          price_boost_odds: null,
+          name: 'Home -2',
+          price_boost_type: 'standard',
+        },
+        {
+          bet_id: 'pb-2',
+          trading_status: 'open',
+          outcome_type: 'hcap',
+          participant_role_id: 'away',
+          outcome_id: 21,
+          handicap: '-2',
+          odds_decimal: '1.90',
+          odds_american: '-111',
+          odds_fractional: '10/11',
+          is_allowed: true,
+          price_boost: false,
+          is_manual: false,
+          price_boost_odds: null,
+          name: 'Away +2',
+          price_boost_type: 'standard',
+        },
+      ];
+
+      const result = findEvensSelections(payload, 'participant');
+      expect(result).toHaveLength(2);
+      const [a, b] = result;
+      expect(new Set([a.handicap, b.handicap])).toEqual(new Set(['+2', '-2']));
+      expect(new Set([a.participant_role_id, b.participant_role_id])).toEqual(new Set(['home', 'away']));
+    });
+
+    it('skips non-numeric handicaps and does not crash', () => {
+      const payload: TestSelection[] = [
+        {
+          bet_id: 'nx-1',
+          trading_status: 'open',
+          outcome_type: 'hcap',
+          participant_role_id: 'a',
+          outcome_id: 1,
+          handicap: '+abc',
+          odds_decimal: '2.00',
+          odds_american: '+100',
+          odds_fractional: '1/1',
+          is_allowed: true,
+          price_boost: false,
+          is_manual: false,
+          price_boost_odds: null,
+          name: 'Bad +',
+          price_boost_type: 'standard',
+        },
+        {
+          bet_id: 'nx-2',
+          trading_status: 'open',
+          outcome_type: 'hcap',
+          participant_role_id: 'b',
+          outcome_id: 2,
+          handicap: 'N/A',
+          odds_decimal: '1.90',
+          odds_american: '-111',
+          odds_fractional: '10/11',
+          is_allowed: true,
+          price_boost: false,
+          is_manual: false,
+          price_boost_odds: null,
+          name: 'Bad -',
+          price_boost_type: 'standard',
+        },
+        // Valid pair exists too
+        {
+          bet_id: 'nx-3',
+          trading_status: 'open',
+          outcome_type: 'hcap',
+          participant_role_id: 'a',
+          outcome_id: 3,
+          handicap: '+1.5',
+          odds_decimal: '1.95',
+          odds_american: '-105',
+          odds_fractional: '20/21',
+          is_allowed: true,
+          price_boost: false,
+          is_manual: false,
+          price_boost_odds: null,
+          name: 'A -1.5',
+          price_boost_type: 'standard',
+        },
+        {
+          bet_id: 'nx-4',
+          trading_status: 'open',
+          outcome_type: 'hcap',
+          participant_role_id: 'b',
+          outcome_id: 4,
+          handicap: '-1.5',
+          odds_decimal: '1.90',
+          odds_american: '-111',
+          odds_fractional: '10/11',
+          is_allowed: true,
+          price_boost: false,
+          is_manual: false,
+          price_boost_odds: null,
+          name: 'B +1.5',
+          price_boost_type: 'standard',
+        },
+      ];
+
+      const result = findEvensSelections(payload, 'participant');
+      expect(result).toHaveLength(2);
+      const [a, b] = result;
+      expect(new Set([a.handicap, b.handicap])).toEqual(new Set(['+1.5', '-1.5']));
+    });
+
+    it('does not pair 0 with -0 (treated as same sign in JS)', () => {
+      const payload: TestSelection[] = [
+        {
+          bet_id: 'z-1',
+          trading_status: 'open',
+          outcome_type: 'hcap',
+          participant_role_id: 'a',
+          outcome_id: 1,
+          handicap: '0',
+          odds_decimal: '2.00',
+          odds_american: '+100',
+          odds_fractional: '1/1',
+          is_allowed: true,
+          price_boost: false,
+          is_manual: false,
+          price_boost_odds: null,
+          name: 'Zero A',
+          price_boost_type: 'standard',
+        },
+        {
+          bet_id: 'z-2',
+          trading_status: 'open',
+          outcome_type: 'hcap',
+          participant_role_id: 'b',
+          outcome_id: 2,
+          handicap: '-0',
+          odds_decimal: '2.00',
+          odds_american: '+100',
+          odds_fractional: '1/1',
+          is_allowed: true,
+          price_boost: false,
+          is_manual: false,
+          price_boost_odds: null,
+          name: 'Zero B',
+          price_boost_type: 'standard',
+        },
+      ];
+
+      const result = findEvensSelections(payload, 'participant');
+      expect(result).toEqual([]);
+    });
+
+    it('does not pair opposite handicaps when participant_role_id matches', () => {
+      const payload: TestSelection[] = [
+        {
+          bet_id: 'sp-1',
+          trading_status: 'open',
+          outcome_type: 'hcap',
+          participant_role_id: 'same',
+          outcome_id: 1,
+          handicap: '+1',
+          odds_decimal: '1.90',
+          odds_american: '-111',
+          odds_fractional: '10/11',
+          is_allowed: true,
+          price_boost: false,
+          is_manual: false,
+          price_boost_odds: null,
+          name: 'Same +1',
+          price_boost_type: 'standard',
+        },
+        {
+          bet_id: 'sp-2',
+          trading_status: 'open',
+          outcome_type: 'hcap',
+          participant_role_id: 'same',
+          outcome_id: 2,
+          handicap: '-1',
+          odds_decimal: '2.00',
+          odds_american: '+100',
+          odds_fractional: '1/1',
+          is_allowed: true,
+          price_boost: false,
+          is_manual: false,
+          price_boost_odds: null,
+          name: 'Same -1',
+          price_boost_type: 'standard',
+        },
+      ];
+
+      expect(findEvensSelections(payload, 'participant')).toEqual([]);
+    });
+
+    it('handles multiple options on one side by checking all cross-pairs', () => {
+      const payload: TestSelection[] = [
+        // Positive side has two entries, negative side one
+        {
+          bet_id: 'mp-1',
+          trading_status: 'open',
+          outcome_type: 'hcap',
+          participant_role_id: 'a',
+          outcome_id: 1,
+          handicap: '+1',
+          odds_decimal: '2.10',
+          odds_american: '+110',
+          odds_fractional: '11/10',
+          is_allowed: true,
+          price_boost: false,
+          is_manual: false,
+          price_boost_odds: null,
+          name: 'A +1',
+          price_boost_type: 'standard',
+        },
+        {
+          bet_id: 'mp-2',
+          trading_status: 'open',
+          outcome_type: 'hcap',
+          participant_role_id: 'a2',
+          outcome_id: 2,
+          handicap: '+1',
+          odds_decimal: '1.95',
+          odds_american: '-105',
+          odds_fractional: '20/21',
+          is_allowed: true,
+          price_boost: false,
+          is_manual: false,
+          price_boost_odds: null,
+          name: 'A2 +1',
+          price_boost_type: 'standard',
+        },
+        {
+          bet_id: 'mn-1',
+          trading_status: 'open',
+          outcome_type: 'hcap',
+          participant_role_id: 'b',
+          outcome_id: 3,
+          handicap: '-1',
+          odds_decimal: '1.90',
+          odds_american: '-111',
+          odds_fractional: '10/11',
+          is_allowed: true,
+          price_boost: false,
+          is_manual: false,
+          price_boost_odds: null,
+          name: 'B -1',
+          price_boost_type: 'standard',
+        },
+      ];
+
+      const result = findEvensSelections(payload, 'participant');
+      expect(result).toHaveLength(2);
+      const [a, b] = result;
+      expect(new Set([a.handicap, b.handicap])).toEqual(new Set(['+1', '-1']));
+    });
   });
 });

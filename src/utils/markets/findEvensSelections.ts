@@ -52,52 +52,98 @@ export const findEvensSelections = <
   } & OddsFormatsModel,
 >(
   selections: T[],
-  evensType: 'participant' | 'outcome' = 'participant',
+  evensType: 'participant' | 'outcome' = 'outcome',
 ): T[] => {
-  // 1. Group selections by handicap
-  // We now store selections in an array for each handicap line.
+  // For 'participant' evens, we want opposite handicaps (-h and +h)
+  if (evensType === 'participant') {
+    type Bucket = { pos: T[]; neg: T[] };
+    const byAbsHandicap = new Map<string, Bucket>();
+
+    for (const selection of selections) {
+      const handicap = selection.handicap;
+
+      if (!handicap) {
+        continue;
+      }
+
+      const numeric = parseFloat(handicap);
+
+      if (Number.isNaN(numeric)) {
+        continue;
+      }
+
+      const absKey = Math.abs(numeric).toString();
+      if (!byAbsHandicap.has(absKey)) {
+        byAbsHandicap.set(absKey, { pos: [], neg: [] });
+      }
+
+      const bucket = byAbsHandicap.get(absKey)!;
+      if (numeric >= 0) {
+        bucket.pos.push(selection);
+      } else {
+        bucket.neg.push(selection);
+      }
+    }
+
+    let smallestGap = Infinity;
+    let bestPair: T[] = [];
+
+    for (const bucket of byAbsHandicap.values()) {
+      if (bucket.pos.length === 0 || bucket.neg.length === 0) {
+        continue;
+      }
+
+      for (const posSel of bucket.pos) {
+        for (const negSel of bucket.neg) {
+          const pair: T[] = [posSel, negSel];
+          if (!areValidOpposingSelections(pair, 'participant')) {
+            continue;
+          }
+
+          const priceOne = parseFloat(posSel.odds_decimal);
+          const priceTwo = parseFloat(negSel.odds_decimal);
+          const currentGap = Math.abs(priceOne - priceTwo);
+
+          if (currentGap < smallestGap) {
+            smallestGap = currentGap;
+            bestPair = pair;
+          }
+        }
+      }
+    }
+
+    return bestPair;
+  }
+
   const marketLines = new Map<string, T[]>();
 
   for (const selection of selections) {
     const handicap = selection.handicap;
 
     if (!handicap) {
-      continue; // Skip selections without a handicap
+      continue;
     }
 
-    // Ensure the handicap line exists in our map
     if (!marketLines.has(handicap)) {
       marketLines.set(handicap, []);
     }
 
-    // Add the current selection to its handicap group
     marketLines.get(handicap)!.push(selection);
   }
 
-  // 2. Find the smallest gap
   let smallestGap = Infinity;
   let bestPair: T[] = [];
 
-  // Loop through all the grouped handicap lines (which are now arrays)
   for (const line of marketLines.values()) {
-    // A valid pair must consist of exactly two selections (e.g., Over and Under)
-    // and they must have different identifiers based on the evensType.
-    if (line.length === 2 && areValidOpposingSelections(line, evensType)) {
-      // Get the two selections for this line
+    if (line.length === 2 && areValidOpposingSelections(line, 'outcome')) {
       const selectionOne = line[0];
       const selectionTwo = line[1];
-
-      // Convert decimal odds from string to number for calculation
       const priceOne = parseFloat(selectionOne.odds_decimal);
       const priceTwo = parseFloat(selectionTwo.odds_decimal);
-
-      // Calculate the absolute difference (the gap)
       const currentGap = Math.abs(priceOne - priceTwo);
-
-      // 3. Compare and store the best pair
       if (currentGap < smallestGap) {
         smallestGap = currentGap;
-        bestPair = line; // The line itself is the array [selectionOne, selectionTwo]
+        bestPair = line;
       }
     }
   }
