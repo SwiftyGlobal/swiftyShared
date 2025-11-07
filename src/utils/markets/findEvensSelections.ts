@@ -14,7 +14,9 @@ import type { Nullable } from '../../types';
  * that form the "Evens" market. Returns an empty array
  * if no complete pair is found.
  */
-export const findEvensSelections = <T extends { handicap?: Nullable<string>; outcome_id?: number } & OddsFormatsModel>(
+export const findEvensSelections = <
+  T extends { handicap?: Nullable<string>; participant_role_id?: string } & OddsFormatsModel,
+>(
   selections: T[],
 ): T[] => {
   // 1. Group selections by handicap
@@ -44,8 +46,8 @@ export const findEvensSelections = <T extends { handicap?: Nullable<string>; out
   // Loop through all the grouped handicap lines (which are now arrays)
   for (const line of marketLines.values()) {
     // A valid pair must consist of exactly two selections (e.g., Over and Under)
-    // and they must have different outcome_ids.
-    if (line.length === 2 && line[0].outcome_id !== line[1].outcome_id) {
+    // and they must have different participant_role_id values.
+    if (line.length === 2 && line[0].participant_role_id !== line[1].participant_role_id) {
       // Get the two selections for this line
       const selectionOne = line[0];
       const selectionTwo = line[1];
