@@ -41,7 +41,6 @@
     "@jaxin007/prettier-config-backend": "^1.0.0",
     "@swc/core": "^1.13.5",
     "@swc/jest": "^0.2.39",
-    "@types/aws-lambda": "^8.10.109",
     "@types/jest": "^29.5.14",
     "@types/node": "^18.11.17",
     "@typescript-eslint/eslint-plugin": "^6.0.0",

@@ -1,6 +1,5 @@
 export * from './nullable';
 export * from './mysqlBoolean';
-export * from './apiServerlessHandler';
 export * from './jwtModel';
 export * from './emptyObject';
 export * from './ladderValues';
