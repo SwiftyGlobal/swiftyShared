@@ -10,7 +10,7 @@ import type {
 import { BetOddType } from '../common/constants/betOddType';
 import type { BetOdds } from '../common/dto/betOdd';
 import { BetSlipType } from '../common/constants/betSlipType';
-import { BetResultType } from '../common/constants/betResultType';
+import { BetResultType, LegacyBetResultType } from '../common/constants/betResultType';
 
 export class BetCalculator {
   stake: number = 0;
@@ -73,6 +73,28 @@ export class BetCalculator {
     return numeric;
   };
 
+  private sanitizeResult = (result: LegacyBetResultType): BetResultType => {
+    if ([LegacyBetResultType.PLACED, LegacyBetResultType.PLACE].includes(result) && this.each_way === false) {
+      return BetResultType.LOSER;
+    } else if ([LegacyBetResultType.PLACED, LegacyBetResultType.PLACE].includes(result) && this.each_way === true) {
+      return BetResultType.PLACED;
+    } else if ([LegacyBetResultType.WINNER, LegacyBetResultType.WIN, LegacyBetResultType.WON].includes(result)) {
+      return BetResultType.WINNER;
+    } else if ([LegacyBetResultType.VOID, LegacyBetResultType.PUSHED, LegacyBetResultType.PUSH].includes(result)) {
+      return BetResultType.VOID;
+    } else if ([LegacyBetResultType.PARTIAL, LegacyBetResultType.PARTIAL_WIN].includes(result)) {
+      return BetResultType.PARTIAL;
+    } else if ([LegacyBetResultType.LOSER, LegacyBetResultType.LOSE, LegacyBetResultType.LOST].includes(result)) {
+      return BetResultType.LOSER;
+    } else if (result === LegacyBetResultType.HALF_WON) {
+      return BetResultType.HALF_WON;
+    } else if (result === LegacyBetResultType.HALF_LOST) {
+      return BetResultType.HALF_LOST;
+    } else {
+      return BetResultType.OPEN;
+    }
+  };
+
   private clamp = (value: number, min: number, max: number): number => {
     if (value < min) return min;
     if (value > max) return max;
@@ -121,9 +143,7 @@ export class BetCalculator {
       sanitized.odd_fractional = sanitized.odd_fractional || '';
       sanitized.ew_terms = sanitized.ew_terms || '';
 
-      if (this.each_way === false && sanitized.result === BetResultType.PLACED) {
-        sanitized.result = BetResultType.LOSER;
-      }
+      sanitized.result = this.sanitizeResult(sanitized.result as unknown as LegacyBetResultType);
 
       return sanitized;
     });
