@@ -10,7 +10,7 @@ import type {
 import { BetOddType } from '../common/constants/betOddType';
 import type { BetOdds } from '../common/dto/betOdd';
 import { BetSlipType } from '../common/constants/betSlipType';
-import { BetResultType } from '../common/constants/betResultType';
+import { BetResultType, LegacyBetResultType } from '../common/constants/betResultType';
 
 export class BetCalculator {
   stake: number = 0;
@@ -73,6 +73,28 @@ export class BetCalculator {
     return numeric;
   };
 
+  private sanitizeResult = (result: LegacyBetResultType): BetResultType => {
+    if ([LegacyBetResultType.PLACED, LegacyBetResultType.PLACE].includes(result) && this.each_way === false) {
+      return BetResultType.LOSER;
+    } else if ([LegacyBetResultType.PLACED, LegacyBetResultType.PLACE].includes(result) && this.each_way === true) {
+      return BetResultType.PLACED;
+    } else if ([LegacyBetResultType.WINNER, LegacyBetResultType.WIN, LegacyBetResultType.WON].includes(result)) {
+      return BetResultType.WINNER;
+    } else if ([LegacyBetResultType.VOID, LegacyBetResultType.PUSHED, LegacyBetResultType.PUSH].includes(result)) {
+      return BetResultType.VOID;
+    } else if ([LegacyBetResultType.PARTIAL, LegacyBetResultType.PARTIAL_WIN].includes(result)) {
+      return BetResultType.PARTIAL;
+    } else if ([LegacyBetResultType.LOSER, LegacyBetResultType.LOSE, LegacyBetResultType.LOST].includes(result)) {
+      return BetResultType.LOSER;
+    } else if (result === LegacyBetResultType.HALF_WON) {
+      return BetResultType.HALF_WON;
+    } else if (result === LegacyBetResultType.HALF_LOST) {
+      return BetResultType.HALF_LOST;
+    } else {
+      return BetResultType.OPEN;
+    }
+  };
+
   private clamp = (value: number, min: number, max: number): number => {
     if (value < min) return min;
     if (value > max) return max;
@@ -120,6 +142,8 @@ export class BetCalculator {
       sanitized.sp_odd_fractional = sanitized.sp_odd_fractional || '';
       sanitized.odd_fractional = sanitized.odd_fractional || '';
       sanitized.ew_terms = sanitized.ew_terms || '';
+
+      sanitized.result = this.sanitizeResult(sanitized.result as LegacyBetResultType);
 
       if (this.each_way === false && sanitized.result === BetResultType.PLACED) {
         sanitized.result = BetResultType.LOSER;
@@ -245,7 +269,7 @@ export class BetCalculator {
     let win_profit = 0;
     let place_profit = 0;
     let win_stake = this.stake;
-    const place_stake = this.each_way ? this.stake : 0;
+    let place_stake = this.each_way ? this.stake : 0;
 
     // only is appliied to win stake
     if (selection.partial_win_percent && selection.partial_win_percent > 0 && selection.partial_win_percent < 100) {
@@ -254,9 +278,21 @@ export class BetCalculator {
 
     let return_stake = win_stake;
 
+    if (selection.result === BetResultType.HALF_WON) {
+      win_stake = win_stake / 2;
+      place_stake = place_stake / 2;
+    } else if (selection.result === BetResultType.HALF_LOST) {
+      win_stake = win_stake / 2;
+      place_stake = place_stake / 2;
+    }
+
+    console.log('Half Won Single', { win_stake, place_stake, return_stake, result: selection.result });
+
     const odds = this.calculatorHelper.retrieveOdds(selection);
 
-    const each_way_odds = this.each_way ? this.calculatorHelper.retrieveEachWayOdds(odds, selection.ew_terms) : null;
+    const each_way_odds = this.each_way
+      ? this.calculatorHelper.retrieveEachWayOdds(odds, selection.ew_terms, selection.result as BetResultType)
+      : null;
 
     if (odds.main.odd_decimal === 0 && odds.sp.odd_decimal === 0 && selection.result !== BetResultType.VOID) {
       this.profit = 0;
@@ -265,7 +301,7 @@ export class BetCalculator {
       return {
         stake: return_stake,
         payout: this.payout,
-        result_type: selection.result,
+        result_type: selection.result as BetResultType,
         win_profit,
         place_profit,
         profit: this.profit,
@@ -281,7 +317,7 @@ export class BetCalculator {
             win_odd: odds.main.odd_decimal,
             place_odd: each_way_odds?.main?.odd_decimal || 0,
             payout: this.payout,
-            result_type: selection.result,
+            result_type: selection.result as BetResultType,
           },
         ],
         combinations: [],
@@ -289,7 +325,11 @@ export class BetCalculator {
       };
     }
 
-    if ([BetResultType.WINNER, BetResultType.PARTIAL].includes(selection.result)) {
+    if (
+      [BetResultType.WINNER, BetResultType.PARTIAL, BetResultType.HALF_WON, BetResultType.HALF_LOST].includes(
+        selection.result as BetResultType,
+      )
+    ) {
       win_profit = this.calculatorHelper.calculateProfit(
         odds,
         win_stake,
@@ -310,7 +350,13 @@ export class BetCalculator {
         this.bog_odd = each_way_odds ? each_way_odds.bog.odd_decimal : odds.bog.odd_decimal;
       }
 
-      return_stake += place_stake;
+      if (selection.result === BetResultType.HALF_WON) {
+        return_stake = win_stake * 2 + place_stake * 2;
+      } else if (selection.result === BetResultType.HALF_LOST) {
+        return_stake = win_stake + place_stake;
+      } else {
+        return_stake += place_stake;
+      }
 
       this.profit = +win_profit + +place_profit;
     } else if (selection.result === BetResultType.PLACED && this.each_way) {
@@ -351,7 +397,6 @@ export class BetCalculator {
 
     if (selection.rule_4 && selection.rule_4 > 0 && selection.rule_4 < 100) {
       this.profit = this.calculatorHelper.calculateRule4(this.profit, selection.rule_4);
-      console.log('Rule 4', { profit: this.profit });
     }
 
     this.payout = +this.profit + +return_stake;
@@ -362,6 +407,8 @@ export class BetCalculator {
         return_stake,
         win_profit: +win_profit,
         place_profit: +place_profit,
+        profit: this.profit,
+        payout: this.payout,
         bog_amount_won: this.bog_amount_won,
       }),
     );
@@ -369,7 +416,7 @@ export class BetCalculator {
     return {
       stake: return_stake,
       payout: this.payout,
-      result_type: selection.result,
+      result_type: selection.result as BetResultType,
       win_profit,
       place_profit,
       profit: this.profit,
@@ -385,7 +432,7 @@ export class BetCalculator {
           win_odd: odds.main.odd_decimal,
           place_odd: each_way_odds?.main?.odd_decimal || 0,
           payout: this.payout,
-          result_type: selection.result,
+          result_type: selection.result as BetResultType,
         },
       ],
       combinations: [],
@@ -406,7 +453,25 @@ export class BetCalculator {
     };
 
     let win_stake = this.stake;
-    const place_stake = this.each_way ? this.stake : 0;
+    let place_stake = this.each_way ? this.stake : 0;
+
+    // Handle HALF_WON and HALF_LOST for both selections
+    // Each HALF_WON/HALF_LOST divides stake by 2, so both = divide by 4
+    if (
+      (first_selection.result === BetResultType.HALF_WON || first_selection.result === BetResultType.HALF_LOST) &&
+      (second_selection.result === BetResultType.HALF_WON || second_selection.result === BetResultType.HALF_LOST)
+    ) {
+      place_stake = win_stake / 4;
+      win_stake = win_stake / 4;
+    } else if (
+      first_selection.result === BetResultType.HALF_WON ||
+      first_selection.result === BetResultType.HALF_LOST ||
+      second_selection.result === BetResultType.HALF_WON ||
+      second_selection.result === BetResultType.HALF_LOST
+    ) {
+      place_stake = place_stake / 2;
+      win_stake = win_stake / 2;
+    }
 
     if (
       first_selection.partial_win_percent &&
@@ -425,16 +490,30 @@ export class BetCalculator {
 
     let return_stake = win_stake;
 
-    // objects of odds
     const first_odds = this.calculatorHelper.retrieveOdds(first_selection);
     const second_odds = this.calculatorHelper.retrieveOdds(second_selection);
 
-    const first_each_way_odds = this.each_way
-      ? this.calculatorHelper.retrieveEachWayOdds(first_odds, first_selection.ew_terms)
-      : null;
-    const second_each_way_odds = this.each_way
-      ? this.calculatorHelper.retrieveEachWayOdds(second_odds, second_selection.ew_terms)
-      : null;
+    const first_each_way_odds =
+      this.each_way ||
+      first_selection.result === BetResultType.HALF_WON ||
+      first_selection.result === BetResultType.HALF_LOST
+        ? this.calculatorHelper.retrieveEachWayOdds(
+            first_odds,
+            first_selection.ew_terms,
+            first_selection.result as BetResultType,
+          )
+        : null;
+
+    const second_each_way_odds =
+      this.each_way ||
+      second_selection.result === BetResultType.HALF_WON ||
+      second_selection.result === BetResultType.HALF_LOST
+        ? this.calculatorHelper.retrieveEachWayOdds(
+            second_odds,
+            second_selection.ew_terms,
+            second_selection.result as BetResultType,
+          )
+        : null;
 
     const { win_odd: first_win_odd, place_odd: first_place_odd } = this.calculatorHelper.getSingleResultOdds(
       first_selection,
@@ -452,6 +531,7 @@ export class BetCalculator {
     place_odd = this.calculatorHelper.getCombinationOdds([first_place_odd, second_place_odd]);
 
     let win_profit = this.calculatorHelper.calculateProfit(win_odd, win_stake, BetOddType.MAIN);
+
     let place_profit = this.calculatorHelper.calculateProfit(place_odd, place_stake, BetOddType.MAIN);
 
     if (this.bog_applicable) {
@@ -632,13 +712,25 @@ export class BetCalculator {
     console.log('Treble Selections Odds', { first_odds, second_odds, third_odds });
 
     const first_each_way_odds = this.each_way
-      ? this.calculatorHelper.retrieveEachWayOdds(first_odds, first_selection.ew_terms)
+      ? this.calculatorHelper.retrieveEachWayOdds(
+          first_odds,
+          first_selection.ew_terms,
+          first_selection.result as BetResultType,
+        )
       : null;
     const second_each_way_odds = this.each_way
-      ? this.calculatorHelper.retrieveEachWayOdds(second_odds, second_selection.ew_terms)
+      ? this.calculatorHelper.retrieveEachWayOdds(
+          second_odds,
+          second_selection.ew_terms,
+          second_selection.result as BetResultType,
+        )
       : null;
     const third_each_way_odds = this.each_way
-      ? this.calculatorHelper.retrieveEachWayOdds(third_odds, third_selection.ew_terms)
+      ? this.calculatorHelper.retrieveEachWayOdds(
+          third_odds,
+          third_selection.ew_terms,
+          third_selection.result as BetResultType,
+        )
       : null;
 
     const { win_odd: first_win_odd, place_odd: first_place_odd } = this.calculatorHelper.getSingleResultOdds(
@@ -1399,7 +1491,11 @@ export class BetCalculator {
       const retrieved_odds = this.calculatorHelper.retrieveOdds(selection);
 
       const each_way_odds = this.each_way
-        ? this.calculatorHelper.retrieveEachWayOdds(retrieved_odds, selection.ew_terms)
+        ? this.calculatorHelper.retrieveEachWayOdds(
+            retrieved_odds,
+            selection.ew_terms,
+            selection.result as BetResultType,
+          )
         : null;
 
       const resultOdds = this.calculatorHelper.getSingleResultOdds(selection, retrieved_odds, each_way_odds);
@@ -1569,9 +1665,9 @@ export class BetCalculator {
     } else if (first_selection.result === BetResultType.PARTIAL && second_selection.result === BetResultType.PARTIAL) {
       return BetResultType.PARTIAL;
     } else if (first_selection.result === BetResultType.VOID && second_selection.result != BetResultType.VOID) {
-      return second_selection.result;
+      return second_selection.result as BetResultType;
     } else if (first_selection.result != BetResultType.VOID && second_selection.result === BetResultType.VOID) {
-      return first_selection.result;
+      return first_selection.result as BetResultType;
     } else if (
       first_selection.result === BetResultType.WINNER ||
       first_selection.result === BetResultType.PLACED ||

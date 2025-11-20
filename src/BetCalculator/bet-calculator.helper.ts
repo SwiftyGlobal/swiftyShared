@@ -51,30 +51,78 @@ export class BetCalculatorHelper {
     return retrieved_odds;
   };
 
-  retrieveEachWayOdds = (odds: BetOdds, ew_terms: string | null): BetOdds | null => {
-    if (!ew_terms) {
+  /**
+   * This method is used to retrieve the each way odds for a selection
+   * If the result is HALF_WON or HALF_LOST, return the odds as 1 or 0 respectively
+   * @param odds - The odds of the selection
+   * @param ew_terms - The each way terms of the selection
+   * @param result - The result of the selection
+   * @returns The each way odds of the selection
+   */
+  retrieveEachWayOdds = (odds: BetOdds, ew_terms: string | null, result: BetResultType): BetOdds | null => {
+    if (!ew_terms && result !== BetResultType.HALF_WON && result !== BetResultType.HALF_LOST) {
       return null;
     }
 
     const each_way_term = this.getEachWayTerm(ew_terms);
 
-    return {
-      main: {
-        numerator: odds.main.numerator,
-        denominator: odds.main.denominator * each_way_term,
-        odd_decimal: this.roundToDecimalPlaces(odds.main.odd_decimal * (1 / each_way_term)),
-      },
-      sp: {
-        numerator: odds.sp.numerator,
-        denominator: odds.sp.denominator * each_way_term,
-        odd_decimal: this.roundToDecimalPlaces(odds.sp.odd_decimal * (1 / each_way_term)),
-      },
-      bog: {
-        numerator: odds.bog.numerator,
-        denominator: odds.bog.denominator * each_way_term,
-        odd_decimal: this.roundToDecimalPlaces(odds.bog.odd_decimal * (1 / each_way_term)),
-      },
-    };
+    if (result === BetResultType.HALF_WON) {
+      // for half won return odd as 0 to be considered as void
+      return {
+        main: {
+          numerator: 0,
+          denominator: 0,
+          odd_decimal: 0,
+        },
+        sp: {
+          numerator: 0,
+          denominator: 0,
+          odd_decimal: 0,
+        },
+        bog: {
+          numerator: 0,
+          denominator: 0,
+          odd_decimal: 0,
+        },
+      };
+    } else if (result === BetResultType.HALF_LOST) {
+      //for half lost return odd as 0 denominator 1 to be considered as loser
+      return {
+        main: {
+          numerator: 0,
+          denominator: 1,
+          odd_decimal: 0,
+        },
+        sp: {
+          numerator: 0,
+          denominator: 1,
+          odd_decimal: 0,
+        },
+        bog: {
+          numerator: 0,
+          denominator: 1,
+          odd_decimal: 0,
+        },
+      };
+    } else {
+      return {
+        main: {
+          numerator: odds.main.numerator,
+          denominator: odds.main.denominator * each_way_term,
+          odd_decimal: this.roundToDecimalPlaces(odds.main.odd_decimal * (1 / each_way_term)),
+        },
+        sp: {
+          numerator: odds.sp.numerator,
+          denominator: odds.sp.denominator * each_way_term,
+          odd_decimal: this.roundToDecimalPlaces(odds.sp.odd_decimal * (1 / each_way_term)),
+        },
+        bog: {
+          numerator: odds.bog.numerator,
+          denominator: odds.bog.denominator * each_way_term,
+          odd_decimal: this.roundToDecimalPlaces(odds.bog.odd_decimal * (1 / each_way_term)),
+        },
+      };
+    }
   };
 
   retrieveSelectionOdd = (selection: PlacedBetSelection): BetOdd => {
@@ -220,7 +268,21 @@ export class BetCalculatorHelper {
       // do nothing, already set to 0
       result_type = BetResultType.LOSER;
     } else if (selection.result === BetResultType.HALF_WON) {
+      win_odd.main = this.getOdds(odds, BetOddType.MAIN);
+      win_odd.sp = this.getOdds(odds, BetOddType.SP);
+      win_odd.bog = this.getOdds(odds, BetOddType.BOG);
+      place_odd.main = this.getOdds(each_way_odds, BetOddType.MAIN);
+      place_odd.sp = this.getOdds(each_way_odds, BetOddType.SP);
+      place_odd.bog = this.getOdds(each_way_odds, BetOddType.BOG);
+      result_type = BetResultType.HALF_WON;
     } else if (selection.result === BetResultType.HALF_LOST) {
+      win_odd.main = this.getOdds(odds, BetOddType.MAIN);
+      win_odd.sp = this.getOdds(odds, BetOddType.SP);
+      win_odd.bog = this.getOdds(odds, BetOddType.BOG);
+      place_odd.main = this.getOdds(each_way_odds, BetOddType.MAIN);
+      place_odd.sp = this.getOdds(each_way_odds, BetOddType.SP);
+      place_odd.bog = this.getOdds(each_way_odds, BetOddType.BOG);
+      result_type = BetResultType.HALF_LOST;
     }
 
     return { win_odd, place_odd, result_type };
@@ -385,7 +447,7 @@ export class BetCalculatorHelper {
     const first_result = combinations[0].result;
 
     if (combinations.every((combination) => combination.result === first_result)) {
-      return first_result;
+      return first_result as BetResultType;
     }
 
     if (

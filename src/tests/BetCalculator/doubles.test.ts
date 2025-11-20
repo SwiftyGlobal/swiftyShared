@@ -1231,4 +1231,413 @@ describe('Edge Cases for DOUBLE bet type (odds > 1, inputs sanitized)', () => {
     expect(result.bog_amount_won).toBeCloseTo(30, 1);
     expect(result.result_type).toBe(BetResultType.WINNER);
   });
+
+  // add half won and half lost tests for doubles
+  describe('DOUBLE - HALF_WON and HALF_LOST combinations', () => {
+    // HALF_WON + WINNER → expect WINNER (half won leg gives partial profit)
+    it.only('Double: HALF_WON + WINNER → expect result_type WINNER', () => {
+      const bets = [
+        {
+          bet_id: 1,
+          result: BetResultType.HALF_WON,
+          stake: 10,
+          is_starting_price: false,
+          sp_odd_fractional: '',
+          odd_fractional: '',
+          ew_terms: '',
+          partial_win_percent: 0,
+          rule_4: 0,
+          is_each_way: false,
+          sp_odd_decimal: 0,
+          odd_decimal: 2.5,
+        },
+        {
+          bet_id: 2,
+          result: BetResultType.HALF_LOST,
+          stake: 10,
+          is_starting_price: false,
+          sp_odd_fractional: '',
+          odd_fractional: '',
+          ew_terms: '',
+          partial_win_percent: 0,
+          rule_4: 0,
+          is_each_way: false,
+          sp_odd_decimal: 0,
+          odd_decimal: 2.5,
+        },
+      ];
+      const result = betCalculator.processBet({
+        stake: 10,
+        total_stake: 10,
+        bets,
+        selections: [],
+        bet_type: BetSlipType.DOUBLE,
+        free_bet_amount: 0,
+        bog_applicable: false,
+        bog_max_payout: 0,
+        max_payout: 0,
+        each_way: false,
+      });
+      expect(result.result_type).toBe(BetResultType.WINNER);
+      expect(result.return_payout).toBeCloseTo(21.875, 1);
+    });
+
+    // HALF_WON + LOSER → expect LOSER (one losing leg voids the double)
+    it('Double: HALF_WON + LOSER → expect result_type LOSER', () => {
+      const bets = [
+        clone(baseBet, { bet_id: 1, result: BetResultType.HALF_WON }),
+        clone(baseBet, { bet_id: 2, result: BetResultType.LOSER }),
+      ];
+      const result = betCalculator.processBet({
+        stake: 10,
+        total_stake: 10,
+        bets,
+        selections: [],
+        bet_type: BetSlipType.DOUBLE,
+        free_bet_amount: 0,
+        bog_applicable: false,
+        bog_max_payout: 0,
+        max_payout: 0,
+        each_way: false,
+      });
+      expect(result.result_type).toBe(BetResultType.LOSER);
+      expect(result.return_payout).toBe(0);
+    });
+
+    // HALF_WON + VOID → expect WINNER (void leg ignored, half won leg contributes)
+    it('Double: HALF_WON + VOID → expect result_type WINNER', () => {
+      const bets = [
+        clone(baseBet, { bet_id: 1, result: BetResultType.HALF_WON }),
+        clone(baseBet, { bet_id: 2, result: BetResultType.VOID }),
+      ];
+      const result = betCalculator.processBet({
+        stake: 10,
+        total_stake: 10,
+        bets,
+        selections: [],
+        bet_type: BetSlipType.DOUBLE,
+        free_bet_amount: 0,
+        bog_applicable: false,
+        bog_max_payout: 0,
+        max_payout: 0,
+        each_way: false,
+      });
+      expect(result.result_type).toBe(BetResultType.WINNER);
+      expect(result.return_payout).toBeGreaterThan(0);
+    });
+
+    // HALF_WON + PLACED → expect LOSER (placed leg doesn't count without each_way)
+    it('Double: HALF_WON + PLACED → expect result_type LOSER', () => {
+      const bets = [
+        clone(baseBet, { bet_id: 1, result: BetResultType.HALF_WON }),
+        clone(baseBet, { bet_id: 2, result: BetResultType.PLACED }),
+      ];
+      const result = betCalculator.processBet({
+        stake: 10,
+        total_stake: 10,
+        bets,
+        selections: [],
+        bet_type: BetSlipType.DOUBLE,
+        free_bet_amount: 0,
+        bog_applicable: false,
+        bog_max_payout: 0,
+        max_payout: 0,
+        each_way: false,
+      });
+      expect(result.result_type).toBe(BetResultType.LOSER);
+      expect(result.return_payout).toBe(0);
+    });
+
+    // HALF_WON + PARTIAL → expect WINNER (partial downgrades but still wins)
+    it('Double: HALF_WON + PARTIAL → expect result_type WINNER', () => {
+      const bets = [
+        clone(baseBet, { bet_id: 1, result: BetResultType.HALF_WON }),
+        clone(baseBet, { bet_id: 2, result: BetResultType.PARTIAL, partial_win_percent: 50 }),
+      ];
+      const result = betCalculator.processBet({
+        stake: 10,
+        total_stake: 10,
+        bets,
+        selections: [],
+        bet_type: BetSlipType.DOUBLE,
+        free_bet_amount: 0,
+        bog_applicable: false,
+        bog_max_payout: 0,
+        max_payout: 0,
+        each_way: false,
+      });
+      expect(result.result_type).toBe(BetResultType.WINNER);
+      expect(result.return_payout).toBeGreaterThan(0);
+    });
+
+    // HALF_LOST + WINNER → expect WINNER (half lost leg gives reduced profit)
+    it('Double: HALF_LOST + WINNER → expect result_type WINNER', () => {
+      const bets = [
+        clone(baseBet, { bet_id: 1, result: BetResultType.HALF_LOST }),
+        clone(baseBet, { bet_id: 2, result: BetResultType.WINNER }),
+      ];
+      const result = betCalculator.processBet({
+        stake: 10,
+        total_stake: 10,
+        bets,
+        selections: [],
+        bet_type: BetSlipType.DOUBLE,
+        free_bet_amount: 0,
+        bog_applicable: false,
+        bog_max_payout: 0,
+        max_payout: 0,
+        each_way: false,
+      });
+      expect(result.result_type).toBe(BetResultType.WINNER);
+      expect(result.return_payout).toBeGreaterThan(0);
+    });
+
+    // HALF_LOST + LOSER → expect LOSER (one losing leg voids the double)
+    it('Double: HALF_LOST + LOSER → expect result_type LOSER', () => {
+      const bets = [
+        clone(baseBet, { bet_id: 1, result: BetResultType.HALF_LOST }),
+        clone(baseBet, { bet_id: 2, result: BetResultType.LOSER }),
+      ];
+      const result = betCalculator.processBet({
+        stake: 10,
+        total_stake: 10,
+        bets,
+        selections: [],
+        bet_type: BetSlipType.DOUBLE,
+        free_bet_amount: 0,
+        bog_applicable: false,
+        bog_max_payout: 0,
+        max_payout: 0,
+        each_way: false,
+      });
+      expect(result.result_type).toBe(BetResultType.LOSER);
+      expect(result.return_payout).toBe(0);
+    });
+
+    // HALF_LOST + VOID → expect WINNER (void leg ignored, half lost leg contributes)
+    it('Double: HALF_LOST + VOID → expect result_type WINNER', () => {
+      const bets = [
+        clone(baseBet, { bet_id: 1, result: BetResultType.HALF_LOST }),
+        clone(baseBet, { bet_id: 2, result: BetResultType.VOID }),
+      ];
+      const result = betCalculator.processBet({
+        stake: 10,
+        total_stake: 10,
+        bets,
+        selections: [],
+        bet_type: BetSlipType.DOUBLE,
+        free_bet_amount: 0,
+        bog_applicable: false,
+        bog_max_payout: 0,
+        max_payout: 0,
+        each_way: false,
+      });
+      expect(result.result_type).toBe(BetResultType.WINNER);
+      expect(result.return_payout).toBeGreaterThan(0);
+    });
+
+    // HALF_LOST + PLACED → expect LOSER (placed leg doesn't count without each_way)
+    it('Double: HALF_LOST + PLACED → expect result_type LOSER', () => {
+      const bets = [
+        clone(baseBet, { bet_id: 1, result: BetResultType.HALF_LOST }),
+        clone(baseBet, { bet_id: 2, result: BetResultType.PLACED }),
+      ];
+      const result = betCalculator.processBet({
+        stake: 10,
+        total_stake: 10,
+        bets,
+        selections: [],
+        bet_type: BetSlipType.DOUBLE,
+        free_bet_amount: 0,
+        bog_applicable: false,
+        bog_max_payout: 0,
+        max_payout: 0,
+        each_way: false,
+      });
+      expect(result.result_type).toBe(BetResultType.LOSER);
+      expect(result.return_payout).toBe(0);
+    });
+
+    // HALF_LOST + PARTIAL → expect WINNER (partial downgrades but still wins)
+    it('Double: HALF_LOST + PARTIAL → expect result_type WINNER', () => {
+      const bets = [
+        clone(baseBet, { bet_id: 1, result: BetResultType.HALF_LOST }),
+        clone(baseBet, { bet_id: 2, result: BetResultType.PARTIAL, partial_win_percent: 50 }),
+      ];
+      const result = betCalculator.processBet({
+        stake: 10,
+        total_stake: 10,
+        bets,
+        selections: [],
+        bet_type: BetSlipType.DOUBLE,
+        free_bet_amount: 0,
+        bog_applicable: false,
+        bog_max_payout: 0,
+        max_payout: 0,
+        each_way: false,
+      });
+      expect(result.result_type).toBe(BetResultType.WINNER);
+      expect(result.return_payout).toBeGreaterThan(0);
+    });
+
+    // HALF_WON + HALF_WON → expect WINNER (both legs half won, reduced profit)
+    it('Double: HALF_WON + HALF_WON → expect result_type WINNER', () => {
+      const bets = [
+        clone(baseBet, { bet_id: 1, result: BetResultType.HALF_WON }),
+        clone(baseBet, { bet_id: 2, result: BetResultType.HALF_WON }),
+      ];
+      const result = betCalculator.processBet({
+        stake: 10,
+        total_stake: 10,
+        bets,
+        selections: [],
+        bet_type: BetSlipType.DOUBLE,
+        free_bet_amount: 0,
+        bog_applicable: false,
+        bog_max_payout: 0,
+        max_payout: 0,
+        each_way: false,
+      });
+      expect(result.result_type).toBe(BetResultType.WINNER);
+      expect(result.return_payout).toBeGreaterThan(0);
+    });
+
+    // HALF_LOST + HALF_LOST → expect WINNER (both legs half lost, very reduced profit)
+    it('Double: HALF_LOST + HALF_LOST → expect result_type WINNER', () => {
+      const bets = [
+        clone(baseBet, { bet_id: 1, result: BetResultType.HALF_LOST }),
+        clone(baseBet, { bet_id: 2, result: BetResultType.HALF_LOST }),
+      ];
+      const result = betCalculator.processBet({
+        stake: 10,
+        total_stake: 10,
+        bets,
+        selections: [],
+        bet_type: BetSlipType.DOUBLE,
+        free_bet_amount: 0,
+        bog_applicable: false,
+        bog_max_payout: 0,
+        max_payout: 0,
+        each_way: false,
+      });
+      expect(result.result_type).toBe(BetResultType.WINNER);
+      expect(result.return_payout).toBeGreaterThan(0);
+    });
+
+    // HALF_WON + HALF_LOST → expect WINNER (mixed half results, reduced profit)
+    it('Double: HALF_WON + HALF_LOST → expect result_type WINNER', () => {
+      const bets = [
+        clone(baseBet, { bet_id: 1, result: BetResultType.HALF_WON }),
+        clone(baseBet, { bet_id: 2, result: BetResultType.HALF_LOST }),
+      ];
+      const result = betCalculator.processBet({
+        stake: 10,
+        total_stake: 10,
+        bets,
+        selections: [],
+        bet_type: BetSlipType.DOUBLE,
+        free_bet_amount: 0,
+        bog_applicable: false,
+        bog_max_payout: 0,
+        max_payout: 0,
+        each_way: false,
+      });
+      expect(result.result_type).toBe(BetResultType.WINNER);
+      expect(result.return_payout).toBeGreaterThan(0);
+    });
+
+    // 3 selections: HALF_WON + WINNER + LOSER → expect WINNER (one double wins)
+    it('Double: 3 selections HALF_WON + WINNER + LOSER → expect result_type WINNER', () => {
+      const bets = [
+        clone(baseBet, { bet_id: 1, result: BetResultType.HALF_WON }),
+        clone(baseBet, { bet_id: 2, result: BetResultType.WINNER }),
+        clone(baseBet, { bet_id: 3, result: BetResultType.LOSER }),
+      ];
+      const result = betCalculator.processBet({
+        stake: 10,
+        total_stake: 10,
+        bets,
+        selections: [],
+        bet_type: BetSlipType.DOUBLE,
+        free_bet_amount: 0,
+        bog_applicable: false,
+        bog_max_payout: 0,
+        max_payout: 0,
+        each_way: false,
+      });
+      expect(result.result_type).toBe(BetResultType.WINNER);
+      expect(result.return_payout).toBeGreaterThan(0);
+    });
+
+    // 3 selections: HALF_LOST + WINNER + VOID → expect WINNER (one double wins)
+    it('Double: 3 selections HALF_LOST + WINNER + VOID → expect result_type WINNER', () => {
+      const bets = [
+        clone(baseBet, { bet_id: 1, result: BetResultType.HALF_LOST }),
+        clone(baseBet, { bet_id: 2, result: BetResultType.WINNER }),
+        clone(baseBet, { bet_id: 3, result: BetResultType.VOID }),
+      ];
+      const result = betCalculator.processBet({
+        stake: 10,
+        total_stake: 10,
+        bets,
+        selections: [],
+        bet_type: BetSlipType.DOUBLE,
+        free_bet_amount: 0,
+        bog_applicable: false,
+        bog_max_payout: 0,
+        max_payout: 0,
+        each_way: false,
+      });
+      expect(result.result_type).toBe(BetResultType.WINNER);
+      expect(result.return_payout).toBeGreaterThan(0);
+    });
+
+    // 4 selections: HALF_WON + WINNER + WINNER + LOSER → expect WINNER (multiple doubles win)
+    it('Double: 4 selections HALF_WON + WINNER + WINNER + LOSER → expect result_type WINNER', () => {
+      const bets = [
+        clone(baseBet, { bet_id: 1, result: BetResultType.HALF_WON }),
+        clone(baseBet, { bet_id: 2, result: BetResultType.WINNER }),
+        clone(baseBet, { bet_id: 3, result: BetResultType.WINNER }),
+        clone(baseBet, { bet_id: 4, result: BetResultType.LOSER }),
+      ];
+      const result = betCalculator.processBet({
+        stake: 10,
+        total_stake: 10,
+        bets,
+        selections: [],
+        bet_type: BetSlipType.DOUBLE,
+        free_bet_amount: 0,
+        bog_applicable: false,
+        bog_max_payout: 0,
+        max_payout: 0,
+        each_way: false,
+      });
+      expect(result.result_type).toBe(BetResultType.WINNER);
+      expect(result.return_payout).toBeGreaterThan(0);
+    });
+
+    // 4 selections: HALF_LOST + HALF_LOST + WINNER + WINNER → expect WINNER (multiple doubles win with reduced profit)
+    it('Double: 4 selections HALF_LOST + HALF_LOST + WINNER + WINNER → expect result_type WINNER', () => {
+      const bets = [
+        clone(baseBet, { bet_id: 1, result: BetResultType.HALF_LOST }),
+        clone(baseBet, { bet_id: 2, result: BetResultType.HALF_LOST }),
+        clone(baseBet, { bet_id: 3, result: BetResultType.WINNER }),
+        clone(baseBet, { bet_id: 4, result: BetResultType.WINNER }),
+      ];
+      const result = betCalculator.processBet({
+        stake: 10,
+        total_stake: 10,
+        bets,
+        selections: [],
+        bet_type: BetSlipType.DOUBLE,
+        free_bet_amount: 0,
+        bog_applicable: false,
+        bog_max_payout: 0,
+        max_payout: 0,
+        each_way: false,
+      });
+      expect(result.result_type).toBe(BetResultType.WINNER);
+      expect(result.return_payout).toBeGreaterThan(0);
+    });
+  });
 });

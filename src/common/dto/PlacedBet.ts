@@ -1,10 +1,10 @@
-import type { BetResultType } from '../constants/betResultType';
+import type { BetResultType, LegacyBetResultType } from '../constants/betResultType';
 import type { BetSlipType } from '../constants/betSlipType';
 
 export interface PlacedBetSelection {
   bet_id: number;
   stake: number;
-  result: BetResultType;
+  result: BetResultType | LegacyBetResultType;
   is_starting_price: boolean;
   is_each_way: boolean;
   sp_odd_fractional: string | null;

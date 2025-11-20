@@ -1064,4 +1064,74 @@ describe('Edge Cases for BetCalculator Single', () => {
     expect(result.result_type).toBe(BetResultType.WINNER);
     expect(result.bog_amount_won).toBeCloseTo(10, 1);
   });
+
+  it('Half Won', () => {
+    const bets: PlacedBetSelection[] = [
+      {
+        bet_id: 1,
+        stake: 10,
+        result: BetResultType.HALF_WON,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 2,
+      },
+    ];
+    const selections = [];
+    const result = betCalculator.processBet({
+      stake: 10,
+      total_stake: 10,
+      bets,
+      selections,
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+    expect(result.return_payout).toBeCloseTo(15, 1);
+    expect(result.return_stake).toBeCloseTo(10, 1);
+    expect(result.result_type).toBe(BetResultType.HALF_WON);
+  });
+
+  it.only('Half Lost', () => {
+    const bets: PlacedBetSelection[] = [
+      {
+        bet_id: 1,
+        stake: 10,
+        result: BetResultType.HALF_LOST,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 2,
+      },
+    ];
+    const selections = [];
+    const result = betCalculator.processBet({
+      stake: 10,
+      total_stake: 10,
+      bets,
+      selections,
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+    expect(result.return_payout).toBeCloseTo(10, 1);
+    expect(result.return_stake).toBeCloseTo(5, 1);
+    expect(result.result_type).toBe(BetResultType.HALF_LOST);
+  });
 });
