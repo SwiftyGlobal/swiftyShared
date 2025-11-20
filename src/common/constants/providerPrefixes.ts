@@ -34,7 +34,7 @@ export const FeedProvidersNames = {
   [FeedProviders.SIS]: 'SIS',
   [FeedProviders.PA_MEDIA]: 'PA Media',
   [FeedProviders.EVERYMATRIX]: 'EveryMatrix',
-  [FeedProviders.LS_SPORTS]: 'LS Sports',
+  [FeedProviders.LS_SPORTS]: 'L-Sports',
   [FeedProviders.BET_RADAR]: 'Bet Radar',
   [FeedProviders.MANUAL]: 'Manual',
 };
