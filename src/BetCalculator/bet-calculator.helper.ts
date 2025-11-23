@@ -465,10 +465,18 @@ export class BetCalculatorHelper {
     }
 
     const has_winner = combinations.some((combination) => combination.result_type === BetResultType.WINNER);
+    const has_partial = combinations.some(
+      (combination) =>
+        combination.result_type === BetResultType.PARTIAL || combination.result_type === BetResultType.PLACED,
+    );
     const has_void = combinations.some((combination) => combination.result_type === BetResultType.VOID);
 
     if (has_winner) {
       return BetResultType.WINNER;
+    }
+
+    if (has_partial) {
+      return BetResultType.PARTIAL;
     }
 
     if (has_void) {

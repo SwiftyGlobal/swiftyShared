@@ -1,4 +1,4 @@
-import type { BetResultType } from '../constants/betResultType';
+import { type BetResultType } from '../constants/betResultType';
 import type { BetSlipType } from '../constants/betSlipType';
 
 export interface PlacedBetSelection {
