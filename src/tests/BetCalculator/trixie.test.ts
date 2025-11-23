@@ -1,6 +1,6 @@
 import { BetCalculator } from '../../BetCalculator/bet-calculator.class';
 import { BetSlipType } from '../../common/constants/betSlipType';
-import { BetResultType } from '../../common/constants/betResultType';
+import { BetResultType, LegacyBetResultType } from '../../common/constants/betResultType';
 
 // Edge cases dhe përshkrime të qarta për TRIXIE (3 singles, 3 doubles, 1 treble)
 describe('TRIXIE - Edge cases dhe pritje determinuese', () => {
@@ -451,5 +451,66 @@ describe('Trixie Simple Winner Case', () => {
     expect(result.result_type).toBe(BetResultType.WINNER);
     expect(result.return_payout).toBeCloseTo(240, 1);
     expect(result.bog_amount_won).toBeCloseTo(100, 1);
+  });
+
+  it.only('TRIXIE: BOG with SP odds higher than main odds (WINNER×3) → expect result_type WINNER with BOG benefit', () => {
+    const bets = [
+      {
+        bet_id: 1,
+        stake: 5,
+        result: LegacyBetResultType.PUSHED as any,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 13,
+      },
+      {
+        bet_id: 2,
+        stake: 5,
+        result: BetResultType.LOSER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 9,
+        odd_decimal: 9.5,
+      },
+      {
+        bet_id: 3,
+        stake: 5,
+        result: BetResultType.PLACED,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '1/5',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: true,
+        sp_odd_decimal: 10,
+        odd_decimal: 15,
+      },
+    ];
+    const result = betCalculator.processBet({
+      stake: 1,
+      total_stake: 8,
+      bets,
+      selections: [],
+      bet_type: BetSlipType.TRIXIE,
+      free_bet_amount: 0,
+      bog_applicable: true,
+      bog_max_payout: 100,
+      max_payout: 0,
+      each_way: true,
+    });
+    expect(result.result_type).toBe(BetResultType.PARTIAL);
+    expect(result.return_payout).toBeCloseTo(3.8, 1);
   });
 });
