@@ -1020,6 +1020,41 @@ describe('Edge Cases for BetCalculator Single', () => {
     expect(result.return_payout).toBeGreaterThanOrEqual(0);
   });
 
+  it('bog_applicable true with missing starting price', () => {
+    const bets = [
+      {
+        bet_id: 601,
+        stake: 10,
+        result: BetResultType.WINNER,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 2.38,
+      },
+    ];
+    const selections = [];
+    const result = betCalculator.processBet({
+      stake: 10,
+      total_stake: 10,
+      bets,
+      selections,
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: true,
+      bog_max_payout: 1000,
+      max_payout: 1000,
+      each_way: false,
+    });
+    expect(result.return_payout).toBeCloseTo(23.8, 1);
+    expect(result.result_type).toBe(BetResultType.WINNER);
+    expect(result.calc.bog_amount_won).toBeGreaterThanOrEqual(0);
+  });
+
   it('Single: BOG with SP odds higher than main odds → expect result_type WINNER with BOG benefit', () => {
     const bets: PlacedBetSelection[] = [
       {
