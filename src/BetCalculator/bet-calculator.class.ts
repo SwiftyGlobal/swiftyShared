@@ -325,8 +325,8 @@ export class BetCalculator {
       if (this.bog_applicable) {
         const bog_win_profit = this.calculatorHelper.calculateProfit(odds, win_stake, BetOddType.BOG);
         const bog_place_profit = this.calculatorHelper.calculateProfit(each_way_odds, place_stake, BetOddType.BOG);
-
-        this.bog_amount_won = +bog_win_profit + +bog_place_profit - +win_profit - +place_profit;
+        // Clamp to never negative
+        this.bog_amount_won = Math.max(0, +bog_win_profit + +bog_place_profit - +win_profit - +place_profit);
         this.bog_odd = each_way_odds ? each_way_odds.bog.odd_decimal : odds.bog.odd_decimal;
       }
 
@@ -348,7 +348,8 @@ export class BetCalculator {
           place_stake,
           BetOddType.BOG,
         );
-        this.bog_amount_won = +place_profit - +bog_place_profit;
+        // Clamp to never negative
+        this.bog_amount_won = Math.max(0, +place_profit - +bog_place_profit);
         this.bog_odd = this.each_way ? each_way_odds?.bog.odd_decimal || 0 : odds.bog.odd_decimal;
 
         console.log('Placed single BOG', { place_profit, odd: this.bog_odd, bog_amount_won: this.bog_amount_won });
@@ -478,7 +479,7 @@ export class BetCalculator {
       const bog_win_profit = this.calculatorHelper.calculateProfit(win_odd, win_stake, BetOddType.BOG);
       const bog_place_profit = this.calculatorHelper.calculateProfit(place_odd, place_stake, BetOddType.BOG);
 
-      this.bog_amount_won = +bog_win_profit + +bog_place_profit - +win_profit - +place_profit;
+      this.bog_amount_won = Math.max(0, bog_win_profit + bog_place_profit - win_profit - place_profit);
       this.bog_odd = win_odd.bog.odd_decimal * (place_odd.bog.odd_decimal > 0 ? place_odd.bog.odd_decimal : 1);
     }
 
@@ -711,7 +712,7 @@ export class BetCalculator {
       const bog_win_profit = this.calculatorHelper.calculateProfit(win_odds, win_stake, BetOddType.BOG);
       const bog_place_profit = this.calculatorHelper.calculateProfit(place_odds, place_stake, BetOddType.BOG);
 
-      this.bog_amount_won = +bog_win_profit + +bog_place_profit - +win_profit - +place_profit;
+      this.bog_amount_won = Math.max(0, bog_win_profit + bog_place_profit - win_profit - place_profit);
       this.bog_odd = win_odds.bog.odd_decimal * (place_odds.bog.odd_decimal > 0 ? place_odds.bog.odd_decimal : 1);
     }
 
