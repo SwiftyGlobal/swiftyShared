@@ -1028,7 +1028,7 @@ describe('Edge Cases for BetCalculator Single', () => {
         result: BetResultType.WINNER,
         is_starting_price: false,
         sp_odd_fractional: '',
-        odd_fractional: '',
+        odd_fractional: '2.38',
         ew_terms: '',
         partial_win_percent: 0,
         rule_4: 0,
@@ -1050,6 +1050,7 @@ describe('Edge Cases for BetCalculator Single', () => {
       max_payout: 1000,
       each_way: false,
     });
+
     expect(result.return_payout).toBeCloseTo(23.8, 1);
     expect(result.result_type).toBe(BetResultType.WINNER);
     expect(result.calc.bog_amount_won).toBeGreaterThanOrEqual(0);
