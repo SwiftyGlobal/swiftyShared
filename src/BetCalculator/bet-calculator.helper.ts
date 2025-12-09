@@ -81,7 +81,7 @@ export class BetCalculatorHelper {
     let numerator = 0;
     let denominator = 0;
 
-    if (selection.odd_fractional && selection.odd_fractional != 'SP') {
+    if (selection.odd_fractional && selection.odd_fractional != 'SP' && selection.odd_fractional?.includes('/')) {
       ({ numerator, denominator } = this.getFractionalValues(selection.odd_fractional));
     } else if (selection.odd_decimal) {
       ({ numerator, denominator } = { numerator: selection.odd_decimal - 1, denominator: 1 });
@@ -103,7 +103,12 @@ export class BetCalculatorHelper {
     let numerator = 0;
     let denominator = 1;
 
-    if (selection.is_starting_price && selection.sp_odd_fractional && selection.sp_odd_fractional != 'SP') {
+    if (
+      selection.is_starting_price &&
+      selection.sp_odd_fractional &&
+      selection.sp_odd_fractional != 'SP' &&
+      selection.sp_odd_fractional?.includes('/')
+    ) {
       ({ numerator, denominator } = this.getFractionalValues(selection.sp_odd_fractional));
     } else if (selection.sp_odd_decimal) {
       ({ numerator, denominator } = { numerator: selection.sp_odd_decimal - 1, denominator: 1 });
@@ -132,8 +137,10 @@ export class BetCalculatorHelper {
     if (
       selection.sp_odd_fractional &&
       selection.sp_odd_fractional != 'SP' &&
+      selection.odd_fractional?.includes('/') &&
       selection.odd_fractional &&
-      selection.odd_fractional != 'SP'
+      selection.odd_fractional != 'SP' &&
+      selection.odd_fractional?.includes('/')
     ) {
       const { numerator: odd_numerator, denominator: odd_denominator } = this.getFractionalValues(
         selection.odd_fractional,
