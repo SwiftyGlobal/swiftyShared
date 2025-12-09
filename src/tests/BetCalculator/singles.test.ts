@@ -1065,3 +1065,211 @@ describe('Edge Cases for BetCalculator Single', () => {
     expect(result.bog_amount_won).toBeCloseTo(10, 1);
   });
 });
+
+describe('Single Half-Won / Half-Lost', () => {
+  const betCalculator = new BetCalculator();
+
+  it('Half Won - Win Only', () => {
+    const bets: PlacedBetSelection[] = [
+      {
+        bet_id: 1001,
+        stake: 10,
+        result: BetResultType.HALF_WON,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 2.0,
+      },
+    ];
+
+    const selections = [
+      {
+        selection_id: 1001,
+        position: 1,
+        result: BetResultType.HALF_WON,
+        dead_heat_count: null,
+        partial_percent: null,
+        each_way_places: null,
+        each_way_terms: null,
+      },
+    ];
+
+    const result = betCalculator.processBet({
+      stake: 10,
+      total_stake: 10,
+      bets,
+      selections,
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+
+    // Half stake wins at 2.0 → profit = 5; full stake returned
+    expect(result.return_stake).toBeCloseTo(10);
+    expect(result.calc.win_profit).toBeCloseTo(5, 3);
+    expect(result.calc.place_profit).toBeCloseTo(0, 3);
+    expect(result.return_payout).toBeCloseTo(15, 3);
+    expect(result.result_type).toBe(BetResultType.HALF_WON);
+  });
+
+  it('Half Lost - Win Only', () => {
+    const bets: PlacedBetSelection[] = [
+      {
+        bet_id: 1002,
+        stake: 10,
+        result: BetResultType.HALF_LOST,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: false,
+        sp_odd_decimal: 0,
+        odd_decimal: 2.0,
+      },
+    ];
+
+    const selections = [
+      {
+        selection_id: 1002,
+        position: 1,
+        result: BetResultType.HALF_LOST,
+        dead_heat_count: null,
+        partial_percent: null,
+        each_way_places: null,
+        each_way_terms: null,
+      },
+    ];
+
+    const result = betCalculator.processBet({
+      stake: 10,
+      total_stake: 10,
+      bets,
+      selections,
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+
+    // Half stake returned, no profit
+    expect(result.return_stake).toBeCloseTo(5, 3);
+    expect(result.calc.win_profit).toBeCloseTo(0, 3);
+    expect(result.calc.place_profit).toBeCloseTo(0, 3);
+    expect(result.return_payout).toBeCloseTo(5, 3);
+    expect(result.result_type).toBe(BetResultType.HALF_LOST);
+  });
+
+  it('Half Won - Each Way', () => {
+    const bets: PlacedBetSelection[] = [
+      {
+        bet_id: 1003,
+        stake: 5,
+        result: BetResultType.HALF_WON,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '1/2',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: true,
+        sp_odd_decimal: 0,
+        odd_decimal: 2.0,
+      },
+    ];
+
+    const selections = [
+      {
+        selection_id: 1003,
+        position: 1,
+        result: BetResultType.HALF_WON,
+        dead_heat_count: null,
+        partial_percent: null,
+        each_way_places: null,
+        each_way_terms: null,
+      },
+    ];
+
+    const result = betCalculator.processBet({
+      stake: 5,
+      total_stake: 10,
+      bets,
+      selections,
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: true,
+    });
+
+    // Win half stake at 2.0 → 2.5 profit; place half stake at EW 1/2 of (2-1) → place decimal 1.5 → profit 1.25
+    expect(result.return_stake).toBeCloseTo(10, 3);
+    expect(result.calc.win_profit).toBeCloseTo(2.5, 2);
+    expect(result.calc.place_profit).toBeCloseTo(1.25, 2);
+    expect(result.return_payout).toBeCloseTo(13.75, 2);
+    expect(result.result_type).toBe(BetResultType.HALF_WON);
+  });
+
+  it('Half Lost - Each Way', () => {
+    const bets: PlacedBetSelection[] = [
+      {
+        bet_id: 1004,
+        stake: 5,
+        result: BetResultType.HALF_LOST,
+        is_starting_price: false,
+        sp_odd_fractional: '',
+        odd_fractional: '',
+        ew_terms: '1/2',
+        partial_win_percent: 0,
+        rule_4: 0,
+        is_each_way: true,
+        sp_odd_decimal: 0,
+        odd_decimal: 2.0,
+      },
+    ];
+
+    const selections = [
+      {
+        selection_id: 1004,
+        position: 1,
+        result: BetResultType.HALF_LOST,
+        dead_heat_count: null,
+        partial_percent: null,
+        each_way_places: null,
+        each_way_terms: null,
+      },
+    ];
+
+    const result = betCalculator.processBet({
+      stake: 5,
+      total_stake: 10,
+      bets,
+      selections,
+      bet_type: BetSlipType.SINGLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: true,
+    });
+
+    // Half of each leg returned; no profit
+    expect(result.return_stake).toBeCloseTo(5, 3);
+    expect(result.calc.win_profit).toBeCloseTo(0, 3);
+    expect(result.calc.place_profit).toBeCloseTo(0, 3);
+    expect(result.return_payout).toBeCloseTo(5, 3);
+    expect(result.result_type).toBe(BetResultType.HALF_LOST);
+  });
+});

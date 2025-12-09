@@ -278,7 +278,13 @@ export class BetCalculator {
 
     const each_way_odds = this.each_way ? this.calculatorHelper.retrieveEachWayOdds(odds, selection.ew_terms) : null;
 
-    if (odds.main.odd_decimal === 0 && odds.sp.odd_decimal === 0 && selection.result !== BetResultType.VOID) {
+    if (
+      odds.main.odd_decimal === 0 &&
+      odds.sp.odd_decimal === 0 &&
+      selection.result !== BetResultType.VOID &&
+      selection.result !== BetResultType.HALF_WON &&
+      selection.result !== BetResultType.HALF_LOST
+    ) {
       this.profit = 0;
       this.payout = 0;
       return_stake = 0;
@@ -333,6 +339,57 @@ export class BetCalculator {
       return_stake += place_stake;
 
       this.profit = +win_profit + +place_profit;
+    } else if (selection.result === BetResultType.HALF_WON) {
+      const half_win_stake = win_stake / 2;
+      const half_place_stake = this.each_way ? place_stake / 2 : 0;
+
+      win_profit = this.calculatorHelper.calculateProfit(
+        odds,
+        half_win_stake,
+        selection.is_starting_price ? BetOddType.SP : BetOddType.MAIN,
+      );
+
+      place_profit = this.calculatorHelper.calculateProfit(
+        this.each_way ? each_way_odds : null,
+        half_place_stake,
+        selection.is_starting_price ? BetOddType.SP : BetOddType.MAIN,
+      );
+
+      if (this.bog_applicable) {
+        const bog_win_profit = this.calculatorHelper.calculateProfit(odds, half_win_stake, BetOddType.BOG);
+        const bog_place_profit = this.calculatorHelper.calculateProfit(
+          this.each_way ? each_way_odds : null,
+          half_place_stake,
+          BetOddType.BOG,
+        );
+        this.bog_amount_won = +bog_win_profit + +bog_place_profit - +win_profit - +place_profit;
+        this.bog_odd = this.each_way ? each_way_odds?.bog.odd_decimal || 0 : odds.bog.odd_decimal;
+      }
+
+      // Half won implies the other half is void; full stake is returned
+      return_stake = win_stake + (this.each_way ? place_stake : 0);
+      this.profit = +win_profit + +place_profit;
+      console.log('Half Won single', {
+        half_win_stake,
+        half_place_stake,
+        win_profit,
+        place_profit,
+        return_stake,
+      });
+    } else if (selection.result === BetResultType.HALF_LOST) {
+      // Half lost implies half stake lost, half stake void (returned)
+      const returned_win_stake = win_stake / 2;
+      const returned_place_stake = this.each_way ? place_stake / 2 : 0;
+
+      win_profit = 0;
+      place_profit = 0;
+      this.profit = 0;
+      return_stake = returned_win_stake + returned_place_stake;
+      console.log('Half Lost single', {
+        returned_win_stake,
+        returned_place_stake,
+        return_stake,
+      });
     } else if (selection.result === BetResultType.PLACED && this.each_way) {
       place_profit = this.calculatorHelper.calculateProfit(
         this.each_way ? each_way_odds : odds,
