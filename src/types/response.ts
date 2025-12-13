@@ -6,6 +6,11 @@ export interface SuccessResponse {
   code: string;
   message: string;
   messageCode: string;
+  pagination: Nullable<{
+    page: Nullable<number>;
+    pageSize: Nullable<number>;
+    total: Nullable<number>;
+  }>;
 }
 
 export interface ErrorResponse {
@@ -82,6 +87,11 @@ export interface ApiResponse<T> {
   code: string;
   data: T | T[] | null;
   meta?: ResponseMeta;
+  pagination: {
+    page: number | null;
+    pageSize: number | null;
+    total: number | null;
+  };
 }
 
 // EXAMPLE USAGE:
