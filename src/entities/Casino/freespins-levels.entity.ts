@@ -17,5 +17,5 @@ export interface FreespinsLevel {
   type: Nullable<string>;
   feature: Nullable<string>;
   created_at: Nullable<Date | string>;
-  modified_at: Date | string;
+  modified_at: Nullable<Date | string>;
 }
