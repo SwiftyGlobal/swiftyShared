@@ -195,15 +195,15 @@ export const getLadderBoostedPriceV3 = (
  * // current ladders - [1.5, 1.6, 1.7, 1.8, 1.9, 2.0];
  * const decimal = 1.7;
  * const ladder = 'ladder+2';
- * getLadderBoostedPriceV4({ sportSlug: 'football', decimal, ladderValue: ladder, laddersMap }); 
+ * getLadderBoostedPriceV4({ sportSlug: 'football', decimal, ladderValue: ladder, laddersMap });
  * // { decimal: 1.9, fractional: '9/10', price_boost_type: 'boost' }
- * 
+ *
  * @example
  * // Negative ladder example:
  * // current ladders - [1.5, 1.6, 1.7, 1.8, 1.9, 2.0];
  * const decimal = 1.9;
  * const ladder = 'ladder-2';
- * getLadderBoostedPriceV4({ sportSlug: 'football', decimal, ladderValue: ladder, laddersMap }); 
+ * getLadderBoostedPriceV4({ sportSlug: 'football', decimal, ladderValue: ladder, laddersMap });
  * // { decimal: 1.7, fractional: '7/10', price_boost_type: 'standard' }
  */
 export const getLadderBoostedPriceV4 = (
