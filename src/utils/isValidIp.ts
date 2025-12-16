@@ -21,9 +21,9 @@ import { isIP } from 'node:net';
  * isValidIP("999.9.9.9");   // returns false
  * ```
  */
-export function isValidIP(input: string): boolean {
+export const isValidIP = (input: string): boolean => {
   // net.isIP returns 0 for invalid, 4 for IPv4, and 6 for IPv6
   const result = isIP(input);
 
   return result !== 0;
-}
+};
