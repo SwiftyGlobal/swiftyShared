@@ -21,3 +21,5 @@ export * from './capitalizeWords';
 export * from './checkIfSportIsRace';
 export * from './prepareArrayToMysqlStatement';
 export * from './generateUniqueNumber';
+export * from './isValidUrl';
+export * from './isValidIp';
