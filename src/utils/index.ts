@@ -23,3 +23,4 @@ export * from './prepareArrayToMysqlStatement';
 export * from './generateUniqueNumber';
 export * from './isValidUrl';
 export * from './isValidIp';
+export * from './oddsFormatter';
