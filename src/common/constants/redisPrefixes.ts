@@ -36,6 +36,10 @@ export const RedisPrefixes = {
      * @description - `maindb.settings_v2` table
      */
     SETTINGS_VARIABLES: 'settings_variables',
+    /**
+     * @description - `maindb.cms_footer_links` table
+     */
+    FOOTER_LINKS: 'footer_links',
   },
   SET: {
     JWT_BLACKLIST: 'jwt_blacklist',
