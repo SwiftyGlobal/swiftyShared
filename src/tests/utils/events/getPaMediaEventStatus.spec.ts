@@ -35,6 +35,10 @@ describe('getPaMediaEventStatus', () => {
 
   it('should return PRE_MATCH when raceStatus is in preMatchStatuses', () => {
     expect(getPaMediaEventStatus({ raceStatus: 'Dormant', eventOffTime: null })).toBe(SportEventStatuses.PRE_MATCH);
+    expect(getPaMediaEventStatus({ raceStatus: 'GoingDown', eventOffTime: null })).toBe(SportEventStatuses.PRE_MATCH);
+    expect(getPaMediaEventStatus({ raceStatus: 'GoingBehind', eventOffTime: null })).toBe(SportEventStatuses.PRE_MATCH);
+    expect(getPaMediaEventStatus({ raceStatus: 'AtThePost', eventOffTime: null })).toBe(SportEventStatuses.PRE_MATCH);
+    expect(getPaMediaEventStatus({ raceStatus: 'Parading', eventOffTime: null })).toBe(SportEventStatuses.PRE_MATCH);
     expect(getPaMediaEventStatus({ raceStatus: null, eventOffTime: null })).toBe(SportEventStatuses.PRE_MATCH);
   });
 

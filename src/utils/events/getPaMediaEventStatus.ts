@@ -6,7 +6,14 @@ import type { GetPaMediaEventStatusDto } from '../../common';
 
 const inPlayStatuses: Set<Nullable<string>> = new Set(['Active', 'Off']);
 const abandonedStatuses: Set<Nullable<string>> = new Set(['Abandoned']);
-const preMatchStatuses: Set<Nullable<string>> = new Set(['Dormant', null]);
+const preMatchStatuses: Set<Nullable<string>> = new Set([
+  'Dormant',
+  'GoingDown',
+  'GoingBehind',
+  'AtThePost',
+  'Parading',
+  null,
+]);
 const finishedStatuses: Set<Nullable<string>> = new Set([
   'Result',
   'Race Void',
