@@ -458,7 +458,7 @@ export class BetCalculatorHelper {
     return BetResultType.LOSER;
   };
 
-  getMainResultType = (combinations: ResultMainBet[]): BetResultType => {
+  getMainResultType = (combinations: ResultMainBet[], payout: number): BetResultType => {
     const result_type = BetResultType.OPEN;
 
     if (combinations.length === 0) {
@@ -478,15 +478,15 @@ export class BetCalculatorHelper {
     );
     const has_void = combinations.some((combination) => combination.result_type === BetResultType.VOID);
 
-    if (has_winner) {
+    if (has_winner && payout > 0) {
       return BetResultType.WINNER;
     }
 
-    if (has_partial) {
+    if (has_partial && payout > 0) {
       return BetResultType.PARTIAL;
     }
 
-    if (has_void) {
+    if (has_void && payout > 0) {
       return BetResultType.PARTIAL;
     }
 

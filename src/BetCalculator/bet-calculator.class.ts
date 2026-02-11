@@ -856,13 +856,15 @@ export class BetCalculator {
       bog_amount_won,
     });
 
-    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles]);
+    const total_payout = doubles_payout + trebles_payout;
+
+    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles], total_payout);
 
     return {
       singles: [],
       combinations: [...doubles.combinations, ...trebles.combinations],
       stake: doubles_stake + trebles_stake,
-      payout: doubles_payout + trebles_payout,
+      payout: total_payout,
       result_type: main_result_type,
       win_profit,
       place_profit,
@@ -901,13 +903,15 @@ export class BetCalculator {
 
     this.profit = win_profit + place_profit;
 
-    const main_result_type = this.calculatorHelper.getMainResultType([...singles, doubles, trebles]);
+    const total_payout = singles_payout + doubles_payout + trebles_payout;
+
+    const main_result_type = this.calculatorHelper.getMainResultType([...singles, doubles, trebles], total_payout);
 
     return {
       singles: singles.map((single) => single.singles).flat(),
       combinations: [...doubles.combinations, ...trebles.combinations],
       stake: singles_stake + doubles_stake + trebles_stake,
-      payout: singles_payout + doubles_payout + trebles_payout,
+      payout: total_payout,
       result_type: main_result_type,
       win_profit,
       place_profit,
@@ -936,13 +940,15 @@ export class BetCalculator {
 
     const bog_amount_won = doubles.bog_amount_won + trebles.bog_amount_won + accumulator.bog_amount_won;
 
-    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles]);
+    const total_payout = doubles_payout + trebles_payout + accumulator_payout;
+
+    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles, accumulator], total_payout);
 
     return {
       singles: singles.map((single) => single.singles).flat(),
       combinations: [...doubles.combinations, ...trebles.combinations],
       stake: doubles_stake + trebles_stake + accumulator.stake,
-      payout: doubles_payout + trebles_payout + accumulator_payout,
+      payout: total_payout,
       result_type: main_result_type,
       win_profit,
       place_profit,
@@ -976,13 +982,10 @@ export class BetCalculator {
     const win_profit = doubles.win_profit + trebles.win_profit + folds.win_profit + accumulator.win_profit;
     const place_profit = doubles.place_profit + trebles.place_profit + folds.place_profit + accumulator.place_profit;
 
-    const main_result_type = this.calculatorHelper.getMainResultType([
-      ...singles,
-      doubles,
-      trebles,
-      folds,
-      accumulator,
-    ]);
+    const main_result_type = this.calculatorHelper.getMainResultType(
+      [...singles, doubles, trebles, folds, accumulator],
+      total_payout,
+    );
 
     return {
       singles: singles.map((single) => single.singles).flat(),
@@ -1034,7 +1037,9 @@ export class BetCalculator {
 
     console.log('Heinz', JSON.stringify({ selections, singles, doubles, trebles, fourfolds, fivefolds, accumulator }));
 
-    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles, accumulator]);
+    const total_payout = doubles_payout + trebles_payout + fourfolds_payout + fivefolds_payout + accumulator_payout;
+
+    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles, accumulator], total_payout);
 
     return {
       singles: singles.map((single) => single.singles).flat(),
@@ -1045,7 +1050,7 @@ export class BetCalculator {
         ...fivefolds.combinations,
       ],
       stake: doubles_stake + trebles_stake + fourfolds_stake + fivefolds_stake + accumulator.stake,
-      payout: doubles_payout + trebles_payout + fourfolds_payout + fivefolds_payout + accumulator_payout,
+      payout: total_payout,
       result_type: main_result_type,
       win_profit,
       place_profit,
@@ -1076,7 +1081,11 @@ export class BetCalculator {
     const sixfolds_payout = sixfolds.payout;
     const sixfolds_stake = sixfolds.stake;
     const accumulator_payout = accumulator.payout;
-    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles, accumulator]);
+
+    const total_payout =
+      doubles_payout + trebles_payout + fourfolds_payout + fivefolds_payout + sixfolds_payout + accumulator_payout;
+
+    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles, accumulator], total_payout);
 
     const win_profit =
       doubles.win_profit +
@@ -1110,8 +1119,7 @@ export class BetCalculator {
         ...sixfolds.combinations,
       ],
       stake: doubles_stake + trebles_stake + fourfolds_stake + fivefolds_stake + sixfolds_stake + accumulator.stake,
-      payout:
-        doubles_payout + trebles_payout + fourfolds_payout + fivefolds_payout + sixfolds_payout + accumulator_payout,
+      payout: total_payout,
       result_type: main_result_type,
       win_profit,
       place_profit,
@@ -1145,7 +1153,17 @@ export class BetCalculator {
     const sevenfolds_payout = sevenfolds.payout;
     const sevenfolds_stake = sevenfolds.stake;
     const accumulator_payout = accumulator.payout;
-    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles, accumulator]);
+
+    const total_payout =
+      doubles_payout +
+      trebles_payout +
+      fourfolds_payout +
+      fivefolds_payout +
+      sixfolds_payout +
+      sevenfolds_payout +
+      accumulator_payout;
+
+    const main_result_type = this.calculatorHelper.getMainResultType([doubles, trebles, accumulator], total_payout);
 
     const win_profit =
       doubles.win_profit +
@@ -1190,14 +1208,7 @@ export class BetCalculator {
         sixfolds_stake +
         sevenfolds_stake +
         accumulator.stake,
-      payout:
-        doubles_payout +
-        trebles_payout +
-        fourfolds_payout +
-        fivefolds_payout +
-        sixfolds_payout +
-        sevenfolds_payout +
-        accumulator_payout,
+      payout: total_payout,
       result_type: main_result_type,
       win_profit,
       place_profit,
@@ -1223,7 +1234,13 @@ export class BetCalculator {
     const trebles_payout = trebles.payout;
     const trebles_stake = trebles.stake;
     const accumulator_payout = accumulator.payout;
-    const main_result_type = this.calculatorHelper.getMainResultType([...singles, doubles, trebles, accumulator]);
+
+    const total_payout = singles_payout + doubles_payout + trebles_payout + accumulator_payout;
+
+    const main_result_type = this.calculatorHelper.getMainResultType(
+      [...singles, doubles, trebles, accumulator],
+      total_payout,
+    );
 
     const win_profit = singles_win_profit + doubles.win_profit + trebles.win_profit + accumulator.win_profit;
     const place_profit = singles_place_profit + doubles.place_profit + trebles.place_profit + accumulator.place_profit;
@@ -1237,7 +1254,7 @@ export class BetCalculator {
       singles: singles.map((single) => single.singles).flat(),
       combinations: [...doubles.combinations, ...trebles.combinations],
       stake: singles_stake + doubles_stake + trebles_stake + accumulator.stake,
-      payout: singles_payout + doubles_payout + trebles_payout + accumulator_payout,
+      payout: total_payout,
       result_type: main_result_type,
       win_profit,
       place_profit,
@@ -1266,7 +1283,13 @@ export class BetCalculator {
     const fourfolds_payout = fourfolds.payout;
     const fourfolds_stake = fourfolds.stake;
     const accumulator_payout = accumulator.payout;
-    const main_result_type = this.calculatorHelper.getMainResultType([...singles, doubles, trebles, accumulator]);
+
+    const total_payout = singles_payout + doubles_payout + trebles_payout + fourfolds_payout + accumulator_payout;
+
+    const main_result_type = this.calculatorHelper.getMainResultType(
+      [...singles, doubles, trebles, accumulator],
+      total_payout,
+    );
 
     const win_profit =
       singles_win_profit + doubles.win_profit + trebles.win_profit + fourfolds.win_profit + accumulator.win_profit;
@@ -1295,7 +1318,7 @@ export class BetCalculator {
       singles: singles.map((single) => single.singles).flat(),
       combinations: [...doubles.combinations, ...trebles.combinations, ...fourfolds.combinations],
       stake: singles_stake + doubles_stake + trebles_stake + fourfolds_stake + accumulator.stake,
-      payout: singles_payout + doubles_payout + trebles_payout + fourfolds_payout + accumulator_payout,
+      payout: total_payout,
       result_type: main_result_type,
       win_profit,
       place_profit,
@@ -1327,7 +1350,14 @@ export class BetCalculator {
     const fivefolds_payout = fivefolds.payout;
     const fivefolds_stake = fivefolds.stake;
     const accumulator_payout = accumulator.payout;
-    const main_result_type = this.calculatorHelper.getMainResultType([...singles, doubles, trebles, accumulator]);
+
+    const total_payout =
+      singles_payout + doubles_payout + trebles_payout + fourfolds_payout + fivefolds_payout + accumulator_payout;
+
+    const main_result_type = this.calculatorHelper.getMainResultType(
+      [...singles, doubles, trebles, accumulator],
+      total_payout,
+    );
 
     const win_profit =
       singles_win_profit +
@@ -1360,8 +1390,7 @@ export class BetCalculator {
         ...fivefolds.combinations,
       ],
       stake: singles_stake + doubles_stake + trebles_stake + fourfolds_stake + fivefolds_stake + accumulator.stake,
-      payout:
-        singles_payout + doubles_payout + trebles_payout + fourfolds_payout + fivefolds_payout + accumulator_payout,
+      payout: total_payout,
       result_type: main_result_type,
       win_profit,
       place_profit,
@@ -1491,7 +1520,7 @@ export class BetCalculator {
     foldCombinations.forEach((combination) => {
       const result: ResultMainBet = this.processAccumulatorBet(combination);
 
-      const combination_result_type = this.calculatorHelper.getMainResultType([result]);
+      const combination_result_type = this.calculatorHelper.getMainResultType([result], result.payout);
 
       results.push({
         payout: result.payout,
