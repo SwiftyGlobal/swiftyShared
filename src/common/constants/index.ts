@@ -19,3 +19,4 @@ export * from './betSlipType';
 export * from './countryCodes';
 export * from './currencies';
 export * from './errorCodes';
+export * from './transactions';
