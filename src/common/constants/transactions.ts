@@ -197,7 +197,7 @@ export const CasinoBetTransactionTypes = ['cancel_casino_result', 'casino_bet'];
 
 export const CasinoResultTransactionTypes = ['casino_result', 'cancel_casino_bet'];
 
-export const DeductingTransactionsBets = [...SportStakesTransactionTypes, ...CasinoBetTransactionTypes];
+export const DeductionTransactionsBets = [...SportStakesTransactionTypes, ...CasinoBetTransactionTypes];
 
 export const AdditionTransactionsBets = [
   ...SportReturnsTransactionTypes,
@@ -205,7 +205,7 @@ export const AdditionTransactionsBets = [
   ...CasinoResultTransactionTypes,
 ];
 
-export const SportsTransactionType = [
+export const SportsTransactionTypes = [
   ...SportStakesTransactionTypes,
   ...SportReturnsTransactionTypes,
   ...SportPushedTransactionTypes,
