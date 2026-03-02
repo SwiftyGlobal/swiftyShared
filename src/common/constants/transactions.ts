@@ -223,7 +223,7 @@ export const AdditionTransactionTypes = [
 ];
 
 export const DeductionTransactionTypes = [
-  ...DeductingTransactionsBets,
+  ...DeductionTransactionsBets,
   ...WithdrawalTransactionTypes,
   ...ManualWithdrawalAdjustments,
   ...NonManualWithdrawalAdjustments,
