@@ -1,5 +1,6 @@
 const MYSQL_POOL_MONITOR_GLOBAL_KEY = '__SWIFTY_MYSQL_POOL_MONITOR__';
 const DEFAULT_MONITOR_INTERVAL_MS = 60000;
+const DEFAULT_TOTAL_CONNECTIONS_THRESHOLD = 300;
 
 type Mysql2PoolInternals = {
   _allConnections?: { length?: number };
@@ -15,16 +16,27 @@ type PoolMonitorConfig = {
   connectionLimit?: number;
 };
 
+type PoolMonitorEventsConfig = {
+  created?: boolean;
+  stats?: boolean;
+  statsError?: boolean;
+  thresholdExceeded?: boolean;
+};
+
 type RegisterPoolForMonitoringPayload = {
   poolName: string;
   pool: Mysql2PromisePoolLike;
   config?: PoolMonitorConfig;
   intervalMs?: number;
+  totalConnectionsThreshold?: number;
+  events?: PoolMonitorEventsConfig;
 };
 
 type RegisteredPool = {
   poolName: string;
   pool: Mysql2PromisePoolLike;
+  totalConnectionsThreshold?: number;
+  events: Required<PoolMonitorEventsConfig>;
 };
 
 type GlobalPoolMonitorState = {
@@ -71,36 +83,75 @@ const getErrorMessage = (error: unknown): string => {
   return String(error);
 };
 
+const resolveEventsConfig = (events?: PoolMonitorEventsConfig): Required<PoolMonitorEventsConfig> => ({
+  created: events?.created ?? true,
+  stats: events?.stats ?? true,
+  statsError: events?.statsError ?? true,
+  thresholdExceeded: events?.thresholdExceeded ?? true,
+});
+
+const resolveTotalConnectionsThreshold = (totalConnectionsThreshold?: number): number => {
+  if (typeof totalConnectionsThreshold === 'number' && Number.isFinite(totalConnectionsThreshold)) {
+    return totalConnectionsThreshold;
+  }
+
+  return DEFAULT_TOTAL_CONNECTIONS_THRESHOLD;
+};
+
 const logPoolStats = (): void => {
   const globalState = getGlobalState();
   const pools = Object.values(globalState.pools);
 
-  pools.forEach(({ poolName, pool }) => {
+  pools.forEach(({ poolName, pool, totalConnectionsThreshold, events }) => {
     try {
       const totalConnections = pool?.pool?._allConnections?.length ?? 0;
       const freeConnections = pool?.pool?._freeConnections?.length ?? 0;
       const queuedRequests = pool?.pool?._connectionQueue?.length ?? 0;
 
-      console.log(
-        JSON.stringify({
-          event: 'mysql_pool_stats',
-          pid: process.pid,
-          timestamp: new Date().toISOString(),
-          poolName,
-          totalConnections,
-          freeConnections,
-          queuedRequests,
-        }),
-      );
+      if (events.stats) {
+        console.log(
+          JSON.stringify({
+            event: 'mysql_pool_stats',
+            pid: process.pid,
+            timestamp: new Date().toISOString(),
+            poolName,
+            totalConnections,
+            freeConnections,
+            queuedRequests,
+          }),
+        );
+      }
+
+      if (
+        events.thresholdExceeded &&
+        typeof totalConnectionsThreshold === 'number' &&
+        Number.isFinite(totalConnectionsThreshold) &&
+        totalConnections > totalConnectionsThreshold
+      ) {
+        console.error(
+          JSON.stringify({
+            event: 'mysql_pool_connections_threshold_exceeded',
+            pid: process.pid,
+            timestamp: new Date().toISOString(),
+            poolName,
+            totalConnections,
+            freeConnections,
+            queuedRequests,
+            threshold: totalConnectionsThreshold,
+          }),
+        );
+      }
     } catch (error) {
-      console.error(
-        JSON.stringify({
-          event: 'mysql_pool_stats_error',
-          pid: process.pid,
-          timestamp: new Date().toISOString(),
-          error: getErrorMessage(error),
-        }),
-      );
+      if (events.statsError) {
+        console.error(
+          JSON.stringify({
+            event: 'mysql_pool_stats_error',
+            pid: process.pid,
+            timestamp: new Date().toISOString(),
+            error: getErrorMessage(error),
+          }),
+        );
+      }
     }
   });
 };
@@ -110,23 +161,29 @@ export const registerPoolForMonitoring = ({
   pool,
   config,
   intervalMs,
+  totalConnectionsThreshold,
+  events,
 }: RegisterPoolForMonitoringPayload): void => {
   const globalState = getGlobalState();
 
   globalState.pools[poolName] = {
     poolName,
     pool,
+    totalConnectionsThreshold: resolveTotalConnectionsThreshold(totalConnectionsThreshold),
+    events: resolveEventsConfig(events),
   };
 
-  console.log(
-    JSON.stringify({
-      event: 'mysql_pool_created',
-      pid: process.pid,
-      timestamp: new Date().toISOString(),
-      poolName,
-      connectionLimit: config?.connectionLimit ?? 0,
-    }),
-  );
+  if (globalState.pools[poolName].events.created) {
+    console.log(
+      JSON.stringify({
+        event: 'mysql_pool_created',
+        pid: process.pid,
+        timestamp: new Date().toISOString(),
+        poolName,
+        connectionLimit: config?.connectionLimit ?? 0,
+      }),
+    );
+  }
 
   if (!globalState.intervalStarted) {
     globalState.intervalStarted = true;

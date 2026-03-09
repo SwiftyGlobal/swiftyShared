@@ -10,6 +10,8 @@ registerPoolForMonitoring({
   pool,
   config,
   intervalMs,
+  totalConnectionsThreshold,
+  events,
 });
 ```
 
@@ -17,12 +19,19 @@ registerPoolForMonitoring({
 - `pool`: `mysql2/promise` pool instance.
 - `config.connectionLimit`: value logged in `mysql_pool_created`.
 - `intervalMs` (optional): overrides monitor interval.
+- `totalConnectionsThreshold` (optional): emits anomaly event when current `totalConnections` is greater than this value. Default is `300`.
+- `events` (optional): per-pool event toggles.
+  - `created`
+  - `stats`
+  - `statsError`
+  - `thresholdExceeded`
 
 ## Logged events
 
 - `mysql_pool_created`
 - `mysql_pool_stats`
 - `mysql_pool_stats_error`
+- `mysql_pool_connections_threshold_exceeded`
 
 All logs are single-line JSON.
 
@@ -46,6 +55,13 @@ registerPoolForMonitoring({
   pool: mainPool,
   config: { connectionLimit },
   intervalMs: 60000,
+  totalConnectionsThreshold: 18,
+  events: {
+    created: true,
+    stats: true,
+    statsError: true,
+    thresholdExceeded: true,
+  },
 });
 ```
 
@@ -68,6 +84,11 @@ registerPoolForMonitoring({
   poolName: 'main_mysql_pool',
   pool: mainPool,
   config: { connectionLimit },
+  totalConnectionsThreshold: 18,
+  events: {
+    stats: true,
+    thresholdExceeded: true,
+  },
 });
 ```
 

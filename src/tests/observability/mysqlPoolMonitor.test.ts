@@ -166,4 +166,68 @@ describe('registerPoolForMonitoring', () => {
       ]),
     );
   });
+
+  it('logs threshold exceeded event when total connections go above threshold', async () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    jest.spyOn(console, 'log').mockImplementation(() => undefined);
+
+    const { registerPoolForMonitoring } = await import('../../observability/mysqlPoolMonitor');
+
+    registerPoolForMonitoring({
+      poolName: 'threshold_pool',
+      pool: {
+        pool: {
+          _allConnections: { length: 11 },
+          _freeConnections: { length: 2 },
+          _connectionQueue: { length: 4 },
+        },
+      },
+      config: { connectionLimit: 20 },
+      intervalMs: 1000,
+      totalConnectionsThreshold: 10,
+    });
+
+    jest.advanceTimersByTime(1000);
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+
+    const thresholdEvent = JSON.parse(errorSpy.mock.calls[0][0]);
+
+    expect(thresholdEvent.event).toBe('mysql_pool_connections_threshold_exceeded');
+    expect(thresholdEvent.poolName).toBe('threshold_pool');
+    expect(thresholdEvent.totalConnections).toBe(11);
+    expect(thresholdEvent.threshold).toBe(10);
+  });
+
+  it('supports disabling selected event types', async () => {
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    const { registerPoolForMonitoring } = await import('../../observability/mysqlPoolMonitor');
+
+    registerPoolForMonitoring({
+      poolName: 'silent_pool',
+      pool: {
+        pool: {
+          _allConnections: { length: 12 },
+          _freeConnections: { length: 1 },
+          _connectionQueue: { length: 7 },
+        },
+      },
+      config: { connectionLimit: 20 },
+      intervalMs: 1000,
+      totalConnectionsThreshold: 10,
+      events: {
+        created: false,
+        stats: false,
+        statsError: false,
+        thresholdExceeded: false,
+      },
+    });
+
+    jest.advanceTimersByTime(1000);
+
+    expect(logSpy).not.toHaveBeenCalled();
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
 });
