@@ -21,7 +21,8 @@
     "test:trixie": "jest --color --verbose src/tests/BetCalculator/trixie.test.ts",
     "test:singles": "jest --color --verbose src/tests/BetCalculator/singles.test.ts",
     "test:folds": "jest --color --verbose src/tests/BetCalculator/folds.test.ts",
-    "test:resulting": "jest --color --verbose src/tests/BetCalculator/resulting.test.ts"
+    "test:resulting": "jest --color --verbose src/tests/BetCalculator/resulting.test.ts",
+    "test:mysql-pool": "jest --color --verbose src/tests/observability/*.test.ts"
   },
   "keywords": [],
   "author": "jaxin007",
