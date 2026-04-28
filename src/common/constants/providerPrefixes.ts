@@ -6,6 +6,7 @@ export enum Providers {
   PAMEDIA = 'pamedia',
   SIS = 'sis',
   BETGENIUS = 'betgenius',
+  RAS = 'ras',
 }
 
 export const ProviderPrefixes = {
@@ -16,6 +17,7 @@ export const ProviderPrefixes = {
   c: Providers.SIS,
   d: Providers.PAMEDIA,
   m: Providers.MANUAL,
+  h: Providers.RAS,
 } as const;
 
 // needed on js projects
@@ -27,6 +29,7 @@ export const FeedProviders = {
   LS_SPORTS: 'f',
   BET_RADAR: 'g',
   MANUAL: 'm',
+  RAS: 'h',
 } as const;
 
 export const FeedProvidersNames = {
@@ -37,4 +40,5 @@ export const FeedProvidersNames = {
   [FeedProviders.LS_SPORTS]: 'L-Sports',
   [FeedProviders.BET_RADAR]: 'Bet Radar',
   [FeedProviders.MANUAL]: 'Manual',
+  [FeedProviders.RAS]: 'Racing And Sports',
 };
