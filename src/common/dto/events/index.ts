@@ -5,3 +5,4 @@ export * from './getEveryMatrixEventStatus.dto';
 export * from './getPaMediaEventStatus.dto';
 export * from './getBetRadarEventStatus.dto';
 export * from './getProviderEventStatus.dto';
+export * from './getRasEventStatus.dto';

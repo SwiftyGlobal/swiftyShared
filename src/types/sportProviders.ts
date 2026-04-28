@@ -10,9 +10,10 @@ import type { ObjectKeys } from './objectKeys';
  * e - every matrix (stored under every_matrix)
  * f - ls sports (stored under ls_sports)
  * g - bet radar (stored under bet_radar)
+ * h - racing and sports (stored under ras)
  */
 export type SportProviders = ObjectKeys<typeof ProviderPrefixes>;
 
-export type RacingSportProviders = Extract<SportProviders, 'c' | 'd'>;
+export type RacingSportProviders = Extract<SportProviders, 'c' | 'd' | 'h'>;
 
 export type RegularSportProviders = Exclude<SportProviders, RacingSportProviders>;
