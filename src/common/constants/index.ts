@@ -16,6 +16,7 @@ export * from './priceBoostTypes';
 export * from './eventStatuses';
 export * from './betResultType';
 export * from './betSlipType';
+export * from './betTickerAuditEvents';
 export * from './countryCodes';
 export * from './currencies';
 export * from './errorCodes';
