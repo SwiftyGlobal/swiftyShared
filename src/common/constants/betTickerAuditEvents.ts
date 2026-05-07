@@ -24,3 +24,9 @@ export enum BetTickerAuditActor {
 }
 
 export const BET_TICKER_AUDIT_ACTOR_VALUES: ReadonlySet<string> = new Set(Object.values(BetTickerAuditActor));
+
+export const BET_TICKER_AUDIT_ACTOR_LABEL: Readonly<Record<BetTickerAuditActor, string>> = {
+  [BetTickerAuditActor.PLAYER]: 'Player',
+  [BetTickerAuditActor.CMS_USER]: 'Trader',
+  [BetTickerAuditActor.SYSTEM]: 'System',
+};
