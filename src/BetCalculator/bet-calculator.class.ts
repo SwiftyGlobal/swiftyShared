@@ -45,6 +45,8 @@ export class BetCalculator {
 
   fold_type: number = 0;
 
+  decimal: number = 0;
+
   calculatorHelper: BetCalculatorHelper = new BetCalculatorHelper();
 
   reset = () => {
@@ -63,6 +65,7 @@ export class BetCalculator {
     this.free_bet_amount = 0;
     this.payout = 0;
     this.each_way = false;
+    this.decimal = 0;
   };
 
   private sanitizeNumber = (value: unknown, fallback: number = 0): number => {
@@ -164,6 +167,7 @@ export class BetCalculator {
       bog_applicable,
       each_way,
       fold_type,
+      decimal,
     } = betSettings;
     this.stake = +stake;
     this.total_stake = +total_stake;
@@ -176,6 +180,7 @@ export class BetCalculator {
     this.bog_applicable = bog_applicable || false;
     this.each_way = each_way || false;
     this.fold_type = fold_type || 0;
+    this.decimal = +(decimal || 0);
 
     this.validateBetsAndSettings();
 
@@ -220,6 +225,8 @@ export class BetCalculator {
       result = this.processLucky63Bet(this.bets);
     } else if (this.bet_type.includes(BetSlipType.FOLD)) {
       result = this.processFoldBet(this.bets, this.fold_type);
+    } else if (this.bet_type === BetSlipType.BET_BUILDER) {
+      result = this.processBetBuilderBet(this.bets, this.decimal);
     }
     // else if (this.bet_type === BetSlipType.SUPER_GOLIATH) {
     // result = this.processSuperGoliathBet(this.bets);
@@ -1698,5 +1705,108 @@ export class BetCalculator {
 
     generateCombinations(selections, combinationSize);
     return result;
+  };
+
+  /**
+   * Settle a Bet Builder bet.
+   *
+   * Rules:
+   *   - any losing leg              → bet loses (payout = 0)
+   *   - all winners, no voids       → payout = decimal × stake (the original BB combined price)
+   *   - mix of winners + voids      → payout = (∏ surviving leg odds) × stake (acca of survivors)
+   *   - all legs void               → refund stake
+   *
+   * Half-result legs use the same effective-odd as accumulator settlement:
+   *   half_won → odd_decimal / 2     half_lost → 0.5
+   *
+   * BB has no Rule 4 and no BOG. Boosts (BB_BOOST only) are applied by callers
+   * outside this function.
+   */
+  processBetBuilderBet = (selections: PlacedBetSelection[], decimal: number): ResultMainBet => {
+    const stake = this.stake;
+    let no_of_winners = 0;
+    let no_of_voids = 0;
+    let no_of_losers = 0;
+    const surviving_odds: number[] = [];
+
+    for (const leg of selections) {
+      const result = leg.result;
+      const odd = +(leg.odd_decimal ?? 0);
+
+      if (result === BetResultType.WINNER) {
+        no_of_winners++;
+        surviving_odds.push(odd);
+      } else if (result === BetResultType.VOID) {
+        no_of_voids++;
+      } else if (result === BetResultType.HALF_WON) {
+        no_of_winners++;
+        surviving_odds.push(odd / 2);
+      } else if (result === BetResultType.HALF_LOST) {
+        no_of_winners++;
+        surviving_odds.push(0.5);
+      } else if (result === BetResultType.LOSER) {
+        no_of_losers++;
+      }
+    }
+
+    // Any loser → bet loses
+    if (no_of_losers > 0) {
+      return {
+        stake: 0,
+        payout: 0,
+        result_type: BetResultType.LOSER,
+        win_profit: 0,
+        place_profit: 0,
+        singles: [],
+        combinations: [],
+        accumulator_profit: 0,
+        profit: 0,
+        bog_amount_won: 0,
+      };
+    }
+
+    // All voids → refund stake
+    if (no_of_voids === selections.length && selections.length > 0) {
+      return {
+        stake,
+        payout: stake,
+        result_type: BetResultType.VOID,
+        win_profit: 0,
+        place_profit: 0,
+        singles: [],
+        combinations: [],
+        accumulator_profit: 0,
+        profit: 0,
+        bog_amount_won: 0,
+      };
+    }
+
+    // All winners (no voids) → use the pricing-engine combined price
+    let new_odds: number;
+    if (no_of_voids === 0 && no_of_winners === selections.length) {
+      if (!(decimal > 0)) {
+        throw new Error(`Bet Builder decimal must be > 0 (got ${decimal})`);
+      }
+      new_odds = decimal;
+    } else {
+      // Mix of winners + voids → recompute as acca of surviving legs
+      new_odds = surviving_odds.reduce((acc, o) => acc * o, 1);
+    }
+
+    const payout = new_odds * stake;
+    const win_profit = payout - stake;
+
+    return {
+      stake,
+      payout,
+      result_type: BetResultType.WINNER,
+      win_profit,
+      place_profit: 0,
+      singles: [],
+      combinations: [],
+      accumulator_profit: 0,
+      profit: win_profit,
+      bog_amount_won: 0,
+    };
   };
 }
