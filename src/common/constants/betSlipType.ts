@@ -21,6 +21,7 @@ export enum BetSlipType {
   TRIFECTA = 'bet_slip_place_trifecta',
   SWINGER = 'bet_slip_place_swinger',
   FOLD = 'bet_slip_place_fold',
+  BET_BUILDER = 'bet_builder',
 }
 
 export const BetSlipTypeName: Record<BetSlipType, string> = {
@@ -46,6 +47,7 @@ export const BetSlipTypeName: Record<BetSlipType, string> = {
   [BetSlipType.TRIFECTA]: 'Trifecta',
   [BetSlipType.SWINGER]: 'Swinge',
   [BetSlipType.FOLD]: 'Fold',
+  [BetSlipType.BET_BUILDER]: 'Bet Builder',
 };
 
 export enum CastType {
