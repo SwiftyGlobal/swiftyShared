@@ -45,7 +45,7 @@ export class BetCalculator {
 
   fold_type: number = 0;
 
-  decimal: number = 0;
+  stored_payout: number = 0;
 
   calculatorHelper: BetCalculatorHelper = new BetCalculatorHelper();
 
@@ -65,7 +65,7 @@ export class BetCalculator {
     this.free_bet_amount = 0;
     this.payout = 0;
     this.each_way = false;
-    this.decimal = 0;
+    this.stored_payout = 0;
   };
 
   private sanitizeNumber = (value: unknown, fallback: number = 0): number => {
@@ -167,7 +167,7 @@ export class BetCalculator {
       bog_applicable,
       each_way,
       fold_type,
-      decimal,
+      stored_payout,
     } = betSettings;
     this.stake = +stake;
     this.total_stake = +total_stake;
@@ -180,7 +180,7 @@ export class BetCalculator {
     this.bog_applicable = bog_applicable || false;
     this.each_way = each_way || false;
     this.fold_type = fold_type || 0;
-    this.decimal = +(decimal || 0);
+    this.stored_payout = +(stored_payout || 0);
 
     this.validateBetsAndSettings();
 
@@ -226,7 +226,7 @@ export class BetCalculator {
     } else if (this.bet_type.includes(BetSlipType.FOLD)) {
       result = this.processFoldBet(this.bets, this.fold_type);
     } else if (this.bet_type === BetSlipType.BET_BUILDER) {
-      result = this.processBetBuilderBet(this.bets, this.decimal);
+      result = this.processBetBuilderBet(this.bets, this.stored_payout);
     }
     // else if (this.bet_type === BetSlipType.SUPER_GOLIATH) {
     // result = this.processSuperGoliathBet(this.bets);
@@ -1712,17 +1712,23 @@ export class BetCalculator {
    *
    * Rules:
    *   - any losing leg              → bet loses (payout = 0)
-   *   - all winners, no voids       → payout = decimal × stake (the original BB combined price)
-   *   - mix of winners + voids      → payout = (∏ surviving leg odds) × stake (acca of survivors)
+   *   - all winners, no voids       → payout = stored_payout (the gross return
+   *                                   set by the pricing engine at placement,
+   *                                   stored on users_bets.return_amount). No
+   *                                   recompute — honour the price the player
+   *                                   agreed to.
+   *   - mix of winners + voids      → payout = (∏ surviving leg odds) × stake
+   *                                   (rebuild as accumulator of survivors)
    *   - all legs void               → refund stake
    *
-   * Half-result legs use the same effective-odd as accumulator settlement:
+   * Half-result legs use the same effective-odd as accumulator settlement
+   * (relevant only on the void-recalc path):
    *   half_won → odd_decimal / 2     half_lost → 0.5
    *
    * BB has no Rule 4 and no BOG. Boosts (BB_BOOST only) are applied by callers
    * outside this function.
    */
-  processBetBuilderBet = (selections: PlacedBetSelection[], decimal: number): ResultMainBet => {
+  processBetBuilderBet = (selections: PlacedBetSelection[], stored_payout: number): ResultMainBet => {
     const stake = this.stake;
     let no_of_winners = 0;
     let no_of_voids = 0;
@@ -1781,19 +1787,19 @@ export class BetCalculator {
       };
     }
 
-    // All winners (no voids) → use the pricing-engine combined price
-    let new_odds: number;
+    // All winners (no voids) → honour the stored gross return verbatim.
+    let payout: number;
     if (no_of_voids === 0 && no_of_winners === selections.length) {
-      if (!(decimal > 0)) {
-        throw new Error(`Bet Builder decimal must be > 0 (got ${decimal})`);
+      if (!(stored_payout > 0)) {
+        throw new Error(`Bet Builder stored_payout must be > 0 (got ${stored_payout})`);
       }
-      new_odds = decimal;
+      payout = stored_payout;
     } else {
-      // Mix of winners + voids → recompute as acca of surviving legs
-      new_odds = surviving_odds.reduce((acc, o) => acc * o, 1);
+      // Mix of winners + voids → recompute as acca of surviving legs.
+      const new_odds = surviving_odds.reduce((acc, o) => acc * o, 1);
+      payout = new_odds * stake;
     }
 
-    const payout = new_odds * stake;
     const win_profit = payout - stake;
 
     return {
