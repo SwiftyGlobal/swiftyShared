@@ -47,7 +47,7 @@ export interface BetSettings {
   free_bet_amount: number;
   bog_applicable: boolean;
   each_way: boolean;
-  decimal?: number;
+  stored_payout?: number;
 }
 
 export interface ResultSingle {
