@@ -1711,28 +1711,28 @@ export class BetCalculator {
    * Settle a Bet Builder bet.
    *
    * Rules:
-   *   - any losing leg              → bet loses (payout = 0)
-   *   - all winners, no voids       → payout = stored_payout (the gross return
-   *                                   set by the pricing engine at placement,
-   *                                   stored on users_bets.return_amount). No
-   *                                   recompute — honour the price the player
-   *                                   agreed to.
-   *   - mix of winners + voids      → strip the voided legs from the original
-   *                                   BB combined price:
-   *                                     new_odds = (stored_payout / stake) / ∏ voided_odds
-   *                                     payout   = new_odds × stake
-   *                                   This preserves the correlation-adjusted
-   *                                   price of the surviving legs; multiplying
-   *                                   surviving leg odds directly would discard
-   *                                   the BB margin/correlation the player paid
-   *                                   for at placement.
-   *   - all legs void               → refund stake
+   *   - any losing leg                       → bet loses (payout = 0)
+   *   - all winners, no voids                → payout = stored_payout verbatim
+   *                                            (gross return set by the pricing
+   *                                            engine at placement; stored on
+   *                                            users_bets.return_amount).
+   *   - exactly 1 winner + rest all void     → bet collapses to a single on the
+   *                                            survivor:
+   *                                              payout = win_odd × stake
+   *                                            Applies for any number of legs.
+   *                                            BB margin/correlation no longer
+   *                                            applies once only one leg is in
+   *                                            play.
+   *   - ≥2 winners + ≥1 void                 → strip voided legs from the BB
+   *                                            combined price:
+   *                                              new_odds = (stored_payout / stake) / ∏ voided_odds
+   *                                              payout   = new_odds × stake
+   *                                            Preserves the correlation-adjusted
+   *                                            price of the surviving legs.
+   *   - all legs void                        → refund stake
    *
-   * Half-result legs (relevant only on the void-recalc path) divide their
-   * effective odd into the price the same way a void leg does:
-   *   half_won → odd_decimal × 2     half_lost → ÷ 0.5  ⇒  no change
-   * (a half-result is treated as if its odd was halved at placement; on
-   * recalc we divide out the original odd / 2 the same way.)
+   * Half-result legs use their effective odd in the single-survivor branch:
+   *   half_won → odd / 2     half_lost → 0.5
    *
    * BB has no Rule 4 and no BOG. Boosts (BB_BOOST only) are applied by callers
    * outside this function.
@@ -1806,18 +1806,19 @@ export class BetCalculator {
     }
 
     let payout: number;
-    if (selections.length === 2 && no_of_winners === 1 && no_of_voids === 1) {
-      // 2-leg BB with 1 void → the bet collapses to a single on the surviving
-      // leg. BB margin/correlation no longer applies; pay the survivor's
-      // straight price (half-result legs use their effective odd, populated
+    if (no_of_winners === 1 && no_of_voids === selections.length - 1) {
+      // Exactly one surviving leg (and every other leg voided) → the bet
+      // collapses to a single on the survivor. BB margin/correlation no
+      // longer applies; pay the survivor's straight price. Applies for any
+      // number of legs (half-result legs use their effective odd, populated
       // above as `odd/2` for half_won and `0.5` for half_lost).
       payout = surviving_odds[0] * stake;
     } else if (no_of_voids === 0 && no_of_winners === selections.length) {
       // All winners (no voids) → honour the stored gross return verbatim.
       payout = stored_payout;
     } else {
-      // Mix of winners + voids on a 3+ leg BB → strip voided leg odds from the
-      // BB combined price. new_odds = (stored_payout / stake) / ∏ voided_odds.
+      // ≥2 surviving legs + voids → strip voided leg odds from the BB combined
+      // price. new_odds = (stored_payout / stake) / ∏ voided_odds.
       const bb_combined = stored_payout / stake;
       const void_product = voided_odds.reduce((acc, o) => acc * (o > 0 ? o : 1), 1);
       const new_odds = void_product > 0 ? bb_combined / void_product : 0;
