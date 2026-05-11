@@ -1743,6 +1743,7 @@ export class BetCalculator {
     let no_of_voids = 0;
     let no_of_losers = 0;
     const voided_odds: number[] = [];
+    const surviving_odds: number[] = [];
 
     for (const leg of selections) {
       const result = leg.result;
@@ -1750,13 +1751,16 @@ export class BetCalculator {
 
       if (result === BetResultType.WINNER) {
         no_of_winners++;
+        surviving_odds.push(odd);
       } else if (result === BetResultType.VOID) {
         no_of_voids++;
         voided_odds.push(odd);
-      } else if (result === BetResultType.HALF_WON || result === BetResultType.HALF_LOST) {
-        // Half-result legs count as winners; their effective-odd reduction is
-        // applied below as a separate divisor on the BB combined price.
+      } else if (result === BetResultType.HALF_WON) {
         no_of_winners++;
+        surviving_odds.push(odd / 2);
+      } else if (result === BetResultType.HALF_LOST) {
+        no_of_winners++;
+        surviving_odds.push(0.5);
       } else if (result === BetResultType.LOSER) {
         no_of_losers++;
       }
@@ -1801,13 +1805,19 @@ export class BetCalculator {
       throw new Error(`Bet Builder stake must be > 0 (got ${stake})`);
     }
 
-    // All winners (no voids) → honour the stored gross return verbatim.
     let payout: number;
-    if (no_of_voids === 0 && no_of_winners === selections.length) {
+    if (selections.length === 2 && no_of_winners === 1 && no_of_voids === 1) {
+      // 2-leg BB with 1 void → the bet collapses to a single on the surviving
+      // leg. BB margin/correlation no longer applies; pay the survivor's
+      // straight price (half-result legs use their effective odd, populated
+      // above as `odd/2` for half_won and `0.5` for half_lost).
+      payout = surviving_odds[0] * stake;
+    } else if (no_of_voids === 0 && no_of_winners === selections.length) {
+      // All winners (no voids) → honour the stored gross return verbatim.
       payout = stored_payout;
     } else {
-      // Mix of winners + voids → strip voided leg odds from the BB combined
-      // price. new_odds = (stored_payout / stake) / ∏ voided_odds.
+      // Mix of winners + voids on a 3+ leg BB → strip voided leg odds from the
+      // BB combined price. new_odds = (stored_payout / stake) / ∏ voided_odds.
       const bb_combined = stored_payout / stake;
       const void_product = voided_odds.reduce((acc, o) => acc * (o > 0 ? o : 1), 1);
       const new_odds = void_product > 0 ? bb_combined / void_product : 0;

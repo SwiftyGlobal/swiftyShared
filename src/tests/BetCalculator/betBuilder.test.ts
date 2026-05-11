@@ -32,23 +32,39 @@ const settle = (calculator: BetCalculator, args: { stake: number; stored_payout:
     stored_payout: args.stored_payout,
   });
 
-// Settlement rule (formula B):
-//   all winners              → payout = stored_payout (verbatim)
-//   mix of winners + voids   → new_odds = (stored_payout / stake) / ∏ voided_odds
-//                              payout   = new_odds × stake
-//   any loser                → payout = 0
-//   all voids                → refund stake
-describe('Bet Builder — settlement (formula B: strip voided legs from BB combined)', () => {
+// Settlement rule:
+//   all winners                       → payout = stored_payout (verbatim)
+//   2 legs, 1 winner + 1 void         → payout = surviving_odd × stake (special case)
+//   3+ legs, mix of winners + voids   → formula B: new_odds = (stored_payout / stake) / ∏ voided_odds
+//                                       payout = new_odds × stake
+//   any loser                         → payout = 0
+//   all voids                         → refund stake
+describe('Bet Builder — settlement (2-leg single-survivor + formula B for 3+ legs)', () => {
   const calc = new BetCalculator();
 
-  it('2 legs, 1 void → BB combined ÷ voided leg odd', () => {
-    // BB combined = 3.0, void leg 2.0 → new odds 1.5 → $15
+  it('2 legs, 1 void → settles as single at survivor\'s straight price (ignores BB combined margin)', () => {
+    // BB combined intentionally 2.5 (lower than the no-margin acca 1.5 × 2.0 = 3.0
+    // so the margin is visible). New rule pays survivor's odd × stake = 1.5 × 10 = $15,
+    // NOT formula B's (2.5 / 2.0) × 10 = $12.50.
     const r = settle(calc, {
       stake: 10,
-      stored_payout: 30,
+      stored_payout: 25,
       bets: [leg(BetResultType.VOID, 2.0, 1), leg(BetResultType.WINNER, 1.5, 2)],
     });
     expect(r.return_payout).toBeCloseTo(15, 5);
+    expect(r.result_type).toBe(BetResultType.WINNER);
+  });
+
+  it('2 legs, 1 void (asymmetric fixture distinguishes new rule from formula B)', () => {
+    // stake 10, void odd 4.0, survivor odd 2.0, stored_payout 60 (BB combined 6.0).
+    // New rule: 2.0 × 10 = $20.
+    // Formula B (if regressed): (6.0 / 4.0) × 10 = $15. Asserts we land on the new rule.
+    const r = settle(calc, {
+      stake: 10,
+      stored_payout: 60,
+      bets: [leg(BetResultType.VOID, 4.0, 1), leg(BetResultType.WINNER, 2.0, 2)],
+    });
+    expect(r.return_payout).toBeCloseTo(20, 5);
     expect(r.result_type).toBe(BetResultType.WINNER);
   });
 
