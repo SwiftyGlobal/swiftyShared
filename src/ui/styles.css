@@ -1,0 +1,146 @@
+/* @swiftyglobal/swifty-shared/ui — themable via CSS variables.
+ * Consumers override these in a parent scope (e.g. `.bb-ui-cms { --bb-selection-bg-selected: #7a6fbe; }`).
+ */
+
+.bb-ui__markets,
+.bb-ui__market,
+.bb-ui__market-grid,
+.bb-ui__selections,
+.bb-ui__tabs {
+  --bb-bg: #ffffff;
+  --bb-border: #e4e8ee;
+  --bb-radius: 6px;
+  --bb-text: #2e3a49;
+  --bb-text-muted: #7b8794;
+  --bb-text-selected: #ffffff;
+
+  --bb-selection-bg: #f5f7fa;
+  --bb-selection-bg-hover: #ecf0f5;
+  --bb-selection-bg-selected: #7a6fbe;
+  --bb-selection-border: var(--bb-border);
+
+  --bb-tab-bg: transparent;
+  --bb-tab-bg-active: #ecf0f5;
+  --bb-tab-text: var(--bb-text);
+  --bb-tab-text-active: var(--bb-text);
+
+  --bb-gap: 8px;
+}
+
+.bb-ui__markets {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--bb-text);
+  font-family: inherit;
+}
+
+.bb-ui__market {
+  background: var(--bb-bg);
+  border: 1px solid var(--bb-border);
+  border-radius: var(--bb-radius);
+  padding: 12px;
+}
+
+.bb-ui__market-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.bb-ui__market-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.bb-ui__market-grid {
+  display: grid;
+  gap: var(--bb-gap);
+}
+
+.bb-ui__selections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bb-gap);
+}
+
+.bb-ui__selection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--bb-radius);
+  border: 1px solid var(--bb-selection-border);
+  background: var(--bb-selection-bg);
+  color: var(--bb-text);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  text-align: left;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.bb-ui__selection:hover {
+  background: var(--bb-selection-bg-hover);
+}
+
+.bb-ui__selection--selected {
+  background: var(--bb-selection-bg-selected);
+  color: var(--bb-text-selected);
+  border-color: var(--bb-selection-bg-selected);
+}
+
+.bb-ui__selection--selected:hover {
+  background: var(--bb-selection-bg-selected);
+}
+
+.bb-ui__selection-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bb-ui__selection-odds {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.bb-ui__tabs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.bb-ui__tab {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--bb-tab-bg);
+  color: var(--bb-tab-text);
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  user-select: none;
+}
+
+.bb-ui__tab--active {
+  background: var(--bb-tab-bg-active);
+  color: var(--bb-tab-text-active);
+  border-color: var(--bb-border);
+}
+
+.bb-ui__empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--bb-text-muted);
+  font-size: 13px;
+}
