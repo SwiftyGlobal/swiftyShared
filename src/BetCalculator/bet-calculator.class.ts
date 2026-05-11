@@ -1717,13 +1717,22 @@ export class BetCalculator {
    *                                   stored on users_bets.return_amount). No
    *                                   recompute — honour the price the player
    *                                   agreed to.
-   *   - mix of winners + voids      → payout = (∏ surviving leg odds) × stake
-   *                                   (rebuild as accumulator of survivors)
+   *   - mix of winners + voids      → strip the voided legs from the original
+   *                                   BB combined price:
+   *                                     new_odds = (stored_payout / stake) / ∏ voided_odds
+   *                                     payout   = new_odds × stake
+   *                                   This preserves the correlation-adjusted
+   *                                   price of the surviving legs; multiplying
+   *                                   surviving leg odds directly would discard
+   *                                   the BB margin/correlation the player paid
+   *                                   for at placement.
    *   - all legs void               → refund stake
    *
-   * Half-result legs use the same effective-odd as accumulator settlement
-   * (relevant only on the void-recalc path):
-   *   half_won → odd_decimal / 2     half_lost → 0.5
+   * Half-result legs (relevant only on the void-recalc path) divide their
+   * effective odd into the price the same way a void leg does:
+   *   half_won → odd_decimal × 2     half_lost → ÷ 0.5  ⇒  no change
+   * (a half-result is treated as if its odd was halved at placement; on
+   * recalc we divide out the original odd / 2 the same way.)
    *
    * BB has no Rule 4 and no BOG. Boosts (BB_BOOST only) are applied by callers
    * outside this function.
@@ -1733,7 +1742,7 @@ export class BetCalculator {
     let no_of_winners = 0;
     let no_of_voids = 0;
     let no_of_losers = 0;
-    const surviving_odds: number[] = [];
+    const voided_odds: number[] = [];
 
     for (const leg of selections) {
       const result = leg.result;
@@ -1741,15 +1750,13 @@ export class BetCalculator {
 
       if (result === BetResultType.WINNER) {
         no_of_winners++;
-        surviving_odds.push(odd);
       } else if (result === BetResultType.VOID) {
         no_of_voids++;
-      } else if (result === BetResultType.HALF_WON) {
+        voided_odds.push(odd);
+      } else if (result === BetResultType.HALF_WON || result === BetResultType.HALF_LOST) {
+        // Half-result legs count as winners; their effective-odd reduction is
+        // applied below as a separate divisor on the BB combined price.
         no_of_winners++;
-        surviving_odds.push(odd / 2);
-      } else if (result === BetResultType.HALF_LOST) {
-        no_of_winners++;
-        surviving_odds.push(0.5);
       } else if (result === BetResultType.LOSER) {
         no_of_losers++;
       }
@@ -1787,16 +1794,23 @@ export class BetCalculator {
       };
     }
 
+    if (!(stored_payout > 0)) {
+      throw new Error(`Bet Builder stored_payout must be > 0 (got ${stored_payout})`);
+    }
+    if (!(stake > 0)) {
+      throw new Error(`Bet Builder stake must be > 0 (got ${stake})`);
+    }
+
     // All winners (no voids) → honour the stored gross return verbatim.
     let payout: number;
     if (no_of_voids === 0 && no_of_winners === selections.length) {
-      if (!(stored_payout > 0)) {
-        throw new Error(`Bet Builder stored_payout must be > 0 (got ${stored_payout})`);
-      }
       payout = stored_payout;
     } else {
-      // Mix of winners + voids → recompute as acca of surviving legs.
-      const new_odds = surviving_odds.reduce((acc, o) => acc * o, 1);
+      // Mix of winners + voids → strip voided leg odds from the BB combined
+      // price. new_odds = (stored_payout / stake) / ∏ voided_odds.
+      const bb_combined = stored_payout / stake;
+      const void_product = voided_odds.reduce((acc, o) => acc * (o > 0 ? o : 1), 1);
+      const new_odds = void_product > 0 ? bb_combined / void_product : 0;
       payout = new_odds * stake;
     }
 

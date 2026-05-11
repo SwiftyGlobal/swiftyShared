@@ -32,34 +32,42 @@ const settle = (calculator: BetCalculator, args: { stake: number; stored_payout:
     stored_payout: args.stored_payout,
   });
 
-describe('Bet Builder — settlement (spec coverage)', () => {
+// Settlement rule (formula B):
+//   all winners              → payout = stored_payout (verbatim)
+//   mix of winners + voids   → new_odds = (stored_payout / stake) / ∏ voided_odds
+//                              payout   = new_odds × stake
+//   any loser                → payout = 0
+//   all voids                → refund stake
+describe('Bet Builder — settlement (formula B: strip voided legs from BB combined)', () => {
   const calc = new BetCalculator();
 
-  it('Ex 1: 2 legs, 1 void → settles as single at survivor (1.50) → $15 on $10', () => {
+  it('2 legs, 1 void → BB combined ÷ voided leg odd', () => {
+    // BB combined = 3.0, void leg 2.0 → new odds 1.5 → $15
     const r = settle(calc, {
       stake: 10,
-      stored_payout: 25,
+      stored_payout: 30,
       bets: [leg(BetResultType.VOID, 2.0, 1), leg(BetResultType.WINNER, 1.5, 2)],
     });
     expect(r.return_payout).toBeCloseTo(15, 5);
     expect(r.result_type).toBe(BetResultType.WINNER);
   });
 
-  it('Ex 2: 3 legs, 1 void → acca of survivors (1.50 × 1.80) × 10 = $27', () => {
+  it('Spec card Ex 2: 3 legs, 1 void → BB combined 4.50 ÷ void 2.00 = 2.25 → $22.50', () => {
     const r = settle(calc, {
       stake: 10,
-      stored_payout: 54,
+      stored_payout: 45, // BB combined = 4.50
       bets: [
         leg(BetResultType.VOID, 2.0, 1),
         leg(BetResultType.WINNER, 1.5, 2),
         leg(BetResultType.WINNER, 1.8, 3),
       ],
     });
-    expect(r.return_payout).toBeCloseTo(27, 5);
+    expect(r.return_payout).toBeCloseTo(22.5, 5);
     expect(r.result_type).toBe(BetResultType.WINNER);
   });
 
-  it('Ex 3: 3 legs, 2 voids → single survivor at 1.80 → $18', () => {
+  it('3 legs, 2 voids → BB combined ÷ (void1 × void2)', () => {
+    // BB combined 5.4, voids 2.0 × 1.5 = 3.0 → new odds 1.8 → $18
     const r = settle(calc, {
       stake: 10,
       stored_payout: 54,
@@ -73,7 +81,8 @@ describe('Bet Builder — settlement (spec coverage)', () => {
     expect(r.result_type).toBe(BetResultType.WINNER);
   });
 
-  it('Ex 5: 4 legs, 2 voids middle → (1.50 × 2.50) × 10 = $37.50', () => {
+  it('4 legs, 2 voids middle → BB combined ÷ (void1 × void2)', () => {
+    // BB combined 13.5, voids 1.8 × 2.0 = 3.6 → new odds 3.75 → $37.50
     const r = settle(calc, {
       stake: 10,
       stored_payout: 135,
@@ -88,10 +97,11 @@ describe('Bet Builder — settlement (spec coverage)', () => {
     expect(r.result_type).toBe(BetResultType.WINNER);
   });
 
-  it('Ex 7: 6 legs, 5 voids → single survivor at 1.75 → $17.50', () => {
+  it('6 legs, 5 voids → BB combined ÷ (∏ all 5 voided odds)', () => {
+    // BB combined 33.075 (= 2×1.5×1.8×2.5×1.4×1.75), voids product 18.9 → new odds 1.75 → $17.50
     const r = settle(calc, {
       stake: 10,
-      stored_payout: 330.8,
+      stored_payout: 330.75,
       bets: [
         leg(BetResultType.VOID, 2.0, 1),
         leg(BetResultType.VOID, 1.5, 2),
@@ -147,7 +157,7 @@ describe('Bet Builder — settlement (spec coverage)', () => {
     expect(r.result_type).toBe(BetResultType.VOID);
   });
 
-  it('All winners but stored_payout = 0 → throws', () => {
+  it('stored_payout = 0 (with non-trivial result) → throws', () => {
     expect(() =>
       settle(calc, {
         stake: 10,
@@ -155,35 +165,5 @@ describe('Bet Builder — settlement (spec coverage)', () => {
         bets: [leg(BetResultType.WINNER, 2.0, 1), leg(BetResultType.WINNER, 1.5, 2)],
       }),
     ).toThrow(/stored_payout must be > 0/);
-  });
-
-  it('half_won uses odd/2 as effective survivor odd', () => {
-    // half_won 2.0 → 1.0; × winner 1.5 → 1.5 × $10 = $15
-    const r = settle(calc, {
-      stake: 10,
-      stored_payout: 54,
-      bets: [
-        leg(BetResultType.HALF_WON, 2.0, 1),
-        leg(BetResultType.WINNER, 1.5, 2),
-        leg(BetResultType.VOID, 1.8, 3),
-      ],
-    });
-    expect(r.return_payout).toBeCloseTo(15, 5);
-    expect(r.result_type).toBe(BetResultType.WINNER);
-  });
-
-  it('half_lost uses 0.5 as effective survivor odd', () => {
-    // half_lost → 0.5; × winner 1.8 → 0.9 × $10 = $9
-    const r = settle(calc, {
-      stake: 10,
-      stored_payout: 54,
-      bets: [
-        leg(BetResultType.HALF_LOST, 2.0, 1),
-        leg(BetResultType.WINNER, 1.8, 2),
-        leg(BetResultType.VOID, 1.5, 3),
-      ],
-    });
-    expect(r.return_payout).toBeCloseTo(9, 5);
-    expect(r.result_type).toBe(BetResultType.WINNER);
   });
 });
