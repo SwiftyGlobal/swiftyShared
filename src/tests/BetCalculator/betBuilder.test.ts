@@ -33,13 +33,16 @@ const settle = (calculator: BetCalculator, args: { stake: number; stored_payout:
   });
 
 // Settlement rule:
-//   all winners                       → payout = stored_payout (verbatim)
-//   2 legs, 1 winner + 1 void         → payout = surviving_odd × stake (special case)
-//   3+ legs, mix of winners + voids   → formula B: new_odds = (stored_payout / stake) / ∏ voided_odds
-//                                       payout = new_odds × stake
-//   any loser                         → payout = 0
-//   all voids                         → refund stake
-describe('Bet Builder — settlement (2-leg single-survivor + formula B for 3+ legs)', () => {
+//   all winners                          → payout = stored_payout (verbatim)
+//   exactly 1 winner + rest all void     → payout = win_odd × stake
+//                                          (single-survivor — applies for ANY
+//                                          number of legs; bet collapses to a
+//                                          single on the survivor)
+//   ≥2 winners + ≥1 void                 → formula B: new_odds = (stored_payout / stake) / ∏ voided_odds
+//                                          payout = new_odds × stake
+//   any loser                            → payout = 0
+//   all voids                            → refund stake
+describe('Bet Builder — settlement (N-leg single-survivor + formula B for ≥2 survivors)', () => {
   const calc = new BetCalculator();
 
   it('2 legs, 1 void → settles as single at survivor\'s straight price (ignores BB combined margin)', () => {
@@ -82,8 +85,11 @@ describe('Bet Builder — settlement (2-leg single-survivor + formula B for 3+ l
     expect(r.result_type).toBe(BetResultType.WINNER);
   });
 
-  it('3 legs, 2 voids → BB combined ÷ (void1 × void2)', () => {
-    // BB combined 5.4, voids 2.0 × 1.5 = 3.0 → new odds 1.8 → $18
+  it('3 legs, 2 voids (single survivor) → settles at survivor\'s straight price', () => {
+    // Single surviving leg at odd 1.8, stake 10 → payout 1.8 × 10 = $18.
+    // (Fixture has stored_payout 54 = 1.8 × 2.0 × 1.5 × 10, no margin baked
+    // in, so the new rule and formula B coincidentally agree here — the
+    // dedicated asymmetric 3-leg test below proves the rules differ.)
     const r = settle(calc, {
       stake: 10,
       stored_payout: 54,
@@ -94,6 +100,24 @@ describe('Bet Builder — settlement (2-leg single-survivor + formula B for 3+ l
       ],
     });
     expect(r.return_payout).toBeCloseTo(18, 5);
+    expect(r.result_type).toBe(BetResultType.WINNER);
+  });
+
+  it('3 legs, 2 voids — asymmetric fixture distinguishes single-survivor rule from formula B', () => {
+    // stake 10, voids 2.0 + 4.0, survivor 1.5, stored_payout 60 (BB combined
+    // 6.0, deliberately != un-margined acca 1.5 × 2.0 × 4.0 = 12 so the BB
+    // margin/correlation is visible). Single-survivor rule: 1.5 × 10 = $15.
+    // Formula B (regression): (6.0 / 8.0) × 10 = $7.50.
+    const r = settle(calc, {
+      stake: 10,
+      stored_payout: 60,
+      bets: [
+        leg(BetResultType.VOID, 2.0, 1),
+        leg(BetResultType.VOID, 4.0, 2),
+        leg(BetResultType.WINNER, 1.5, 3),
+      ],
+    });
+    expect(r.return_payout).toBeCloseTo(15, 5);
     expect(r.result_type).toBe(BetResultType.WINNER);
   });
 
@@ -113,8 +137,10 @@ describe('Bet Builder — settlement (2-leg single-survivor + formula B for 3+ l
     expect(r.result_type).toBe(BetResultType.WINNER);
   });
 
-  it('6 legs, 5 voids → BB combined ÷ (∏ all 5 voided odds)', () => {
-    // BB combined 33.075 (= 2×1.5×1.8×2.5×1.4×1.75), voids product 18.9 → new odds 1.75 → $17.50
+  it('6 legs, 5 voids (single survivor) → settles at survivor\'s straight price ($17.50)', () => {
+    // Single surviving leg at odd 1.75, stake 10 → payout 1.75 × 10 = $17.50.
+    // (Fixture stored_payout 330.75 has no margin baked in so formula B
+    // would also give $17.50 — assertion unchanged from prior versions.)
     const r = settle(calc, {
       stake: 10,
       stored_payout: 330.75,
