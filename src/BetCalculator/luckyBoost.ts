@@ -165,7 +165,13 @@ export function calculateLuckyBoost(params: CalculateLuckyBoostParams): LuckyBoo
   const cap = Number(params.max_award) || 0;
   if (cap <= 0) return EMPTY;
 
-  const winners = legs.filter((b) => String(b?.result ?? '').toLowerCase() === 'winner').length;
+  // Worker counts half_won / half_lost as winners for the consolation/all-win
+  // gates (Lucky bets shouldn't actually carry EW partials, but the count is
+  // pre-computed in the worker as winner + half_won + half_lost so we mirror).
+  const winners = legs.filter((b) => {
+    const r = String(b?.result ?? '').toLowerCase();
+    return r === 'winner' || r === 'half_won' || r === 'half_lost';
+  }).length;
 
   // ALL WINNERS: percentage of winnings on total return.
   if (winners === totalSelections) {

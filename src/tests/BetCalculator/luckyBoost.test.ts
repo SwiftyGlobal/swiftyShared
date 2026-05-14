@@ -356,6 +356,25 @@ describe('calculateLuckyBoost — one-winner branch', () => {
   });
 });
 
+describe('calculateLuckyBoost — half_won/half_lost count as winners (worker parity)', () => {
+  it('3 winners + 1 half_won → counts as 4 winners → all-winners branch fires', () => {
+    const r = calculateLuckyBoost({
+      config: baseLuckyConfig(),
+      bet_type: 'lucky15',
+      stake_per_line: 1,
+      return_amount: 70,
+      resultedSingleBets: legs([
+        { result: 'winner', odd: 2 },
+        { result: 'winner', odd: 2 },
+        { result: 'winner', odd: 2 },
+        { result: 'half_won', odd: 2 },
+      ]),
+      max_award: 100,
+    });
+    expect(r.type).toBe('all_winners');
+  });
+});
+
 describe('calculateLuckyBoost — neither branch fires', () => {
   it('2 winners + 2 losers → no consolation, no all-win', () => {
     const r = calculateLuckyBoost({
