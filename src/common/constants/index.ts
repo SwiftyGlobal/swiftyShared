@@ -22,3 +22,4 @@ export * from './currencies';
 export * from './errorCodes';
 export * from './transactions';
 export * from './boostType';
+export * from './emailTemplateVariables';
