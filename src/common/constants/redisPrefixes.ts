@@ -44,6 +44,11 @@ export const RedisPrefixes = {
      * @description - `maindb.top_menu_items` table
      */
     TOP_MENU: 'top_menu',
+    /**
+     * @description - `maindb.custom_bet` where `type = 'manual'`
+     * (active manual market specials for racing events)
+     */
+    RACING_SPECIALS: 'racing_specials',
   },
   SET: {
     JWT_BLACKLIST: 'jwt_blacklist',
