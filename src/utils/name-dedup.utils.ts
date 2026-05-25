@@ -1,4 +1,3 @@
-import * as naturalLib from 'natural';
 import moment from 'moment';
 
 import type { EncryptService } from '../services/encrypt.service';
@@ -17,12 +16,38 @@ interface MetaphoneInstance {
 }
 type MetaphoneCtor = new () => MetaphoneInstance;
 
-const natural = naturalLib as unknown as {
+interface NaturalLib {
   Metaphone: MetaphoneCtor;
   JaroWinklerDistance(s1: string, s2: string): number;
-};
+}
 
-const metaphone: MetaphoneInstance = new natural.Metaphone();
+declare const require: (id: string) => unknown;
+
+// `natural` pulls in a large transitive dep tree (corpora, tokenizers). Load it lazily so that
+// barrel imports of `@swiftyglobal/swifty-shared` don't pay the cost when dedup isn't used.
+let _natural: NaturalLib | null = null;
+let _metaphone: MetaphoneInstance | null = null;
+
+function getNatural(): NaturalLib {
+  if (!_natural) {
+    // Pull the two specific submodules we need instead of the package barrel: the barrel pulls
+    // in `natural`'s Redis/sentiment storage backends (ESM-only deps like `afinn-165`/`uuid`)
+    // that explode under CommonJS consumers and Jest. The submodules are pure CJS.
+    _natural = {
+      Metaphone: require('natural/lib/natural/phonetics/metaphone') as MetaphoneCtor,
+      JaroWinklerDistance:
+        require('natural/lib/natural/distance/jaro-winkler_distance') as NaturalLib['JaroWinklerDistance'],
+    };
+  }
+  return _natural;
+}
+
+function getMetaphone(): MetaphoneInstance {
+  if (!_metaphone) {
+    _metaphone = new (getNatural().Metaphone)();
+  }
+  return _metaphone;
+}
 
 const SALUTATION_RE = /\b(mr|mrs|ms|miss|misses|mister|dr|prof)\b\.?/gi;
 
@@ -83,7 +108,7 @@ export function fingerprint(fullName: string): string {
   return normalized
     .split(' ')
     .filter(Boolean)
-    .map((t) => metaphone.process(t))
+    .map((t) => getMetaphone().process(t))
     .sort()
     .join(' ');
 }
@@ -92,7 +117,7 @@ export function jwScore(a: string, b: string): number {
   const na = normalizeForCompare(a);
   const nb = normalizeForCompare(b);
   if (!na || !nb) return 0;
-  return natural.JaroWinklerDistance(na, nb);
+  return getNatural().JaroWinklerDistance(na, nb);
 }
 
 /**
@@ -147,24 +172,42 @@ export interface DedupCandidateInput {
   limit?: number;
 }
 
-/** `users.address_zip` is written via EncryptService.encryptText() at signup. */
-function decryptPostcode(encryptService: EncryptService, value: string | null | undefined): string {
+/**
+ * `EncryptService.decrypt*()` swallow errors and return the *input* string on failure. That means
+ * a try/catch alone won't catch corrupt/legacy ciphertext: the function returns the ciphertext as
+ * if it were plaintext. Treat result-equal-to-input as a decrypt failure and return '' so the
+ * caller fails closed instead of comparing against ciphertext.
+ */
+function safeDecryptText(encryptService: EncryptService, value: string | null | undefined): string {
   if (!value) return '';
+  let out: string;
   try {
-    return (encryptService.decryptText(value) as string) || '';
+    out = (encryptService.decryptText(value) as string) || '';
   } catch {
     return '';
   }
+  return out && out !== value ? out : '';
+}
+
+function safeDecrypt(encryptService: EncryptService, value: string | null | undefined): string {
+  if (!value) return '';
+  let out: string;
+  try {
+    out = (encryptService.decrypt(value) as string) || '';
+  } catch {
+    return '';
+  }
+  return out && out !== value ? out : '';
+}
+
+/** `users.address_zip` is written via EncryptService.encryptText() at signup. */
+function decryptPostcode(encryptService: EncryptService, value: string | null | undefined): string {
+  return safeDecryptText(encryptService, value);
 }
 
 /** `users.date_of_birth` is written via EncryptService.encrypt(). */
 function decryptDob(encryptService: EncryptService, value: string | null | undefined): string {
-  if (!value) return '';
-  try {
-    return (encryptService.decrypt(value) as string) || '';
-  } catch {
-    return '';
-  }
+  return safeDecrypt(encryptService, value);
 }
 
 /**
@@ -174,8 +217,10 @@ function decryptDob(encryptService: EncryptService, value: string | null | undef
  *
  * Encryption is deterministic, so we can match the stored ciphertext of the candidate's DOB /
  * postcode directly: `date_of_birth` is `encrypt(raw 'YYYY-MM-DD')`, `address_zip` is
- * `encryptText(rawPostcode.toUpperCase())`. A postcode typed in a different spacing than the stored
- * record won't match here — those rely on the DOB anchor instead.
+ * `encryptText(normalizePostcode(rawPostcode))` (uppercase, alphanumerics only). Stored rows
+ * must use the same canonical form on write for the anchor lookup to hit; rows that pre-date
+ * normalization on the write path won't match here and fall back to the DOB anchor when
+ * available.
  */
 export function buildFuzzyDuplicatesQuery(
   encryptService: EncryptService,
@@ -200,7 +245,7 @@ export function buildFuzzyDuplicatesQuery(
   }
   if (candidatePostcode) {
     anchorConds.push('address_zip = ?');
-    params.push(encryptService.encryptText(String(candidate.postcode).toUpperCase()) as string);
+    params.push(encryptService.encryptText(candidatePostcode) as string);
   }
 
   let sql = `
@@ -257,14 +302,8 @@ export function matchFuzzyDuplicatesFromRows(
     }
     if (!anchor) continue;
 
-    let plainFirst = '';
-    let plainLast = '';
-    try {
-      plainFirst = encryptService.decrypt(row.first_name);
-      plainLast = encryptService.decrypt(row.last_name);
-    } catch {
-      continue;
-    }
+    const plainFirst = safeDecrypt(encryptService, row.first_name);
+    const plainLast = safeDecrypt(encryptService, row.last_name);
     if (!plainFirst || !plainLast) continue;
     const otherFull = `${plainFirst} ${plainLast}`.trim();
 

@@ -3,6 +3,9 @@ export default {
   transform: {
     '^.+\\.(t|j)sx?$': '@swc/jest',
   },
+  // `natural` ships some ESM-only deps (`afinn-165`) that the default ignore pattern leaves
+  // untransformed. Let swc transform them so requiring `natural` works under Jest.
+  transformIgnorePatterns: ['/node_modules/(?!(natural|afinn-165|afinn-165-financial)/)'],
   preset: 'ts-jest',
   testEnvironment: 'node',
   moduleFileExtensions: ['ts', 'js', 'json'],
