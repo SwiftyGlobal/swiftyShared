@@ -1,7 +1,7 @@
 import * as naturalLib from 'natural';
 import moment from 'moment';
 
-import { EncryptService } from '../services/encrypt.service';
+import type { EncryptService } from '../services/encrypt.service';
 
 /**
  * Minimal DB connection contract — just the `.query(sql, params)` method shape exposed by
@@ -336,10 +336,7 @@ export async function findFuzzyNameDuplicates(
 ): Promise<DedupMatch[]> {
   const built = buildFuzzyDuplicatesQuery(encryptService, candidate);
   if (!built) return [];
-  const [rows] = (await dbCon.query<DedupUserRow[]>(built.sql, built.params)) as [
-    DedupUserRow[],
-    unknown,
-  ];
+  const [rows] = (await dbCon.query<DedupUserRow[]>(built.sql, built.params)) as [DedupUserRow[], unknown];
   return matchFuzzyDuplicatesFromRows(encryptService, candidate, rows);
 }
 
