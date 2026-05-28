@@ -8,15 +8,17 @@
 .bb-ui__selections,
 .bb-ui__tabs {
   --bb-bg: #ffffff;
-  --bb-border: #e4e8ee;
+  --bb-bg-h: #dae2ea;
+  --bb-border: #dae2ea;
+  --bb-active: #367aff;
   --bb-radius: 6px;
   --bb-text: #2e3a49;
   --bb-text-muted: #7b8794;
   --bb-text-selected: #ffffff;
 
-  --bb-selection-bg: #f5f7fa;
-  --bb-selection-bg-hover: #ecf0f5;
-  --bb-selection-bg-selected: #7a6fbe;
+  --bb-selection-bg: #f6f6f9;
+  --bb-selection-bg-hover: #aec6f6;
+  --bb-selection-bg-selected: #467eee;
   --bb-selection-border: var(--bb-border);
 
   --bb-tab-bg: transparent;
@@ -36,10 +38,7 @@
 }
 
 .bb-ui__market {
-  background: var(--bb-bg);
   border: 1px solid var(--bb-border);
-  border-radius: var(--bb-radius);
-  padding: 12px;
 }
 
 .bb-ui__market-header {
@@ -47,18 +46,22 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  background: var(--bb-bg-h);
 }
 
 .bb-ui__market-name {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
+  margin: 10px 0;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .bb-ui__market-grid {
   display: grid;
+  grid-template-columns: repeat(var(--bb-market-columns, 1), minmax(0, 1fr));
   gap: var(--bb-gap);
+  padding: 12px;
 }
 
 .bb-ui__selections {
@@ -71,31 +74,32 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 10px 12px;
-  border-radius: var(--bb-radius);
-  border: 1px solid var(--bb-selection-border);
-  background: var(--bb-selection-bg);
+  gap: 12px;
+  padding: 7px;
+  border: 1px solid var(--bb-border);
   color: var(--bb-text);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   font-family: inherit;
   text-align: left;
-  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+  background: var(--bb-bg);
+  transition:
+    background 120ms ease,
+    color 120ms ease,
+    border-color 120ms ease;
 }
 
-.bb-ui__selection:hover {
-  background: var(--bb-selection-bg-hover);
-}
-
-.bb-ui__selection--selected {
-  background: var(--bb-selection-bg-selected);
+.bb-ui__selection--selected .bb-ui__selection-odds {
+  background: var(--bb-active);
   color: var(--bb-text-selected);
-  border-color: var(--bb-selection-bg-selected);
 }
 
-.bb-ui__selection--selected:hover {
+.bb-ui__selection--selected .bb-ui__selection-odds:hover {
   background: var(--bb-selection-bg-selected);
+}
+
+.bb-ui__selection-odds:hover {
+  background: var(--bb-selection-bg-hover);
 }
 
 .bb-ui__selection-name {
@@ -109,7 +113,11 @@
 .bb-ui__selection-odds {
   flex: 0 0 auto;
   font-variant-numeric: tabular-nums;
-  font-weight: 600;
+  font-weight: 500;
+  min-width: 90px;
+  padding: 6px;
+  text-align: center;
+  background-color: var(--bb-selection-bg);
 }
 
 .bb-ui__tabs {
@@ -122,8 +130,7 @@
 }
 
 .bb-ui__tab {
-  padding: 4px 10px;
-  border-radius: 999px;
+  padding: 8px 20px;
   background: var(--bb-tab-bg);
   color: var(--bb-tab-text);
   font-size: 12px;
@@ -133,9 +140,7 @@
 }
 
 .bb-ui__tab--active {
-  background: var(--bb-tab-bg-active);
-  color: var(--bb-tab-text-active);
-  border-color: var(--bb-border);
+  border-bottom: 2px solid var(--bb-active);
 }
 
 .bb-ui__empty {
@@ -143,4 +148,20 @@
   text-align: center;
   color: var(--bb-text-muted);
   font-size: 13px;
+}
+
+@media (max-width: 1024px) {
+  .bb-ui__market-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .bb-ui__market-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  .bb-ui__tab {
+    padding: 10px;
+  }
 }
