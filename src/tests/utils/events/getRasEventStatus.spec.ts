@@ -6,8 +6,8 @@ describe('getRasEventStatus', () => {
     expect(getRasEventStatus({ rasStatus: 'ABANDONED', eventOffTime: null })).toBe(SportEventStatuses.ABANDONED);
   });
 
-  it('should return FINISHED when rasStatus is in finishedStatuses', () => {
-    const finishedStatuses = ['RESULT', 'PROTEST_UPHELD', 'PROTEST_DISMISSED'];
+  it('should return FINISHED when rasStatus is in finishedStatuses (official + unofficial results)', () => {
+    const finishedStatuses = ['RESULT', 'PROTEST_UPHELD', 'PROTEST_DISMISSED', 'INTERIM', 'PROTEST'];
     finishedStatuses.forEach((status) => {
       expect(getRasEventStatus({ rasStatus: status, eventOffTime: null })).toBe(SportEventStatuses.FINISHED);
     });
@@ -18,7 +18,7 @@ describe('getRasEventStatus', () => {
   });
 
   it('should return IN_PLAY when rasStatus is in inPlayStatuses', () => {
-    const inPlayStatuses = ['CLOSE', 'FALSE_START', 'FINISHED', 'RESULTING', 'INTERIM', 'PROTEST'];
+    const inPlayStatuses = ['CLOSE', 'FALSE_START', 'FINISHED', 'RESULTING'];
     inPlayStatuses.forEach((status) => {
       expect(getRasEventStatus({ rasStatus: status, eventOffTime: null })).toBe(SportEventStatuses.IN_PLAY);
     });

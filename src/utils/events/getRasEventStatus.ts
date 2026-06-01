@@ -16,24 +16,25 @@ import type { GetRasEventStatusDto } from '../../common';
 // Terminal: race or meeting did not run.
 const abandonedStatuses = new Set(['ABANDONED']);
 
-// Race is over and the result is final.
+// Race is over and a result has been published — official or unofficial.
+// Treated as FINISHED so the event is resulted as soon as a result lands:
 //   RESULT             — official result published.
 //   PROTEST_UPHELD     — interim result overturned, now official.
 //   PROTEST_DISMISSED  — interim result stands, now official.
-const finishedStatuses = new Set(['RESULT', 'PROTEST_UPHELD', 'PROTEST_DISMISSED']);
+//   INTERIM            — unofficial result published.
+//   PROTEST            — interim result challenged, awaiting steward verdict.
+const finishedStatuses = new Set(['RESULT', 'PROTEST_UPHELD', 'PROTEST_DISMISSED', 'INTERIM', 'PROTEST']);
 
 // Betting market is explicitly halted.
 const suspendedStatuses = new Set(['SUSPENDED']);
 
-// Race is underway or has finished but the official result hasn't landed yet.
-// Selections must not be settleable here, so we treat them as IN_PLAY:
+// Race is underway, or has crossed the line but no result has been published
+// yet. We treat these as IN_PLAY:
 //   CLOSE        — betting closed, race underway.
 //   FALSE_START  — race delayed by a false start.
 //   FINISHED     — race has crossed the line, awaiting result.
 //   RESULTING    — awaiting unofficial results.
-//   INTERIM      — unofficial result published.
-//   PROTEST      — interim result challenged, awaiting steward verdict.
-const inPlayStatuses = new Set(['CLOSE', 'FALSE_START', 'FINISHED', 'RESULTING', 'INTERIM', 'PROTEST']);
+const inPlayStatuses = new Set(['CLOSE', 'FALSE_START', 'FINISHED', 'RESULTING']);
 
 // Race is upcoming. Covers the visual-state signals RAS sends while runners
 // are pre-jump:
