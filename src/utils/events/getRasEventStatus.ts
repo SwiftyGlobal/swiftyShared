@@ -16,25 +16,35 @@ import type { GetRasEventStatusDto } from '../../common';
 // Terminal: race or meeting did not run.
 const abandonedStatuses = new Set(['ABANDONED']);
 
-// Race is over and a result has been published — official or unofficial.
-// Treated as FINISHED so the event is resulted as soon as a result lands:
+// Race is over. Per the EIS Field Definitions (pp. 56-57), FINISHED means
+// "Race has finished" and RESULTING means "Awaiting unofficial results …
+// after the race has finished" — both are post-line-crossing states.
+// A result (official or unofficial) has either landed or is imminently
+// expected, so the event is treated as FINISHED:
+//   FINISHED           — race has finished (EIS definition).
+//   RESULTING          — awaiting unofficial results after the race finished.
 //   RESULT             — official result published.
 //   PROTEST_UPHELD     — interim result overturned, now official.
 //   PROTEST_DISMISSED  — interim result stands, now official.
 //   INTERIM            — unofficial result published.
 //   PROTEST            — interim result challenged, awaiting steward verdict.
-const finishedStatuses = new Set(['RESULT', 'PROTEST_UPHELD', 'PROTEST_DISMISSED', 'INTERIM', 'PROTEST']);
+const finishedStatuses = new Set([
+  'FINISHED',
+  'RESULTING',
+  'RESULT',
+  'PROTEST_UPHELD',
+  'PROTEST_DISMISSED',
+  'INTERIM',
+  'PROTEST',
+]);
 
 // Betting market is explicitly halted.
 const suspendedStatuses = new Set(['SUSPENDED']);
 
-// Race is underway, or has crossed the line but no result has been published
-// yet. We treat these as IN_PLAY:
+// Race is underway (betting closed, result not yet published):
 //   CLOSE        — betting closed, race underway.
 //   FALSE_START  — race delayed by a false start.
-//   FINISHED     — race has crossed the line, awaiting result.
-//   RESULTING    — awaiting unofficial results.
-const inPlayStatuses = new Set(['CLOSE', 'FALSE_START', 'FINISHED', 'RESULTING']);
+const inPlayStatuses = new Set(['CLOSE', 'FALSE_START']);
 
 // Race is upcoming. Covers the visual-state signals RAS sends while runners
 // are pre-jump:
