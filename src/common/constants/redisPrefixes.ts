@@ -49,6 +49,10 @@ export const RedisPrefixes = {
      * (active manual market specials for racing events)
      */
     RACING_SPECIALS: 'racing_specials',
+    /**
+     * @description - `maindb.competition_market_settings` table where `is_enabled = false`
+     */
+    DISABLED_COMPETITION_MARKETS: 'disabled_competition_markets',
   },
   SET: {
     JWT_BLACKLIST: 'jwt_blacklist',
