@@ -447,7 +447,25 @@ describe('calculateLuckyBoost — include_bog toggle', () => {
       eligible_sports: ['horseracing'],
       max_award: 1000,
     } as any);
+    // include_bog omitted → falsy; return_amount_no_bog omitted → ?? falls back to return_amount (200)
     expect(r.amount).toBeCloseTo(18.5, 2);
+  });
+
+  it('all-winners: include_bog=false + return_amount_no_bog absent falls back to return_amount', () => {
+    const r = calculateLuckyBoost({
+      config: allWinConfig as any,
+      bet_type: 'lucky15',
+      stake_per_line: 1,
+      return_amount: 200,
+      // return_amount_no_bog intentionally absent
+      resultedSingleBets: fourWinners as any,
+      eligible_sports: ['horseracing'],
+      max_award: 1000,
+      include_bog: false,
+    } as any);
+    // return_amount_no_bog absent → ?? falls back to return_amount (200); basis = 200
+    expect(r.amount).toBeCloseTo(18.5, 2); // (200 - 15) * 10%
+    expect(r.type).toBe('all_winners');
   });
 
   const oneWinConfig = {

@@ -202,10 +202,10 @@ export function calculateLuckyBoost(params: CalculateLuckyBoostParams): LuckyBoo
 
     const winningSingle = legs.find((leg) => String(leg?.result ?? '').toLowerCase() === 'winner') as
       | undefined
-      | { odd?: number | string; odd_decimal?: number | string; rule_4?: number | string };
+      | { odd?: number | string; odd_decimal?: number | string; rule_4?: number | string; bog_odd?: number | null };
     if (!winningSingle) return EMPTY;
 
-    const bogOdd = Number((winningSingle as { bog_odd?: number | null }).bog_odd ?? 0);
+    const bogOdd = Number(winningSingle.bog_odd ?? 0);
     let odd: number;
     if (params.include_bog && bogOdd > 0) {
       // bog_odd is already fully resolved (post-R4, post-SP selection); use as-is.
