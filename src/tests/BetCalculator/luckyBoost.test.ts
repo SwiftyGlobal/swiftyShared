@@ -393,3 +393,118 @@ describe('calculateLuckyBoost — neither branch fires', () => {
     expect(r.amount).toBe(0);
   });
 });
+
+describe('calculateLuckyBoost — include_bog toggle', () => {
+  const allWinConfig = {
+    enabled: true,
+    config: { lucky15: { one_winner: 'none', all_winners: '10%' } },
+  };
+  const fourWinners = [
+    { result: 'winner', sport_slug: 'horseracing', odd: 2 },
+    { result: 'winner', sport_slug: 'horseracing', odd: 2 },
+    { result: 'winner', sport_slug: 'horseracing', odd: 2 },
+    { result: 'winner', sport_slug: 'horseracing', odd: 2 },
+  ];
+
+  it('all-winners: include_bog=true uses BOG return_amount', () => {
+    const r = calculateLuckyBoost({
+      config: allWinConfig as any,
+      bet_type: 'lucky15',
+      stake_per_line: 1,
+      return_amount: 200,
+      return_amount_no_bog: 150,
+      resultedSingleBets: fourWinners as any,
+      eligible_sports: ['horseracing'],
+      max_award: 1000,
+      include_bog: true,
+    } as any);
+    expect(r.amount).toBeCloseTo(18.5, 2); // (200 - 15) * 10%
+    expect(r.type).toBe('all_winners');
+  });
+
+  it('all-winners: include_bog=false uses placed return_amount_no_bog', () => {
+    const r = calculateLuckyBoost({
+      config: allWinConfig as any,
+      bet_type: 'lucky15',
+      stake_per_line: 1,
+      return_amount: 200,
+      return_amount_no_bog: 150,
+      resultedSingleBets: fourWinners as any,
+      eligible_sports: ['horseracing'],
+      max_award: 1000,
+      include_bog: false,
+    } as any);
+    expect(r.amount).toBeCloseTo(13.5, 2); // (150 - 15) * 10%
+  });
+
+  it('all-winners: omitting return_amount_no_bog falls back to return_amount (back-compat)', () => {
+    const r = calculateLuckyBoost({
+      config: allWinConfig as any,
+      bet_type: 'lucky15',
+      stake_per_line: 1,
+      return_amount: 200,
+      resultedSingleBets: fourWinners as any,
+      eligible_sports: ['horseracing'],
+      max_award: 1000,
+    } as any);
+    expect(r.amount).toBeCloseTo(18.5, 2);
+  });
+
+  const oneWinConfig = {
+    enabled: true,
+    config: { lucky15: { one_winner: 'double', all_winners: 'none' } },
+  };
+  const oneWinnerLegs = [
+    { result: 'winner', sport_slug: 'horseracing', odd_decimal: 3, odd: 3, rule_4: 0, bog_odd: 5 },
+    { result: 'loser', sport_slug: 'horseracing', odd: 2 },
+    { result: 'loser', sport_slug: 'horseracing', odd: 2 },
+    { result: 'loser', sport_slug: 'horseracing', odd: 2 },
+  ];
+
+  it('one-winner: include_bog=true uses bog_odd as-is', () => {
+    const r = calculateLuckyBoost({
+      config: oneWinConfig as any,
+      bet_type: 'lucky15',
+      stake_per_line: 2,
+      return_amount: 0,
+      return_amount_no_bog: 0,
+      resultedSingleBets: oneWinnerLegs as any,
+      eligible_sports: ['horseracing'],
+      max_award: 1000,
+      include_bog: true,
+    } as any);
+    expect(r.amount).toBeCloseTo(8, 2); // (5 - 1) * 2
+    expect(r.type).toBe('one_winner');
+  });
+
+  it('one-winner: include_bog=false uses placed odd', () => {
+    const r = calculateLuckyBoost({
+      config: oneWinConfig as any,
+      bet_type: 'lucky15',
+      stake_per_line: 2,
+      return_amount: 0,
+      return_amount_no_bog: 0,
+      resultedSingleBets: oneWinnerLegs as any,
+      eligible_sports: ['horseracing'],
+      max_award: 1000,
+      include_bog: false,
+    } as any);
+    expect(r.amount).toBeCloseTo(4, 2); // (3 - 1) * 2
+  });
+
+  it('one-winner: include_bog=true but bog_odd missing falls back to placed odd', () => {
+    const legsNoBog = oneWinnerLegs.map((l) => { const { bog_odd, ...rest } = l; return rest; });
+    const r = calculateLuckyBoost({
+      config: oneWinConfig as any,
+      bet_type: 'lucky15',
+      stake_per_line: 2,
+      return_amount: 0,
+      return_amount_no_bog: 0,
+      resultedSingleBets: legsNoBog as any,
+      eligible_sports: ['horseracing'],
+      max_award: 1000,
+      include_bog: true,
+    } as any);
+    expect(r.amount).toBeCloseTo(4, 2);
+  });
+});
