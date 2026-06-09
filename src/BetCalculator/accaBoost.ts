@@ -46,8 +46,6 @@ export interface AccaRulesSnapshot {
 /** Leg shape consumed by the resolver — only `result` is read. */
 export interface BoostLeg {
   result?: string | null;
-  /** Fully resolved winning-leg odd under BOG (post-R4, post-SP selection). */
-  bog_odd?: number | null;
   [key: string]: unknown;
 }
 
