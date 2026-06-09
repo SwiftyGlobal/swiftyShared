@@ -111,6 +111,12 @@ export interface CalculateLuckyBoostParams {
   stake_per_line: number;
   /** Total payout for the bet (sum of all winning lines), used by the all-winners branch. */
   return_amount: number;
+  /** Placed-odds total payout (excludes BOG uplift). Falls back to
+   *  `return_amount` when omitted (un-migrated callers keep today's behaviour). */
+  return_amount_no_bog?: number;
+  /** When true, the calc reflects BOG: all-winners uses `return_amount`,
+   *  one-winner uses each leg's `bog_odd`. Default false (placed odds). */
+  include_bog?: boolean;
   /** All Lucky single legs with `result` + `sport_slug` + `odd` (+ optional `rule_4`). */
   resultedSingleBets: BoostLeg[];
   /** Allow-list of sport slugs. Pass `undefined` to skip the gate; `[]` to disable boost. */
@@ -178,7 +184,10 @@ export function calculateLuckyBoost(params: CalculateLuckyBoostParams): LuckyBoo
     const parsed = parseBoostValue(perType.all_winners);
     if (parsed.kind !== 'percent') return EMPTY;
     const totalStake = stake * totalLines;
-    const winnings = Number(params.return_amount) - totalStake;
+    const basis = params.include_bog
+      ? Number(params.return_amount)
+      : Number(params.return_amount_no_bog ?? params.return_amount);
+    const winnings = basis - totalStake;
     if (winnings <= 0) return EMPTY;
     let amount = winnings * (parsed.percent / 100);
     if (amount <= 0) return EMPTY;
@@ -193,11 +202,18 @@ export function calculateLuckyBoost(params: CalculateLuckyBoostParams): LuckyBoo
 
     const winningSingle = legs.find((leg) => String(leg?.result ?? '').toLowerCase() === 'winner') as
       | undefined
-      | { odd?: number | string; odd_decimal?: number | string; rule_4?: number | string };
+      | { odd?: number | string; odd_decimal?: number | string; rule_4?: number | string; bog_odd?: number | null };
     if (!winningSingle) return EMPTY;
 
-    const rawOdd = Number(winningSingle.odd_decimal ?? winningSingle.odd ?? 0);
-    const odd = oddAfterRule4({ odd: rawOdd, rule4_percentage: winningSingle.rule_4 });
+    const bogOdd = Number(winningSingle.bog_odd ?? 0);
+    let odd: number;
+    if (params.include_bog && bogOdd > 0) {
+      // bog_odd is already fully resolved (post-R4, post-SP selection); use as-is.
+      odd = bogOdd;
+    } else {
+      const rawOdd = Number(winningSingle.odd_decimal ?? winningSingle.odd ?? 0);
+      odd = oddAfterRule4({ odd: rawOdd, rule4_percentage: winningSingle.rule_4 });
+    }
     if (odd <= 0 || stake <= 0) return EMPTY;
 
     // Bonus is a multiplier on the winnings portion only (stake always returned):
