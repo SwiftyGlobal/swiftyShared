@@ -37,7 +37,10 @@ function toFiniteOrNull(value: number | string | null | undefined): number | nul
   return Number.isFinite(n) ? n : null;
 }
 
-export function buildBalanceChangeLog(repo: BalanceChangeRepo, fields: BalanceChangeLogFields): Record<string, unknown> {
+export function buildBalanceChangeLog(
+  repo: BalanceChangeRepo,
+  fields: BalanceChangeLogFields,
+): Record<string, unknown> {
   return {
     tag: 'BALANCE_CHANGE',
     repo,
