@@ -13,11 +13,11 @@
 export type BalanceChangeRepo = 'backoffice' | 'casino' | 'gaming' | 'elbapi';
 
 export interface BalanceChangeLogFields {
-  userId: number;
+  userId: number | string;
   playerId?: string | number | null;
-  delta: number | null;
-  oldBalance: number | null;
-  newBalance: number | null;
+  delta: number | string | null;
+  oldBalance: number | string | null;
+  newBalance: number | string | null;
   source: string;
   reason?: string | null;
   ledgerTxId?: string | number | null;
@@ -31,18 +31,25 @@ export interface BalanceChangeLogger {
   emit: (fields: BalanceChangeLogFields) => void;
 }
 
+function toFiniteOrNull(value: number | string | null | undefined): number | null {
+  if (value == null || value === '') return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
 export function buildBalanceChangeLog(repo: BalanceChangeRepo, fields: BalanceChangeLogFields): Record<string, unknown> {
   return {
     tag: 'BALANCE_CHANGE',
     repo,
-    userId: fields.userId != null ? Number(fields.userId) : null,
+    userId: toFiniteOrNull(fields.userId),
     playerId: fields.playerId != null ? String(fields.playerId) : null,
-    delta: fields.delta != null ? Number(fields.delta) : null,
-    oldBalance: fields.oldBalance != null ? Number(fields.oldBalance) : null,
-    newBalance: fields.newBalance != null ? Number(fields.newBalance) : null,
+    delta: toFiniteOrNull(fields.delta),
+    oldBalance: toFiniteOrNull(fields.oldBalance),
+    newBalance: toFiniteOrNull(fields.newBalance),
     source: fields.source || 'unknown',
     reason: fields.reason ?? null,
     ledgerTxId: fields.ledgerTxId ?? null,
+    // NOTE: a ledgerTxId of 0 counts as paired; callers use DB insertIds (>=1) or null.
     ledgerPaired: fields.ledgerTxId != null,
     betId: fields.betId ?? null,
     currency: fields.currency ?? null,
@@ -58,7 +65,22 @@ export function createBalanceChangeLogger(repo: BalanceChangeRepo): BalanceChang
       try {
         console.log(JSON.stringify(buildBalanceChangeLog(repo, fields)));
       } catch (err) {
-        console.error('BALANCE_CHANGE log emit failed:', (err as Error)?.message);
+        // Still emit a minimal structured line so the write is findable via
+        // `filter tag = "BALANCE_CHANGE"` even when full serialization fails.
+        try {
+          console.error(
+            JSON.stringify({
+              tag: 'BALANCE_CHANGE',
+              repo,
+              userId: toFiniteOrNull(fields?.userId),
+              source: fields?.source || 'unknown',
+              error: `emit_serialize_failed: ${(err as Error)?.message}`,
+              ts: new Date().toISOString(),
+            }),
+          );
+        } catch {
+          console.error('BALANCE_CHANGE log emit failed');
+        }
       }
     },
   };

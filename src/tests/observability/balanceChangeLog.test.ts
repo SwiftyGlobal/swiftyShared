@@ -48,6 +48,20 @@ describe('balanceChangeLog', () => {
     expect(log.source).toBe('unknown');
   });
 
+  it('coerces row-string numerics and nulls non-finite input', () => {
+    const log = buildBalanceChangeLog('gaming', {
+      userId: '175',
+      delta: '' as never,
+      oldBalance: 'abc' as never,
+      newBalance: '12.50',
+      source: 'x',
+    });
+    expect(log.userId).toBe(175);
+    expect(log.delta).toBeNull();
+    expect(log.oldBalance).toBeNull();
+    expect(log.newBalance).toBe(12.5);
+  });
+
   it('factory binds the repo and emit logs one JSON line', () => {
     const logger = createBalanceChangeLogger('backoffice');
     const spy = jest.spyOn(console, 'log').mockImplementation(() => {});
@@ -66,6 +80,10 @@ describe('balanceChangeLog', () => {
     expect(() =>
       logger.emit({ userId: 1, delta: 1, oldBalance: 0, newBalance: 1, source: 'x', betId: circular as never }),
     ).not.toThrow();
+    expect(spyErr).toHaveBeenCalledTimes(1);
+    const fallback = JSON.parse(spyErr.mock.calls[0][0] as string);
+    expect(fallback).toMatchObject({ tag: 'BALANCE_CHANGE', repo: 'gaming', userId: 1 });
+    expect(fallback.error).toContain('emit_serialize_failed');
     spyErr.mockRestore();
   });
 });
