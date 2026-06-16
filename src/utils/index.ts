@@ -9,6 +9,7 @@ export * from './convertMysqlBoolean';
 export * from './getDbResponseMap';
 export * from './generateOddsFormats';
 export * from './checkIfEarlyPriceIsDisabled';
+export * from './checkIfEarlyPriceIsDisabledV2';
 export * from './getPriceBoostFormats';
 export * from './decimalToAmerican';
 export * from './parseLadderValue';
