@@ -1,4 +1,5 @@
 import { BetCalculatorHelper } from './bet-calculator.helper';
+import { generateCombinations as kernelCombinations, sameEventIncompatible, sameParticipantIncompatible, allCompatible } from './combination-engine';
 import type {
   BetSettings,
   PlacedBetSelection,
@@ -225,6 +226,10 @@ export class BetCalculator {
       result = this.processLucky63Bet(this.bets);
     } else if (this.bet_type.includes(BetSlipType.FOLD)) {
       result = this.processFoldBet(this.bets, this.fold_type);
+    } else if (this.bet_type === BetSlipType.CROSS_DOUBLE) {
+      result = this.processDoubles(this.bets, allCompatible(sameEventIncompatible, sameParticipantIncompatible));
+    } else if (this.bet_type === BetSlipType.CROSS_TREBLE) {
+      result = this.processTrebles(this.bets, allCompatible(sameEventIncompatible, sameParticipantIncompatible));
     } else if (this.bet_type === BetSlipType.BET_BUILDER) {
       result = this.processBetBuilderBet(this.bets, this.stored_payout);
     }
@@ -551,7 +556,7 @@ export class BetCalculator {
     };
   };
 
-  processDoubles = (selections: PlacedBetSelection[]): ResultMainBet => {
+  processDoubles = (selections: PlacedBetSelection[], isCompatible?: (a: PlacedBetSelection, b: PlacedBetSelection) => boolean): ResultMainBet => {
     let win_profit = 0;
     let place_profit = 0;
     let return_stake = 0;
@@ -559,7 +564,9 @@ export class BetCalculator {
 
     const results: ResultCombination[] = [];
 
-    const combinations = this.generateCombinations(selections, BetSlipType.DOUBLE);
+    const combinations = isCompatible
+      ? kernelCombinations(selections, 2, isCompatible)
+      : this.generateCombinations(selections, BetSlipType.DOUBLE);
 
     combinations.forEach((combination: PlacedBetSelection[]) => {
       const double_result = this.processDoubleBet(combination[0], combination[1]);
@@ -785,7 +792,7 @@ export class BetCalculator {
     };
   };
 
-  processTrebles = (selections: PlacedBetSelection[]): ResultMainBet => {
+  processTrebles = (selections: PlacedBetSelection[], isCompatible?: (a: PlacedBetSelection, b: PlacedBetSelection) => boolean): ResultMainBet => {
     let win_profit = 0;
     let place_profit = 0;
     let return_stake = 0;
@@ -795,7 +802,9 @@ export class BetCalculator {
 
     const results: ResultCombination[] = [];
 
-    const combinations = this.generateCombinations(selections, BetSlipType.TREBLE);
+    const combinations = isCompatible
+      ? kernelCombinations(selections, 3, isCompatible)
+      : this.generateCombinations(selections, BetSlipType.TREBLE);
 
     combinations.forEach((combination) => {
       const treble_result = this.processTrebleBet(combination[0], combination[1], combination[2]);
@@ -1599,17 +1608,8 @@ export class BetCalculator {
     return combinations;
   };
 
-  generateDoubleCombinations = (selections: PlacedBetSelection[]): PlacedBetSelection[][] => {
-    const combinations: PlacedBetSelection[][] = [];
-
-    for (let i = 0; i < selections.length; i++) {
-      for (let j = i + 1; j < selections.length; j++) {
-        combinations.push([selections[i], selections[j]]);
-      }
-    }
-
-    return combinations;
-  };
+  generateDoubleCombinations = (selections: PlacedBetSelection[]): PlacedBetSelection[][] =>
+    kernelCombinations(selections, 2);
 
   generateDoubleResultType = (
     first_selection: PlacedBetSelection,
@@ -1667,45 +1667,11 @@ export class BetCalculator {
     return BetResultType.OPEN;
   };
 
-  generateTrebleCombinations = (selections: PlacedBetSelection[]) => {
-    const combinations: PlacedBetSelection[][] = [];
+  generateTrebleCombinations = (selections: PlacedBetSelection[]): PlacedBetSelection[][] =>
+    kernelCombinations(selections, 3);
 
-    for (let i = 0; i < selections.length; i++) {
-      for (let j = i + 1; j < selections.length; j++) {
-        for (let k = j + 1; k < selections.length; k++) {
-          combinations.push([selections[i], selections[j], selections[k]]);
-        }
-      }
-    }
-
-    return combinations;
-  };
-
-  generateFoldCombinations = (selections: PlacedBetSelection[], combinationSize: number): PlacedBetSelection[][] => {
-    const result: PlacedBetSelection[][] = [];
-
-    // Funksion ndihmës për të gjeneruar kombinime
-    const generateCombinations = (
-      arr: PlacedBetSelection[],
-      size: number,
-      start: number = 0,
-      current: PlacedBetSelection[] = [],
-    ) => {
-      if (current.length === size) {
-        result.push([...current]);
-        return;
-      }
-
-      for (let i = start; i < arr.length; i++) {
-        current.push(arr[i]);
-        generateCombinations(arr, size, i + 1, current);
-        current.pop();
-      }
-    };
-
-    generateCombinations(selections, combinationSize);
-    return result;
-  };
+  generateFoldCombinations = (selections: PlacedBetSelection[], combinationSize: number): PlacedBetSelection[][] =>
+    kernelCombinations(selections, combinationSize);
 
   /**
    * Settle a Bet Builder bet.

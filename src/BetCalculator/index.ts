@@ -4,3 +4,4 @@ export * from './accaBoost';
 export * from './bbBoost';
 export * from './luckyBoost';
 export * from './oddAdjustments';
+export * from './combination-engine';
