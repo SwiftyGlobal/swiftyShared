@@ -4,21 +4,31 @@
  * Sources:
  *   - settlement.utils.js applyMultipleResultAdjustments (lines 75-113):
  *       dead-heat: adjustedOdd = odd * (partialPercent / 100)  where partialPercent = 100 / tieCount
+ *       originalOdd is saved as the PRE-dead-heat odd (singleBet.odd before DH adjustment).
  *   - settlement.utils.js oddAfterRule4 / re-exported from @swiftyglobal/swifty-shared:
  *       odd' = 1 + (odd - 1) * (1 - r4/100)
  *   - playbookResultMultiples.js BOG logic (lines 369-401):
- *       placed_odd_original = originalOdd ?? odd
+ *       placed_odd_original = originalOdd ?? odd   ← PRE-dead-heat
  *       sp_odd_original     = originalSpOdd ?? sp_odd
  *       placed_odd_with_r4  = r4>0 ? oddAfterRule4(placed_odd_original, r4) : placed_odd_original
  *       if sp_odd_original > placed_odd_with_r4 → use dead-heat-adjusted sp_odd
  *       else                                    → apply dead-heat ratio to placed_odd_with_r4
  *       bog_amount_won = SUM over legs of: (BOG combination return − R4 combination return)
  *   - playbookResultMultiples.js R4 path (lines 404-413):
- *       resultedSingleBetsR4: row.odd = oddAfterRule4(originalOdd, r4)
+ *       baseOdd = row.originalOdd ?? row.odd   ← originalOdd = PRE-dead-heat raw odd
+ *       row.odd = oddAfterRule4(baseOdd, r4)   ← R4 applied to PRE-dead-heat odd
+ *       Dead-heat is then applied after R4: r4WinOdd * (partial / 100) when partial > 0.
+ *       Correct order: R4(rawOdd) → then dead-heat factor.  NOT R4(deadHeated_odd).
  *   - playbookMultiple.js combination math (getDoubleReturnAmountWithWinners / getNFoldReturnAmountWithWinners):
  *       gross_win  = Π(odd_i) × stake
  *       gross_place (if EW) = Π(place_odd_i) × stake
  *       gross_total = gross_win + gross_place
+ *
+ * Dead-heat ↔ BetCalculator mapping (empirical):
+ *   ELBAPI partialPercent = 100 / numberOfTyingRunners.
+ *   BetCalculator partial_win_percent maps to ELBAPI as:
+ *     partial_win_percent = 100 - partialPercent
+ *   (For 2-way: 100-50=50, coincidentally equal; for 3-way: 100-33.33=66.67; for 4-way: 100-25=75.)
  *
  * This file is the ORACLE for task-A1.  Do not change the math to match the engine;
  * fix the engine if it diverges from this reference.
@@ -144,16 +154,20 @@ function resolveLeg(leg: DeepLeg, eachWay: boolean): ResolvedLeg {
       bogWinOdd = placed_odd_with_r4;
     }
   } else {
-    // BOG not applicable — both paths use R4-applied odd
-    bogWinOdd = r4 > 0 ? oddAfterRule4(deadHeated_odd, r4) : deadHeated_odd;
+    // BOG not applicable — use R4 path: R4(rawOdd), then apply dead-heat factor.
+    // Mirrors R4 path (lines 404-413): baseOdd = originalOdd (pre-dead-heat), R4 applied to that.
+    // Dead-heat is then re-applied as a factor after R4.
+    const r4Base = r4 > 0 ? oddAfterRule4(rawOdd, r4) : rawOdd;
+    bogWinOdd = (partial > 0 && partial < 100) ? r4Base * (partial / 100) : r4Base;
   }
 
   // ── R4 path (playbookResultMultiples.js lines 404-413) ────────────────────
-  // resultedSingleBetsR4: row.odd = oddAfterRule4(originalOdd, r4)
-  // "originalOdd" here is the pre-dead-heat odd; dead-heat was already applied
-  // to resultedSingleBets before R4 path is built.
-  // i.e.: first dead-heat is applied → r4 path applies R4 to the dead-heat-adjusted odd.
-  const r4WinOdd = r4 > 0 ? oddAfterRule4(deadHeated_odd, r4) : deadHeated_odd;
+  // baseOdd = row.originalOdd ?? row.odd  — originalOdd is the PRE-dead-heat raw odd,
+  // saved by applyMultipleResultAdjustments (settlement.utils.js line 107).
+  // Correct order: R4 is applied to rawOdd (pre-dead-heat), THEN dead-heat factor applied.
+  // This is NOT R4(deadHeated_odd) — that was the previous (wrong) implementation.
+  const r4Base = r4 > 0 ? oddAfterRule4(rawOdd, r4) : rawOdd;
+  const r4WinOdd = (partial > 0 && partial < 100) ? r4Base * (partial / 100) : r4Base;
 
   // ── EW place odds ─────────────────────────────────────────────────────────
   const fraction = parseEwFraction(leg.ew_terms);
@@ -188,36 +202,6 @@ function resolveLeg(leg: DeepLeg, eachWay: boolean): ResolvedLeg {
 }
 
 // ── Combination computation ──────────────────────────────────────────────────
-
-/** Compute gross return for a set of resolved legs in a single combination. */
-function combReturn(legs: ResolvedLeg[], stake: number, eachWay: boolean, useBog: boolean): number {
-  let winProduct = 1;
-  let placeProduct = 1;
-  let hasLoser = false;
-
-  for (const leg of legs) {
-    if (leg.isLoser) { hasLoser = true; break; }
-    const wo = useBog ? leg.bogOdd : leg.r4Odd;
-    if (wo === 0 && !eachWay) { hasLoser = true; break; }
-    winProduct *= wo === 0 ? 0 : wo;
-    if (eachWay) {
-      const po = useBog ? leg.bogPlaceOdd : leg.r4PlaceOdd;
-      placeProduct *= (po === 0 && !leg.isVoid) ? 0 : (po === 0 && leg.isVoid ? 1 : po);
-    }
-  }
-
-  if (hasLoser) {
-    // No win or place return for loser combos
-    if (!eachWay) return 0;
-    // In EW, place still pays if non-zero
-    // Actually loser means the whole combination loses
-    return 0;
-  }
-
-  const winReturn = winProduct * stake;
-  const placeReturn = eachWay ? placeProduct * stake : 0;
-  return winReturn + placeReturn;
-}
 
 /** All k-combinations from an array. */
 function kCombinations<T>(arr: T[], k: number): T[][] {

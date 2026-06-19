@@ -392,6 +392,19 @@ describe('settlement parity: BetCalculator === playbookMultiple', () => {
 
 /** Build a PlacedBetSelection from a DeepLeg for processBet input. */
 function deepToBet(l: DeepLeg, i: number, stake: number, eachWay: boolean): PlacedBetSelection {
+  // EMPIRICALLY DETERMINED dead-heat transform (task-A1 F2):
+  //   ELBAPI partialPercent = 100 / numberOfTyingRunners  (e.g. 50 for 2-way, 33.33 for 3-way, 25 for 4-way).
+  //   BetCalculator reduces stake: win_stake *= (1 - partial_win_percent / 100).
+  //   To reproduce ELBAPI's odd-level reduction (odd * partialPercent/100) via stake-level:
+  //     we need: stake * (1 - pwp/100) = stake * (partialPercent/100)
+  //     ∴ pwp = 100 - partialPercent
+  //   2-way: pwp = 100 - 50 = 50  (coincidentally equal to partialPercent)
+  //   3-way: pwp = 100 - 33.33 = 66.67
+  //   4-way: pwp = 100 - 25    = 75
+  //   0 (no dead-heat): pwp = 0  (special-cased: 100 - 0 would be wrong)
+  const pp = l.partial_percent ?? 0;
+  const partial_win_percent = pp > 0 ? (100 - pp) : 0;
+
   return {
     bet_id: i,
     stake,
@@ -403,10 +416,7 @@ function deepToBet(l: DeepLeg, i: number, stake: number, eachWay: boolean): Plac
     sp_odd_fractional: '',
     odd_fractional: '',
     ew_terms: l.ew_terms ?? '',
-    // Map ELBAPI's partial_percent (e.g. 50 for 2-way dead heat) to BetCalculator's partial_win_percent.
-    // ELBAPI: adjustedOdd = odd * (partial_percent / 100); BetCalculator: reduces stake by the same ratio.
-    // These are algebraically equivalent for single-leg dead-heat combinations.
-    partial_win_percent: l.partial_percent ?? 0,
+    partial_win_percent,
     rule_4: l.rule_4 ?? 0,
     is_each_way: eachWay,
     // sp_odd_decimal: set to odd_decimal for non-BOG legs so BOG odds comparison yields no improvement.
@@ -748,6 +758,165 @@ describe('deep settlement parity', () => {
       expect(ref.return).toBeCloseTo(22, 2);
       const r = runProcessBet(bc, legs3, BetSlipType.TRIXIE, 1, false, false);
       expect(r.return_payout).toBeCloseTo(ref.return, 2);
+    });
+  });
+
+  // ── Case 7 (F1): R4 + dead-heat combined ─────────────────────────────────
+  // ELBAPI R4 path (playbookResultMultiples.js lines 404-413):
+  //   baseOdd = originalOdd (pre-dead-heat raw odd)
+  //   row.odd = R4(baseOdd)
+  //   Dead-heat then applied as factor: r4WinOdd * (partialPercent/100)
+  //
+  // Corrected reference order: R4(rawOdd) → then dead-heat factor.
+  // NOT R4(deadHeated_odd) — that was wrong.
+  //
+  // Leg: odd=5, rule_4=25%, partial_percent=50 (2-way dead heat).
+  //   r4Base = R4(5) = 1 + (5-1)*(1-25/100) = 1 + 3 = 4.0
+  //   r4WinOdd = 4.0 * (50/100) = 2.0
+  // BetCalculator: odd after R4 = 4.0; win_stake = 1*(1-50/100) = 0.5; gross = 4.0*0.5 = 2.0 per stake ✓
+  describe('F1: R4 + dead-heat combined (winner@5 r4=25% dh50% + winner@3)', () => {
+    const legs2: DeepLeg[] = [
+      { odd_decimal: 5.0, rule_4: 25, partial_percent: 50, result: 'winner' },
+      { odd_decimal: 3.0, result: 'winner' },
+    ];
+    const legs3: DeepLeg[] = [
+      { odd_decimal: 5.0, rule_4: 25, partial_percent: 50, result: 'winner' },
+      { odd_decimal: 3.0, result: 'winner' },
+      { odd_decimal: 4.0, result: 'winner' },
+    ];
+
+    it('double: R4(rawOdd)*DH factor matches BetCalculator', () => {
+      const ref = referenceDeepSettle(legs2, 'double', 1, false);
+      // r4WinOdd = R4(5)*(50/100) = 4.0*0.5 = 2.0; ref = 2.0*3*1 = 6.0
+      expect(ref.return).toBeCloseTo(6.0, 2);
+      const r = runProcessBet(bc, legs2, BetSlipType.DOUBLE, 1, false, false);
+      expect(r.return_payout).toBeCloseTo(ref.return, 2);
+    });
+
+    it('treble: R4(rawOdd)*DH factor matches BetCalculator', () => {
+      const ref = referenceDeepSettle(legs3, 'treble', 1, false);
+      // r4WinOdd = 2.0; ref = 2.0*3*4*1 = 24.0
+      expect(ref.return).toBeCloseTo(24.0, 2);
+      const r = runProcessBet(bc, legs3, BetSlipType.TREBLE, 1, false, false);
+      expect(r.return_payout).toBeCloseTo(ref.return, 2);
+    });
+  });
+
+  // ── Case 8 (F2): 3-way dead heat ─────────────────────────────────────────
+  // ELBAPI partialPercent = 100/3 ≈ 33.33 (3 runners tying).
+  // adjustedOdd = odd * (100/3 / 100) = odd * (1/3).
+  //
+  // BetCalculator mapping (EMPIRICALLY DETERMINED):
+  //   partial_win_percent = 100 - partialPercent = 100 - 33.33 = 66.67
+  //   win_stake = stake * (1 - 66.67/100) = stake * 0.3333
+  //   gross = odd * other * stake * 0.3333  ==  odd*(1/3) * other * stake  ✓
+  //
+  // Leg: odd=6, partial_percent=100/3; other: odd=3.
+  //   adjustedOdd = 6*(1/3) = 2.0
+  //   Double ref = 2.0*3*1 = 6.0
+  describe('F2: 3-way dead heat (winner@6 dh=100/3 + winner@3)', () => {
+    const partialPercent3way = 100 / 3; // ≈ 33.33
+    const legs2: DeepLeg[] = [
+      { odd_decimal: 6.0, partial_percent: partialPercent3way, result: 'winner' },
+      { odd_decimal: 3.0, result: 'winner' },
+    ];
+    const legs3: DeepLeg[] = [
+      { odd_decimal: 6.0, partial_percent: partialPercent3way, result: 'winner' },
+      { odd_decimal: 3.0, result: 'winner' },
+      { odd_decimal: 2.0, result: 'winner' },
+    ];
+
+    it('double: 3-way DH reference and BetCalculator(pwp=66.67) match', () => {
+      const ref = referenceDeepSettle(legs2, 'double', 1, false);
+      // adjustedOdd = 6*(1/3)=2.0; ref = 2.0*3*1 = 6.0
+      expect(ref.return).toBeCloseTo(6.0, 2);
+      const r = runProcessBet(bc, legs2, BetSlipType.DOUBLE, 1, false, false);
+      // BetCalculator: partial_win_percent = 100 - 33.33 = 66.67 (via deepToBet transform)
+      expect(r.return_payout).toBeCloseTo(ref.return, 2);
+    });
+
+    it('treble: 3-way DH reference and BetCalculator(pwp=66.67) match', () => {
+      const ref = referenceDeepSettle(legs3, 'treble', 1, false);
+      // adjustedOdd = 2.0; ref = 2.0*3*2*1 = 12.0
+      expect(ref.return).toBeCloseTo(12.0, 2);
+      const r = runProcessBet(bc, legs3, BetSlipType.TREBLE, 1, false, false);
+      expect(r.return_payout).toBeCloseTo(ref.return, 2);
+    });
+  });
+
+  // ── Case 9 (F2): 4-way dead heat ─────────────────────────────────────────
+  // ELBAPI partialPercent = 100/4 = 25 (4 runners tying).
+  // adjustedOdd = odd * 0.25.
+  //
+  // BetCalculator mapping (EMPIRICALLY DETERMINED):
+  //   partial_win_percent = 100 - 25 = 75
+  //   win_stake = stake * (1 - 75/100) = stake * 0.25
+  //   gross = odd * other * stake * 0.25  ==  odd*0.25 * other * stake  ✓
+  //
+  // Leg: odd=8, partial_percent=25; other: odd=3.
+  //   adjustedOdd = 8*0.25 = 2.0
+  //   Double ref = 2.0*3*1 = 6.0
+  describe('F2: 4-way dead heat (winner@8 dh=25 + winner@3)', () => {
+    const partialPercent4way = 25; // 100/4
+    const legs2: DeepLeg[] = [
+      { odd_decimal: 8.0, partial_percent: partialPercent4way, result: 'winner' },
+      { odd_decimal: 3.0, result: 'winner' },
+    ];
+    const legs3: DeepLeg[] = [
+      { odd_decimal: 8.0, partial_percent: partialPercent4way, result: 'winner' },
+      { odd_decimal: 3.0, result: 'winner' },
+      { odd_decimal: 2.0, result: 'winner' },
+    ];
+
+    it('double: 4-way DH reference and BetCalculator(pwp=75) match', () => {
+      const ref = referenceDeepSettle(legs2, 'double', 1, false);
+      // adjustedOdd = 8*0.25=2.0; ref = 2.0*3*1 = 6.0
+      expect(ref.return).toBeCloseTo(6.0, 2);
+      const r = runProcessBet(bc, legs2, BetSlipType.DOUBLE, 1, false, false);
+      // BetCalculator: partial_win_percent = 100 - 25 = 75 (via deepToBet transform)
+      expect(r.return_payout).toBeCloseTo(ref.return, 2);
+    });
+
+    it('treble: 4-way DH reference and BetCalculator(pwp=75) match', () => {
+      const ref = referenceDeepSettle(legs3, 'treble', 1, false);
+      // adjustedOdd = 2.0; ref = 2.0*3*2*1 = 12.0
+      expect(ref.return).toBeCloseTo(12.0, 2);
+      const r = runProcessBet(bc, legs3, BetSlipType.TREBLE, 1, false, false);
+      expect(r.return_payout).toBeCloseTo(ref.return, 2);
+    });
+  });
+
+  // ── Case 10 (F3): Trixie BOG (SP-better on one leg) ─────────────────────
+  // 3 legs: A(@4 sp=6 BOG), B(@2 sp=2 no improvement), C(@3 sp=3 no improvement).
+  // Trixie = 3 doubles (AB, AC, BC) + 1 treble (ABC), stake=1 per line.
+  //
+  // R4 returns: AB=4*2=8, AC=4*3=12, BC=2*3=6, ABC=4*2*3=24. Total R4=50.
+  // BOG returns (SP=6 for A > placed=4): AB=6*2=12, AC=6*3=18, BC=2*3=6, ABC=6*2*3=36. Total BOG=72.
+  //
+  // Reference aggregate: bog_amount_won = max(0, 72-50) = 22.
+  // BetCalculator per-combo: each combo max(0, bog-r4) summed.
+  //   AB: max(0,12-8)=4; AC: max(0,18-12)=6; BC: max(0,6-6)=0; ABC: max(0,36-24)=12. Sum=22.
+  // Both methods give 22 — no bucketing divergence for this trixie case.
+  //
+  // return_payout = ref.return + ref.bog_amount_won = 50 + 22 = 72.
+  describe('F3: trixie BOG (A@4 sp=6 + B@2 + C@3), stake=1 per line', () => {
+    const legs3: DeepLeg[] = [
+      { odd_decimal: 4.0, sp_odd_decimal: 6.0, bog_applicable: true, result: 'winner' },
+      { odd_decimal: 2.0, sp_odd_decimal: 2.0, result: 'winner' },
+      { odd_decimal: 3.0, sp_odd_decimal: 3.0, result: 'winner' },
+    ];
+
+    it('trixie: return_payout and bog_amount_won match reference', () => {
+      const ref = referenceDeepSettle(legs3, 'trixie', 1, false);
+      // R4 total = AB+AC+BC+ABC = 8+12+6+24 = 50
+      expect(ref.return).toBeCloseTo(50, 2);
+      // BOG total = 12+18+6+36 = 72; bog_amount_won = max(0, 72-50) = 22
+      expect(ref.bog_amount_won).toBeCloseTo(22, 2);
+
+      const r = runProcessBet(bc, legs3, BetSlipType.TRIXIE, 1, false, true);
+      // BetCalculator: per-combo BOG sum = 4+6+0+12 = 22
+      expect(r.bog_amount_won).toBeCloseTo(ref.bog_amount_won, 2);
+      expect(r.return_payout).toBeCloseTo(ref.return + ref.bog_amount_won, 2);
     });
   });
 });
