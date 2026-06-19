@@ -14,6 +14,10 @@ export interface PlacedBetSelection {
   ew_terms: string | null;
   partial_win_percent: number | null;
   rule_4: number | null;
+  event_id?: string;
+  participant_id?: string | number;
+  competition_id?: string;
+  sport_slug?: string;
 }
 
 export interface PlacedBet {

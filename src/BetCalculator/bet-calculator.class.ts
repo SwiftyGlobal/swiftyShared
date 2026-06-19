@@ -1,5 +1,5 @@
 import { BetCalculatorHelper } from './bet-calculator.helper';
-import { generateCombinations as kernelCombinations } from './combination-engine';
+import { generateCombinations as kernelCombinations, sameEventIncompatible, sameParticipantIncompatible, allCompatible } from './combination-engine';
 import type {
   BetSettings,
   PlacedBetSelection,
@@ -226,6 +226,10 @@ export class BetCalculator {
       result = this.processLucky63Bet(this.bets);
     } else if (this.bet_type.includes(BetSlipType.FOLD)) {
       result = this.processFoldBet(this.bets, this.fold_type);
+    } else if (this.bet_type === BetSlipType.CROSS_DOUBLE) {
+      result = this.processDoubles(this.bets, allCompatible(sameEventIncompatible, sameParticipantIncompatible));
+    } else if (this.bet_type === BetSlipType.CROSS_TREBLE) {
+      result = this.processTrebles(this.bets, allCompatible(sameEventIncompatible, sameParticipantIncompatible));
     } else if (this.bet_type === BetSlipType.BET_BUILDER) {
       result = this.processBetBuilderBet(this.bets, this.stored_payout);
     }
@@ -552,7 +556,7 @@ export class BetCalculator {
     };
   };
 
-  processDoubles = (selections: PlacedBetSelection[]): ResultMainBet => {
+  processDoubles = (selections: PlacedBetSelection[], isCompatible?: (a: PlacedBetSelection, b: PlacedBetSelection) => boolean): ResultMainBet => {
     let win_profit = 0;
     let place_profit = 0;
     let return_stake = 0;
@@ -560,7 +564,9 @@ export class BetCalculator {
 
     const results: ResultCombination[] = [];
 
-    const combinations = this.generateCombinations(selections, BetSlipType.DOUBLE);
+    const combinations = isCompatible
+      ? kernelCombinations(selections, 2, isCompatible)
+      : this.generateCombinations(selections, BetSlipType.DOUBLE);
 
     combinations.forEach((combination: PlacedBetSelection[]) => {
       const double_result = this.processDoubleBet(combination[0], combination[1]);
@@ -786,7 +792,7 @@ export class BetCalculator {
     };
   };
 
-  processTrebles = (selections: PlacedBetSelection[]): ResultMainBet => {
+  processTrebles = (selections: PlacedBetSelection[], isCompatible?: (a: PlacedBetSelection, b: PlacedBetSelection) => boolean): ResultMainBet => {
     let win_profit = 0;
     let place_profit = 0;
     let return_stake = 0;
@@ -796,7 +802,9 @@ export class BetCalculator {
 
     const results: ResultCombination[] = [];
 
-    const combinations = this.generateCombinations(selections, BetSlipType.TREBLE);
+    const combinations = isCompatible
+      ? kernelCombinations(selections, 3, isCompatible)
+      : this.generateCombinations(selections, BetSlipType.TREBLE);
 
     combinations.forEach((combination) => {
       const treble_result = this.processTrebleBet(combination[0], combination[1], combination[2]);
