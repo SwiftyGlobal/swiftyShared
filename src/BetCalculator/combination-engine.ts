@@ -64,3 +64,15 @@ export function allCompatible<T>(
 ): (a: T, b: T) => boolean {
   return (a, b) => !rules.some((rule) => rule(a, b));
 }
+
+/** Product of decimal odds. Caller resolves void→1 and loser→0 before calling. */
+export function multiplyOdds(odds: number[]): number {
+  return odds.reduce((acc, o) => acc * o, 1);
+}
+
+/** Each-way place odd: (winOdd - 1) * (ewNumerator/ewDenominator) + 1. */
+export function eachWayPlaceOdd(winOdd: number, ewTerms: string): number {
+  if (!ewTerms || !ewTerms.includes('/')) return winOdd;
+  const [num, den] = ewTerms.split('/');
+  return (winOdd - 1) * (+num / +den) + 1;
+}

@@ -3,6 +3,8 @@ import {
   sameEventIncompatible,
   sameParticipantIncompatible,
   allCompatible,
+  multiplyOdds,
+  eachWayPlaceOdd,
   CombinableLeg,
 } from '../../BetCalculator/combination-engine';
 
@@ -62,5 +64,19 @@ describe('exclusion predicates', () => {
     ];
     const combos = generateCombinations(dartsLegs, 2, compat);
     expect(combos.length).toBe(2); // A-C, B-C ; A-B excluded by participant
+  });
+});
+
+describe('odds primitives', () => {
+  it('multiplyOdds multiplies decimals; empty = 1', () => {
+    expect(multiplyOdds([2, 3])).toBe(6);
+    expect(multiplyOdds([2, 1, 2])).toBe(4); // void leg passed as 1
+    expect(multiplyOdds([])).toBe(1);
+  });
+  it('eachWayPlaceOdd applies the EW fraction', () => {
+    // win odd 5.0 (4/1), terms 1/4 -> (5-1)*(1/4)+1 = 2
+    expect(eachWayPlaceOdd(5, '1/4')).toBeCloseTo(2);
+    // no slash -> term 1 -> place odd == win odd
+    expect(eachWayPlaceOdd(5, '')).toBeCloseTo(5);
   });
 });
