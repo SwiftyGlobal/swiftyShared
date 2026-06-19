@@ -1,4 +1,10 @@
-import { generateCombinations } from '../../BetCalculator/combination-engine';
+import {
+  generateCombinations,
+  sameEventIncompatible,
+  sameParticipantIncompatible,
+  allCompatible,
+  CombinableLeg,
+} from '../../BetCalculator/combination-engine';
 
 describe('generateCombinations', () => {
   it('returns all C(n,k) when no predicate', () => {
@@ -18,5 +24,43 @@ describe('generateCombinations', () => {
     const r = generateCombinations([2, 4, 1, 3], 2, isCompat);
     expect(r).not.toContainEqual([2, 4]);
     expect(r.length).toBe(5); // 6 total minus [2,4]
+  });
+});
+
+describe('exclusion predicates', () => {
+  // Cross example: A{A1,A2}, B{B1,B2}, C{C1}
+  const legs: CombinableLeg[] = [
+    { event_id: 'A' }, { event_id: 'A' },
+    { event_id: 'B' }, { event_id: 'B' },
+    { event_id: 'C' },
+  ];
+  const crossCompat = allCompatible(sameEventIncompatible);
+
+  it('cross doubles = 8', () => {
+    expect(generateCombinations(legs, 2, crossCompat).length).toBe(8);
+  });
+  it('cross trebles = 4', () => {
+    expect(generateCombinations(legs, 3, crossCompat).length).toBe(4);
+  });
+  it('sameEventIncompatible ignores null event_id', () => {
+    expect(sameEventIncompatible({}, {})).toBe(false);
+  });
+  it('sameParticipant only fires for darts with equal participant_id', () => {
+    expect(sameParticipantIncompatible(
+      { sport_slug: 'darts', participant_id: 7 }, { sport_slug: 'darts', participant_id: 7 })).toBe(true);
+    expect(sameParticipantIncompatible(
+      { sport_slug: 'darts', participant_id: 7 }, { sport_slug: 'darts', participant_id: 8 })).toBe(false);
+    expect(sameParticipantIncompatible(
+      { sport_slug: 'football', participant_id: 7 }, { sport_slug: 'football', participant_id: 7 })).toBe(false);
+  });
+  it('allCompatible composes (darts + cross both apply)', () => {
+    const compat = allCompatible(sameEventIncompatible, sameParticipantIncompatible);
+    const dartsLegs: CombinableLeg[] = [
+      { event_id: 'A', sport_slug: 'darts', participant_id: 1 },
+      { event_id: 'B', sport_slug: 'darts', participant_id: 1 }, // same participant -> excluded
+      { event_id: 'C', sport_slug: 'darts', participant_id: 2 },
+    ];
+    const combos = generateCombinations(dartsLegs, 2, compat);
+    expect(combos.length).toBe(2); // A-C, B-C ; A-B excluded by participant
   });
 });
