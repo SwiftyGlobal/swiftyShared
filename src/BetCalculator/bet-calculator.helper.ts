@@ -234,7 +234,15 @@ export class BetCalculatorHelper {
       // calculateCombinationFractional computes (numerator+denominator)/denominator = effective_full_decimal ✓
       const makeHW = (profitOdd: number) => {
         const fullDecimal = (profitOdd + 1) / 2;
-        return { numerator: fullDecimal - 1, denominator: 1, odd_decimal: fullDecimal - 1 };
+        const profitNum = fullDecimal - 1;
+        // When fullDecimal === 1.0 the profit numerator is 0 with denominator 1,
+        // which collides with the LOSER sentinel {0, 1} in calculateCombinationFractional
+        // and would zero the entire combination product. Use the VOID/neutral sentinel
+        // {0, 0} instead — calculateCombinationFractional skips it (×1 factor). ✓
+        if (profitNum === 0) {
+          return { numerator: 0, denominator: 0, odd_decimal: 0 };
+        }
+        return { numerator: profitNum, denominator: 1, odd_decimal: profitNum };
       };
       win_odd.main = makeHW(odds.main.odd_decimal);
       win_odd.sp = makeHW(odds.sp.odd_decimal);
@@ -246,7 +254,12 @@ export class BetCalculatorHelper {
         // Full EW decimal = each_way_odds.main.odd_decimal + 1.  Halved: / 2.
         const makeHWPlace = (ewProfitOdd: number) => {
           const fullDecimal = (ewProfitOdd + 1) / 2;
-          return { numerator: fullDecimal - 1, denominator: 1, odd_decimal: fullDecimal - 1 };
+          const profitNum = fullDecimal - 1;
+          // Same evens-at-1.0 guard as makeHW above.
+          if (profitNum === 0) {
+            return { numerator: 0, denominator: 0, odd_decimal: 0 };
+          }
+          return { numerator: profitNum, denominator: 1, odd_decimal: profitNum };
         };
         place_odd.main = makeHWPlace(each_way_odds.main.odd_decimal);
         place_odd.sp = makeHWPlace(each_way_odds.sp.odd_decimal);

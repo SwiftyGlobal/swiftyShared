@@ -252,6 +252,60 @@ describe('settlement parity: BetCalculator === playbookMultiple', () => {
     expect(r.return_payout).toBeCloseTo(ref, 2);
   });
 
+  // ── 7c. HALF_WON@2.0 (evens) in a double ────────────────────────────────
+  // Reference: HALF_WON@2 → effective odd = 2/2 = 1.0; WINNER@3 → odd = 3.
+  // ref = 1.0 * 3 * 1 = 3.00
+  it('half_won@evens+winner double @2half_won,@3winner stake=1 → gross return 3.00', () => {
+    const legs: RefLeg[] = [{ odd: 2, result: 'half_won' }, { odd: 3, result: 'winner' }];
+    const stake = 1;
+    const ref = referenceDoubleReturn(legs, stake, 0);
+    // ref: half_won@2 effective odd = 2/2 = 1.0. combo = 1.0*3*1 = 3.0
+    expect(ref).toBeCloseTo(3, 2);
+
+    const r = bc.processBet({
+      stake,
+      total_stake: stake,
+      bets: legs.map((l, i) => toBet(l, i, stake, false)),
+      bet_type: BetSlipType.DOUBLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+
+    expect(r.return_payout).toBeCloseTo(ref, 2);
+  });
+
+  // ── 7d. HALF_WON@2.0 (evens) in a treble ────────────────────────────────
+  // Reference: HALF_WON@2 → effective odd = 2/2 = 1.0; WINNER@3 → odd = 3; WINNER@4 → odd = 4.
+  // ref = 1.0 * 3 * 4 * 1 = 12.00
+  it('half_won@evens+winner+winner treble @2half_won,@3winner,@4winner stake=1 → gross return 12.00', () => {
+    const legs: RefLeg[] = [
+      { odd: 2, result: 'half_won' },
+      { odd: 3, result: 'winner' },
+      { odd: 4, result: 'winner' },
+    ];
+    const stake = 1;
+    const ref = referenceTrebleReturn(legs, stake, 0);
+    // ref: half_won@2 effective odd = 1.0. combo = 1.0*3*4*1 = 12.0
+    expect(ref).toBeCloseTo(12, 2);
+
+    const r = bc.processBet({
+      stake,
+      total_stake: stake,
+      bets: legs.map((l, i) => toBet(l, i, stake, false)),
+      bet_type: BetSlipType.TREBLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+
+    expect(r.return_payout).toBeCloseTo(ref, 2);
+  });
+
   // ── 8. Cross (same-event) double excluded ────────────────────────────────
   // 3 legs: A@2 event=E1, B@3 event=E1, C@4 event=E2.
   // With excludeSameEvent: only combos (A,C)=8 and (B,C)=12 are valid. ref = (2*4 + 3*4)*1 = 20
