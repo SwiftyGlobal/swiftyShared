@@ -5,7 +5,9 @@ import {
   allCompatible,
   multiplyOdds,
   eachWayPlaceOdd,
+  priceCombinations,
   CombinableLeg,
+  PriceableLeg,
 } from '../../BetCalculator/combination-engine';
 
 describe('generateCombinations', () => {
@@ -78,5 +80,37 @@ describe('odds primitives', () => {
     expect(eachWayPlaceOdd(5, '1/4')).toBeCloseTo(2);
     // no slash -> term 1 -> place odd == win odd
     expect(eachWayPlaceOdd(5, '')).toBeCloseTo(5);
+  });
+});
+
+describe('priceCombinations', () => {
+  const odds2 = (n: number): PriceableLeg[] => Array.from({ length: n }, () => ({ odd: 2 }));
+
+  it('plain doubles: 4 legs @2.0 -> 6 combos, totalOdds 24', () => {
+    const r = priceCombinations(odds2(4), 2);
+    expect(r.noOfCombinations).toBe(6);
+    expect(r.totalOdds).toBe(24); // 6 * (2*2)
+  });
+  it('cross doubles via predicate: A{2}B{2}C{1} -> 8 combos', () => {
+    const legs: PriceableLeg[] = [
+      { odd: 2, event_id: 'A' }, { odd: 2, event_id: 'A' },
+      { odd: 2, event_id: 'B' }, { odd: 2, event_id: 'B' },
+      { odd: 2, event_id: 'C' },
+    ];
+    const r = priceCombinations(legs, 2, { isCompatible: allCompatible(sameEventIncompatible) });
+    expect(r.noOfCombinations).toBe(8);
+    expect(r.totalOdds).toBe(32); // 8 * 4
+  });
+  it('starting_price leg zeroes its combinations win odds', () => {
+    const legs: PriceableLeg[] = [{ odd: 2 }, { odd: 3, starting_price: true }];
+    const r = priceCombinations(legs, 2);
+    expect(r.noOfCombinations).toBe(1);
+    expect(r.totalOdds).toBe(0); // 2 * 0
+  });
+  it('each-way place odds summed when eachWay', () => {
+    const legs: PriceableLeg[] = [{ odd: 5, ew_terms: '1/4' }, { odd: 5, ew_terms: '1/4' }];
+    const r = priceCombinations(legs, 2, { eachWay: true });
+    expect(r.totalOdds).toBe(25);        // 5*5
+    expect(r.totalPlaceOdds).toBeCloseTo(4); // 2 * 2 (each place odd = 2)
   });
 });

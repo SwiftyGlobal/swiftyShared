@@ -76,3 +76,42 @@ export function eachWayPlaceOdd(winOdd: number, ewTerms: string): number {
   const [num, den] = ewTerms.split('/');
   return (winOdd - 1) * (+num / +den) + 1;
 }
+
+export interface PriceableLeg extends CombinableLeg {
+  odd: number;
+  ew_terms?: string;
+  starting_price?: boolean;
+}
+
+export interface PricedFold {
+  noOfCombinations: number;
+  totalOdds: number;
+  totalPlaceOdds: number;
+}
+
+/**
+ * Pre-settlement pricing: combination count + summed win/place odds across all
+ * k-combinations. Mirrors GamingBackend's generateNFolds output.
+ */
+export function priceCombinations(
+  legs: PriceableLeg[],
+  k: number,
+  opts: { eachWay?: boolean; isCompatible?: (a: PriceableLeg, b: PriceableLeg) => boolean } = {},
+): PricedFold {
+  const eachWay = opts.eachWay ?? false;
+  const combos = generateCombinations(legs, k, opts.isCompatible);
+
+  let totalOdds = 0;
+  let totalPlaceOdds = 0;
+  for (const combo of combos) {
+    const winOdds = combo.map((leg) => (leg.starting_price ? 0 : leg.odd));
+    totalOdds += multiplyOdds(winOdds);
+    if (eachWay) {
+      const placeOdds = combo.map((leg) =>
+        leg.starting_price ? 0 : leg.ew_terms ? eachWayPlaceOdd(leg.odd, leg.ew_terms) : 1,
+      );
+      totalPlaceOdds += multiplyOdds(placeOdds);
+    }
+  }
+  return { noOfCombinations: combos.length, totalOdds, totalPlaceOdds };
+}
