@@ -761,20 +761,26 @@ describe('deep settlement parity', () => {
     });
   });
 
-  // ── Case 7 (F1): R4 + dead-heat combined ─────────────────────────────────
-  // ELBAPI R4 path (playbookResultMultiples.js lines 404-413):
-  //   baseOdd = originalOdd (pre-dead-heat raw odd)
-  //   row.odd = R4(baseOdd)
-  //   Dead-heat then applied as factor: r4WinOdd * (partialPercent/100)
+  // ── Case 7 (F1): R4 + dead-heat combined — KNOWN DIVERGENCE ─────────────
   //
-  // Corrected reference order: R4(rawOdd) → then dead-heat factor.
-  // NOT R4(deadHeated_odd) — that was wrong.
+  // ELBAPI non-BOG R4 path (playbookResultMultiples.js lines 404-413):
+  //   baseOdd = originalOdd (PRE-dead-heat raw odd)
+  //   row.odd = oddAfterRule4(baseOdd, r4)   ← dead-heat dropped — not re-applied
   //
-  // Leg: odd=5, rule_4=25%, partial_percent=50 (2-way dead heat).
-  //   r4Base = R4(5) = 1 + (5-1)*(1-25/100) = 1 + 3 = 4.0
-  //   r4WinOdd = 4.0 * (50/100) = 2.0
-  // BetCalculator: odd after R4 = 4.0; win_stake = 1*(1-50/100) = 0.5; gross = 4.0*0.5 = 2.0 per stake ✓
-  describe('F1: R4 + dead-heat combined (winner@5 r4=25% dh50% + winner@3)', () => {
+  // ELBAPI wins with R4(rawOdd), no dead-heat factor:
+  //   Leg: odd=5, rule_4=25 → R4(5) = 1+(5-1)*0.75 = 4.0  (DH factor 0.5 is dropped)
+  //   double: 4.0 * 3 * 1 = 12.0
+  //   treble: 4.0 * 3 * 4 * 1 = 48.0
+  //
+  // BetCalculator applies BOTH R4 and dead-heat:
+  //   Leg: odd after R4 = 4.0; win_stake = 1*(1-50/100) = 0.5; effective = 4.0*0.5 = 2.0
+  //   double: 2.0 * 3 * 1 = 6.0
+  //   treble: 2.0 * 3 * 4 * 1 = 24.0
+  //
+  // These two systems legitimately diverge. The reference (ELBAPI oracle) and processBet
+  // are BOTH asserted on their own values below. Do NOT loosen or skip — keep divergence explicit.
+  // Resolution: deferred to SP-1 production shadow-run; preserve-vs-fix decided at cutover.
+  describe('F1: R4 + dead-heat combined — KNOWN DIVERGENCE (winner@5 r4=25% dh50% + winner@3)', () => {
     const legs2: DeepLeg[] = [
       { odd_decimal: 5.0, rule_4: 25, partial_percent: 50, result: 'winner' },
       { odd_decimal: 3.0, result: 'winner' },
@@ -785,20 +791,38 @@ describe('deep settlement parity', () => {
       { odd_decimal: 4.0, result: 'winner' },
     ];
 
-    it('double: R4(rawOdd)*DH factor matches BetCalculator', () => {
+    it('double: KNOWN R4+dead-heat divergence — reference (ELBAPI) = 12.0, processBet = 6.0', () => {
+      // KNOWN R4+dead-heat divergence:
+      //   ELBAPI drops dead-heat on R4 legs (non-BOG path, playbookResultMultiples.js lines 404-413).
+      //   Shared engine applies both R4 and DH.
+      //   Quantified by the SP-1 production shadow-run; preserve-vs-fix decided at cutover.
       const ref = referenceDeepSettle(legs2, 'double', 1, false);
-      // r4WinOdd = R4(5)*(50/100) = 4.0*0.5 = 2.0; ref = 2.0*3*1 = 6.0
-      expect(ref.return).toBeCloseTo(6.0, 2);
+      // ELBAPI faithful reference: R4(5)=4.0, DH dropped → 4.0*3*1 = 12.0
+      expect(ref.return).toBeCloseTo(12.0, 2);
+
       const r = runProcessBet(bc, legs2, BetSlipType.DOUBLE, 1, false, false);
-      expect(r.return_payout).toBeCloseTo(ref.return, 2);
+      // BetCalculator applies both: R4(5)=4.0, DH=0.5 → 4.0*0.5*3*1 = 6.0
+      expect(r.return_payout).toBeCloseTo(6.0, 2);
+
+      // Confirm they differ (documents the divergence is real, not a copy-paste error)
+      expect(ref.return).not.toBeCloseTo(r.return_payout, 2);
     });
 
-    it('treble: R4(rawOdd)*DH factor matches BetCalculator', () => {
+    it('treble: KNOWN R4+dead-heat divergence — reference (ELBAPI) = 48.0, processBet = 24.0', () => {
+      // KNOWN R4+dead-heat divergence:
+      //   ELBAPI drops dead-heat on R4 legs (non-BOG path, playbookResultMultiples.js lines 404-413).
+      //   Shared engine applies both R4 and DH.
+      //   Quantified by the SP-1 production shadow-run; preserve-vs-fix decided at cutover.
       const ref = referenceDeepSettle(legs3, 'treble', 1, false);
-      // r4WinOdd = 2.0; ref = 2.0*3*4*1 = 24.0
-      expect(ref.return).toBeCloseTo(24.0, 2);
+      // ELBAPI faithful reference: R4(5)=4.0, DH dropped → 4.0*3*4*1 = 48.0
+      expect(ref.return).toBeCloseTo(48.0, 2);
+
       const r = runProcessBet(bc, legs3, BetSlipType.TREBLE, 1, false, false);
-      expect(r.return_payout).toBeCloseTo(ref.return, 2);
+      // BetCalculator applies both: R4(5)=4.0, DH=0.5 → 4.0*0.5*3*4*1 = 24.0
+      expect(r.return_payout).toBeCloseTo(24.0, 2);
+
+      // Confirm they differ (documents the divergence is real, not a copy-paste error)
+      expect(ref.return).not.toBeCloseTo(r.return_payout, 2);
     });
   });
 

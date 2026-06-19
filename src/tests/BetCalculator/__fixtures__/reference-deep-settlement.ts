@@ -17,8 +17,9 @@
  *   - playbookResultMultiples.js R4 path (lines 404-413):
  *       baseOdd = row.originalOdd ?? row.odd   ← originalOdd = PRE-dead-heat raw odd
  *       row.odd = oddAfterRule4(baseOdd, r4)   ← R4 applied to PRE-dead-heat odd
- *       Dead-heat is then applied after R4: r4WinOdd * (partial / 100) when partial > 0.
- *       Correct order: R4(rawOdd) → then dead-heat factor.  NOT R4(deadHeated_odd).
+ *       Dead-heat is NOT re-applied in this block; using originalOdd as baseOdd means
+ *       the DH factor is discarded when r4 > 0. ELBAPI drops dead-heat on R4 legs (non-BOG).
+ *       KNOWN DIVERGENCE: BetCalculator applies both R4 and DH → diverges when r4>0 && DH>0.
  *   - playbookMultiple.js combination math (getDoubleReturnAmountWithWinners / getNFoldReturnAmountWithWinners):
  *       gross_win  = Π(odd_i) × stake
  *       gross_place (if EW) = Π(place_odd_i) × stake
@@ -154,20 +155,44 @@ function resolveLeg(leg: DeepLeg, eachWay: boolean): ResolvedLeg {
       bogWinOdd = placed_odd_with_r4;
     }
   } else {
-    // BOG not applicable — use R4 path: R4(rawOdd), then apply dead-heat factor.
-    // Mirrors R4 path (lines 404-413): baseOdd = originalOdd (pre-dead-heat), R4 applied to that.
-    // Dead-heat is then re-applied as a factor after R4.
-    const r4Base = r4 > 0 ? oddAfterRule4(rawOdd, r4) : rawOdd;
-    bogWinOdd = (partial > 0 && partial < 100) ? r4Base * (partial / 100) : r4Base;
+    // BOG not applicable — non-BOG path mirrors the R4 path (lines 404-413):
+    // ELBAPI: when r4 > 0, baseOdd = originalOdd (pre-dead-heat raw), row.odd = R4(baseOdd).
+    //   Dead-heat is NOT re-applied — it is dropped when r4 > 0 (see FAITHFULNESS NOTE above).
+    // When r4 == 0, dead-heat is preserved (row.odd already holds DH-adjusted odd).
+    // bogWinOdd for non-BOG case equals r4WinOdd (computed below); we forward-reference via
+    // a placeholder that matches the r4WinOdd computation exactly.
+    if (r4 > 0) {
+      bogWinOdd = oddAfterRule4(rawOdd, r4); // dead-heat dropped (ELBAPI non-BOG R4 path)
+    } else {
+      bogWinOdd = (partial > 0 && partial < 100) ? rawOdd * (partial / 100) : rawOdd;
+    }
   }
 
   // ── R4 path (playbookResultMultiples.js lines 404-413) ────────────────────
-  // baseOdd = row.originalOdd ?? row.odd  — originalOdd is the PRE-dead-heat raw odd,
-  // saved by applyMultipleResultAdjustments (settlement.utils.js line 107).
-  // Correct order: R4 is applied to rawOdd (pre-dead-heat), THEN dead-heat factor applied.
-  // This is NOT R4(deadHeated_odd) — that was the previous (wrong) implementation.
-  const r4Base = r4 > 0 ? oddAfterRule4(rawOdd, r4) : rawOdd;
-  const r4WinOdd = (partial > 0 && partial < 100) ? r4Base * (partial / 100) : r4Base;
+  // ELBAPI non-BOG R4 path (lines 404-413):
+  //   baseOdd = row.originalOdd ?? row.odd   ← originalOdd = PRE-dead-heat raw odd
+  //   row.odd = oddAfterRule4(baseOdd, r4)   ← R4 applied to PRE-dead-heat odd
+  //   Dead-heat is NOT re-applied in this block — the dead-heat was already written
+  //   to row.odd by applyMultipleResultAdjustments, but originalOdd holds the raw value.
+  //   Using originalOdd as baseOdd effectively discards the dead-heat reduction.
+  //
+  // FAITHFULNESS NOTE (confirmed reading playbookResultMultiples.js lines 404-413):
+  //   When r4 > 0, ELBAPI drops the dead-heat factor entirely on the non-BOG path.
+  //   The result is R4(rawPreDeadHeatOdd) with NO dead-heat factor applied.
+  //   When r4 == 0 and dead-heat applies, the dead-heat reduction is preserved (row.odd
+  //   was set by applyMultipleResultAdjustments and not overwritten since r4==0).
+  //
+  // KNOWN DIVERGENCE: BetCalculator applies BOTH R4 and dead-heat (R4(raw) * partial/100).
+  //   This divergence is tracked by the SP-1 production shadow-run.
+  //   Divergence is only present when r4 > 0 AND partial > 0 (i.e. R4 + dead-heat combined).
+  let r4WinOdd: number;
+  if (r4 > 0) {
+    // ELBAPI: R4(rawOdd), dead-heat dropped (see lines 404-413 in playbookResultMultiples.js)
+    r4WinOdd = oddAfterRule4(rawOdd, r4);
+  } else {
+    // No R4: dead-heat preserved (applyMultipleResultAdjustments already applied DH to row.odd)
+    r4WinOdd = (partial > 0 && partial < 100) ? rawOdd * (partial / 100) : rawOdd;
+  }
 
   // ── EW place odds ─────────────────────────────────────────────────────────
   const fraction = parseEwFraction(leg.ew_terms);
