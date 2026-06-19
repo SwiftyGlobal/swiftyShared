@@ -1,4 +1,5 @@
 import { BetCalculatorHelper } from './bet-calculator.helper';
+import { generateCombinations as kernelCombinations } from './combination-engine';
 import type {
   BetSettings,
   PlacedBetSelection,
@@ -1599,17 +1600,8 @@ export class BetCalculator {
     return combinations;
   };
 
-  generateDoubleCombinations = (selections: PlacedBetSelection[]): PlacedBetSelection[][] => {
-    const combinations: PlacedBetSelection[][] = [];
-
-    for (let i = 0; i < selections.length; i++) {
-      for (let j = i + 1; j < selections.length; j++) {
-        combinations.push([selections[i], selections[j]]);
-      }
-    }
-
-    return combinations;
-  };
+  generateDoubleCombinations = (selections: PlacedBetSelection[]): PlacedBetSelection[][] =>
+    kernelCombinations(selections, 2);
 
   generateDoubleResultType = (
     first_selection: PlacedBetSelection,
@@ -1667,45 +1659,11 @@ export class BetCalculator {
     return BetResultType.OPEN;
   };
 
-  generateTrebleCombinations = (selections: PlacedBetSelection[]) => {
-    const combinations: PlacedBetSelection[][] = [];
+  generateTrebleCombinations = (selections: PlacedBetSelection[]): PlacedBetSelection[][] =>
+    kernelCombinations(selections, 3);
 
-    for (let i = 0; i < selections.length; i++) {
-      for (let j = i + 1; j < selections.length; j++) {
-        for (let k = j + 1; k < selections.length; k++) {
-          combinations.push([selections[i], selections[j], selections[k]]);
-        }
-      }
-    }
-
-    return combinations;
-  };
-
-  generateFoldCombinations = (selections: PlacedBetSelection[], combinationSize: number): PlacedBetSelection[][] => {
-    const result: PlacedBetSelection[][] = [];
-
-    // Funksion ndihmës për të gjeneruar kombinime
-    const generateCombinations = (
-      arr: PlacedBetSelection[],
-      size: number,
-      start: number = 0,
-      current: PlacedBetSelection[] = [],
-    ) => {
-      if (current.length === size) {
-        result.push([...current]);
-        return;
-      }
-
-      for (let i = start; i < arr.length; i++) {
-        current.push(arr[i]);
-        generateCombinations(arr, size, i + 1, current);
-        current.pop();
-      }
-    };
-
-    generateCombinations(selections, combinationSize);
-    return result;
-  };
+  generateFoldCombinations = (selections: PlacedBetSelection[], combinationSize: number): PlacedBetSelection[][] =>
+    kernelCombinations(selections, combinationSize);
 
   /**
    * Settle a Bet Builder bet.
