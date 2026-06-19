@@ -261,7 +261,6 @@ export function referenceDeepSettle(
   const resolved = legs.map((l) => resolveLeg(l, eachWay));
 
   // Determine combination sizes for this bet type
-  type ComboSpec = { size: number; count?: number }; // count for validation only
   const specs: number[] = [];
   if (betType === 'double') specs.push(2);
   else if (betType === 'treble') specs.push(3);
