@@ -227,7 +227,47 @@ export class BetCalculatorHelper {
       // do nothing, already set to 0
       result_type = BetResultType.LOSER;
     } else if (selection.result === BetResultType.HALF_WON) {
+      // HALF_WON: effective full decimal return = (profit_odd + 1) / 2.
+      // odds.main.odd_decimal is the PROFIT fraction (numerator/denominator), so
+      // full decimal = odds.main.odd_decimal + 1.  Halved: (odds.main.odd_decimal + 1) / 2.
+      // Stored as profit form: numerator = effective_full_decimal - 1, denominator = 1.
+      // calculateCombinationFractional computes (numerator+denominator)/denominator = effective_full_decimal ✓
+      const makeHW = (profitOdd: number) => {
+        const fullDecimal = (profitOdd + 1) / 2;
+        return { numerator: fullDecimal - 1, denominator: 1, odd_decimal: fullDecimal - 1 };
+      };
+      win_odd.main = makeHW(odds.main.odd_decimal);
+      win_odd.sp = makeHW(odds.sp.odd_decimal);
+      win_odd.bog = makeHW(odds.bog.odd_decimal);
+
+      if (each_way_odds) {
+        // For EW, production: place_odd = ((win_odd - 1) * (ew_n/ew_d) + 1) / 2.
+        // each_way_odds.main.odd_decimal is already the EW profit fraction.
+        // Full EW decimal = each_way_odds.main.odd_decimal + 1.  Halved: / 2.
+        const makeHWPlace = (ewProfitOdd: number) => {
+          const fullDecimal = (ewProfitOdd + 1) / 2;
+          return { numerator: fullDecimal - 1, denominator: 1, odd_decimal: fullDecimal - 1 };
+        };
+        place_odd.main = makeHWPlace(each_way_odds.main.odd_decimal);
+        place_odd.sp = makeHWPlace(each_way_odds.sp.odd_decimal);
+        place_odd.bog = makeHWPlace(each_way_odds.bog.odd_decimal);
+      }
+      result_type = BetResultType.HALF_WON;
     } else if (selection.result === BetResultType.HALF_LOST) {
+      // HALF_LOST: effective decimal multiplier = 0.5 (returns half stake).
+      // Fractional profit: numerator = 0.5 - 1 = -0.5, denominator = 1.
+      // calculateCombinationFractional: (-0.5+1)/1 = 0.5 ✓
+      win_odd.main = { numerator: -0.5, denominator: 1, odd_decimal: 0.5 };
+      win_odd.sp = { numerator: -0.5, denominator: 1, odd_decimal: 0.5 };
+      win_odd.bog = { numerator: -0.5, denominator: 1, odd_decimal: 0.5 };
+
+      if (each_way_odds) {
+        // EW HALF_LOST: production uses place_odd = 0.5 (half stake returned on place leg too)
+        place_odd.main = { numerator: -0.5, denominator: 1, odd_decimal: 0.5 };
+        place_odd.sp = { numerator: -0.5, denominator: 1, odd_decimal: 0.5 };
+        place_odd.bog = { numerator: -0.5, denominator: 1, odd_decimal: 0.5 };
+      }
+      result_type = BetResultType.HALF_LOST;
     }
 
     return { win_odd, place_odd, result_type };
@@ -400,6 +440,8 @@ export class BetCalculatorHelper {
         (combination) =>
           combination.result === BetResultType.WINNER ||
           combination.result === BetResultType.PARTIAL ||
+          combination.result === BetResultType.HALF_WON ||
+          combination.result === BetResultType.HALF_LOST ||
           (combination.result === BetResultType.PLACED && each_way),
       )
     ) {
@@ -414,6 +456,13 @@ export class BetCalculatorHelper {
       return BetResultType.LOSER;
     } else if (combinations.some((combination) => combination.result === BetResultType.VOID)) {
       return BetResultType.PARTIAL;
+    } else if (
+      combinations.some(
+        (combination) =>
+          combination.result === BetResultType.HALF_WON || combination.result === BetResultType.HALF_LOST,
+      )
+    ) {
+      return BetResultType.WINNER;
     }
 
     return BetResultType.LOSER;

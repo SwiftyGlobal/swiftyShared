@@ -204,12 +204,9 @@ describe('settlement parity: BetCalculator === playbookMultiple', () => {
     expect(r.return_payout).toBeCloseTo(ref, 2);
   });
 
-  // ── 7. HALF_WON double [BLOCKED — real divergence] ───────────────────────
-  // Reference: HALF_WON@4 → odd=2; WINNER@3 → odd=3. ref = 2*3*1 = 6.
-  // processBet: getSingleResultOdds has empty HALF_WON branch → odds stay at 0.
-  //   getBetResultType: HALF_WON not matched → falls to LOSER. return_payout = 0.
-  // DIVERGENCE: ref=6 vs processBet=0. BLOCKED.
-  it('[BLOCKED-DIVERGENCE] half_won+winner double @4half_won,@3winner stake=1: ref=6 but processBet=0', () => {
+  // ── 7. HALF_WON double ──────────────────────────────────────────────────
+  // Reference: HALF_WON@4 → effective odd=4/2=2; WINNER@3 → odd=3. ref = 2*3*1 = 6.
+  it('half_won+winner double @4half_won,@3winner stake=1 → gross return 6', () => {
     const legs: RefLeg[] = [{ odd: 4, result: 'half_won' }, { odd: 3, result: 'winner' }];
     const stake = 1;
     const ref = referenceDoubleReturn(legs, stake, 0);
@@ -228,11 +225,31 @@ describe('settlement parity: BetCalculator === playbookMultiple', () => {
       each_way: false,
     });
 
-    // Document actual divergence — do NOT assert equality; processBet returns 0 due to missing HALF_WON support
-    // ref (production playbookMultiple) = 6; processBet = 0
-    expect(r.return_payout).toBeCloseTo(0, 2); // processBet result (diverges from ref)
-    // Uncomment when HALF_WON is implemented in BetCalculator multiples:
-    // expect(r.return_payout).toBeCloseTo(ref, 2);
+    expect(r.return_payout).toBeCloseTo(ref, 2);
+  });
+
+  // ── 7b. HALF_LOST double ─────────────────────────────────────────────────
+  // Reference: HALF_LOST@4 → effective odd=0.5; WINNER@3 → odd=3. ref = 0.5*3*1 = 1.5.
+  it('half_lost+winner double @4half_lost,@3winner stake=1 → gross return 1.5', () => {
+    const legs: RefLeg[] = [{ odd: 4, result: 'half_lost' }, { odd: 3, result: 'winner' }];
+    const stake = 1;
+    const ref = referenceDoubleReturn(legs, stake, 0);
+    // ref: half_lost effective odd = 0.5. combo = 0.5*3*1 = 1.5
+    expect(ref).toBeCloseTo(1.5, 2);
+
+    const r = bc.processBet({
+      stake,
+      total_stake: stake,
+      bets: legs.map((l, i) => toBet(l, i, stake, false)),
+      bet_type: BetSlipType.DOUBLE,
+      free_bet_amount: 0,
+      bog_applicable: false,
+      bog_max_payout: 0,
+      max_payout: 0,
+      each_way: false,
+    });
+
+    expect(r.return_payout).toBeCloseTo(ref, 2);
   });
 
   // ── 8. Cross (same-event) double excluded ────────────────────────────────
