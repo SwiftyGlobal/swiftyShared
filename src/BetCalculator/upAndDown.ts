@@ -11,7 +11,7 @@ export interface UpAndDownLeg {
   placeOdds: number;
   /** Did the win part succeed? A dead-heat win counts as won (with deadHeatFraction set). */
   won: boolean;
-  /** Did the place part succeed (placed or better)? Used only when eachWay. */
+  /** Did the place part succeed (placed or better)? A winning leg is always treated as placed. Used only when eachWay. */
   placed: boolean;
   /** Non-runner: the single returns its stake; effective odds become 1.0 and it counts as a success. */
   isVoid: boolean;
@@ -93,7 +93,7 @@ export const calculateUpAndDownReturn = (
     unitStake,
     multiplier,
     (l) => l.placeOdds,
-    (l) => l.placed,
+    (l) => l.placed || l.won,
   );
 
   return winPart + placePart;

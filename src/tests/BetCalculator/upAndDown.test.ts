@@ -79,3 +79,11 @@ describe('Up-and-Down edge results (SSA win-only, unit=10)', () => {
     expect(calculateUpAndDownReturn('ssa', A, B, S, false)).toBeCloseTo(60, 6);
   });
 });
+
+describe('Up-and-Down SSA each-way regression: won leg without explicit placed', () => {
+  it('won leg is treated as placed: A(win@3,place@2,won:true,placed:false) B(win@2,place@1.5,won:true,placed:false) -> 130', () => {
+    const A = leg({ winOdds: 3, placeOdds: 2, won: true, placed: false });
+    const B = leg({ winOdds: 2, placeOdds: 1.5, won: true, placed: false });
+    expect(calculateUpAndDownReturn('ssa', A, B, S, true)).toBeCloseTo(130, 6);
+  });
+});
