@@ -1,10 +1,5 @@
 import { BetCalculatorHelper } from './bet-calculator.helper';
-import {
-  generateCombinations as kernelCombinations,
-  sameEventIncompatible,
-  sameParticipantIncompatible,
-  allCompatible,
-} from './combination-engine';
+import { generateCombinations as kernelCombinations } from './combination-engine';
 import type {
   BetSettings,
   PlacedBetSelection,
@@ -231,10 +226,6 @@ export class BetCalculator {
       result = this.processLucky63Bet(this.bets);
     } else if (this.bet_type.includes(BetSlipType.FOLD)) {
       result = this.processFoldBet(this.bets, this.fold_type);
-    } else if (this.bet_type === BetSlipType.CROSS_DOUBLE) {
-      result = this.processDoubles(this.bets, allCompatible(sameEventIncompatible, sameParticipantIncompatible));
-    } else if (this.bet_type === BetSlipType.CROSS_TREBLE) {
-      result = this.processTrebles(this.bets, allCompatible(sameEventIncompatible, sameParticipantIncompatible));
     } else if (this.bet_type === BetSlipType.BET_BUILDER) {
       result = this.processBetBuilderBet(this.bets, this.stored_payout);
     }

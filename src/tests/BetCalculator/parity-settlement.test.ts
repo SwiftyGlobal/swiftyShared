@@ -320,64 +320,6 @@ describe('settlement parity: BetCalculator === playbookMultiple', () => {
     expect(r.return_payout).toBeCloseTo(ref, 2);
   });
 
-  // ── 8. Cross (same-event) double excluded ────────────────────────────────
-  // 3 legs: A@2 event=E1, B@3 event=E1, C@4 event=E2.
-  // With excludeSameEvent: only combos (A,C)=8 and (B,C)=12 are valid. ref = (2*4 + 3*4)*1 = 20
-  // processBet with CROSS_DOUBLE excludes same-event pairs via sameEventIncompatible.
-  it('cross double 3 legs two same-event: only cross-event combos counted', () => {
-    const legs: RefLeg[] = [
-      { odd: 2, result: 'winner', event_id: 'E1' },
-      { odd: 3, result: 'winner', event_id: 'E1' },
-      { odd: 4, result: 'winner', event_id: 'E2' },
-    ];
-    const stake = 1;
-    const ref = referenceDoubleReturn(legs, stake, 0, true);
-    // combos: (E1_A, E2) = 2*4 = 8; (E1_B, E2) = 3*4 = 12; ref = 20
-    expect(ref).toBeCloseTo(20, 2);
-
-    const r = bc.processBet({
-      stake,
-      total_stake: stake * 2, // 2 valid combos
-      bets: legs.map((l, i) => toBet(l, i, stake, false)),
-      bet_type: BetSlipType.CROSS_DOUBLE,
-      free_bet_amount: 0,
-      bog_applicable: false,
-      bog_max_payout: 0,
-      max_payout: 0,
-      each_way: false,
-    });
-    expect(r.return_payout).toBeCloseTo(ref, 2);
-  });
-
-  // ── 9. Cross (same-event) treble excluded ────────────────────────────────
-  // 4 legs: A@2 event=E1, B@3 event=E2, C@4 event=E3, D@5 event=E3.
-  // Valid treble combos (no same-event): ABC=24, ABD=30, ACD excluded(E3+E3), BCD excluded → valid: ABC, ABD
-  // ref = (2*3*4 + 2*3*5)*1 = 24+30 = 54
-  it('cross treble 4 legs two same-event: only cross-event treble combos counted', () => {
-    const legs: RefLeg[] = [
-      { odd: 2, result: 'winner', event_id: 'E1' },
-      { odd: 3, result: 'winner', event_id: 'E2' },
-      { odd: 4, result: 'winner', event_id: 'E3' },
-      { odd: 5, result: 'winner', event_id: 'E3' },
-    ];
-    const stake = 1;
-    const ref = referenceTrebleReturn(legs, stake, 0, true);
-    // combos: (E1,E2,E3_C)=2*3*4=24; (E1,E2,E3_D)=2*3*5=30; (E1,E3_C,E3_D)=skip; (E2,E3_C,E3_D)=skip
-    expect(ref).toBeCloseTo(54, 2);
-
-    const r = bc.processBet({
-      stake,
-      total_stake: stake * 2, // 2 valid treble combos
-      bets: legs.map((l, i) => toBet(l, i, stake, false)),
-      bet_type: BetSlipType.CROSS_TREBLE,
-      free_bet_amount: 0,
-      bog_applicable: false,
-      bog_max_payout: 0,
-      max_payout: 0,
-      each_way: false,
-    });
-    expect(r.return_payout).toBeCloseTo(ref, 2);
-  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
