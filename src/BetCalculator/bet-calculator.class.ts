@@ -1,5 +1,10 @@
 import { BetCalculatorHelper } from './bet-calculator.helper';
-import { generateCombinations as kernelCombinations, sameEventIncompatible, sameParticipantIncompatible, allCompatible } from './combination-engine';
+import {
+  generateCombinations as kernelCombinations,
+  sameEventIncompatible,
+  sameParticipantIncompatible,
+  allCompatible,
+} from './combination-engine';
 import type {
   BetSettings,
   PlacedBetSelection,
@@ -556,7 +561,10 @@ export class BetCalculator {
     };
   };
 
-  processDoubles = (selections: PlacedBetSelection[], isCompatible?: (a: PlacedBetSelection, b: PlacedBetSelection) => boolean): ResultMainBet => {
+  processDoubles = (
+    selections: PlacedBetSelection[],
+    isCompatible?: (a: PlacedBetSelection, b: PlacedBetSelection) => boolean,
+  ): ResultMainBet => {
     let win_profit = 0;
     let place_profit = 0;
     let return_stake = 0;
@@ -792,7 +800,10 @@ export class BetCalculator {
     };
   };
 
-  processTrebles = (selections: PlacedBetSelection[], isCompatible?: (a: PlacedBetSelection, b: PlacedBetSelection) => boolean): ResultMainBet => {
+  processTrebles = (
+    selections: PlacedBetSelection[],
+    isCompatible?: (a: PlacedBetSelection, b: PlacedBetSelection) => boolean,
+  ): ResultMainBet => {
     let win_profit = 0;
     let place_profit = 0;
     let return_stake = 0;
