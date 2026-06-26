@@ -73,10 +73,10 @@ describe('Up-and-Down edge results (SSA win-only, unit=10)', () => {
     expect(calculateUpAndDownReturn('ssa', A, B, S, false)).toBeCloseTo(40, 6);
   });
 
-  it('dead-heat shrinks effective odds: A half-won@3 (f=0.5), B win@2 -> 60', () => {
+  it('dead-heat divides stake: A half-won@3 (f=0.5), B win@2 -> 50', () => {
     const A = leg({ winOdds: 3, won: true, deadHeatFraction: 0.5 });
     const B = leg({ winOdds: 2, won: true });
-    expect(calculateUpAndDownReturn('ssa', A, B, S, false)).toBeCloseTo(60, 6);
+    expect(calculateUpAndDownReturn('ssa', A, B, S, false)).toBeCloseTo(50, 6);
   });
 });
 

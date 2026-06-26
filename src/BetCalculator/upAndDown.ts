@@ -15,14 +15,14 @@ export interface UpAndDownLeg {
   placed: boolean;
   /** Non-runner: the single returns its stake; effective odds become 1.0 and it counts as a success. */
   isVoid: boolean;
-  /** Dead-heat fraction in (0,1]; null = full odds. Shrinks the profit fraction of the effective odds. */
+  /** Dead-heat fraction in (0,1]; null = full odds. Divides the stake: 1/N of stake at full odds (return = odds × fraction). */
   deadHeatFraction: number | null;
 }
 
 const effectiveOdds = (leg: UpAndDownLeg, baseOdds: number): number => {
   if (leg.isVoid) return 1;
   const fraction = leg.deadHeatFraction == null ? 1 : leg.deadHeatFraction;
-  return 1 + (baseOdds - 1) * fraction;
+  return baseOdds * fraction;
 };
 
 /**
