@@ -11,6 +11,7 @@ import type { ObjectKeys } from './objectKeys';
  * f - ls sports (stored under ls_sports)
  * g - bet radar (stored under bet_radar)
  * h - racing and sports (stored under ras)
+ * s - swifty feed (stored under swifty_feed)
  */
 export type SportProviders = ObjectKeys<typeof ProviderPrefixes>;
 
