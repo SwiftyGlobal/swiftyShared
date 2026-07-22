@@ -19,6 +19,7 @@ export interface UpAndDownLeg {
   deadHeatFraction: number | null;
 }
 
+/** Effective decimal odds for a resolved leg: void -> 1.0; dead-heat shrinks the odds. */
 const effectiveOdds = (leg: UpAndDownLeg, baseOdds: number): number => {
   if (leg.isVoid) return 1;
   const fraction = leg.deadHeatFraction == null ? 1 : leg.deadHeatFraction;
@@ -26,46 +27,59 @@ const effectiveOdds = (leg: UpAndDownLeg, baseOdds: number): number => {
 };
 
 /**
- * Return for one direction: Part 1 = part1, any-to-come a single on Part 2 = part2.
- * `getOdds` selects winOdds or placeOdds; `getSuccess` selects won or placed.
+ * Return for ONE direction of an Up-and-Down: part-1 is a single on legA whose
+ * return rolls over (any-to-come) onto a single on legB.
+ *
+ * Win-only: part-1 is a win single; the ATC stake (capped at multiplier*unit)
+ * funds a win single on legB.
+ *
+ * Each-way (AceOdds "single each-way ATC"): part-1 is an EACH-WAY single on legA,
+ * so its return is win-return (if won) PLUS place-return (if placed). That combined
+ * return rolls over, capped at the each-way ATC stake = 2*multiplier*unit
+ * (multiplier*unit for the win part + multiplier*unit for the place part). The
+ * rolled stake is placed as an each-way single on legB (half win, half place).
+ * A leg that only PLACES (did not win) still produces a return and still rolls over.
  */
 const directionReturn = (
   part1: UpAndDownLeg,
   part2: UpAndDownLeg,
   unit: number,
   multiplier: number,
-  getOdds: (l: UpAndDownLeg) => number,
-  getSuccess: (l: UpAndDownLeg) => boolean,
+  eachWay: boolean,
 ): number => {
-  const part1Success = part1.isVoid || getSuccess(part1);
-  if (!part1Success) return 0;
+  const p1Won = part1.isVoid || part1.won;
+  const p1Placed = part1.isVoid || part1.placed || part1.won;
 
-  const part1Return = unit * effectiveOdds(part1, getOdds(part1));
-  const atcStake = Math.min(multiplier * unit, part1Return);
+  let part1Return = 0;
+  if (p1Won) part1Return += unit * effectiveOdds(part1, part1.winOdds);
+  if (eachWay && p1Placed) part1Return += unit * effectiveOdds(part1, part1.placeOdds);
+  if (part1Return <= 0) return 0;
+
+  const atcCap = (eachWay ? 2 : 1) * multiplier * unit;
+  const atcStake = Math.min(atcCap, part1Return);
   const leftover = part1Return - atcStake;
 
-  const part2Success = part2.isVoid || getSuccess(part2);
-  const atcReturn = part2Success ? atcStake * effectiveOdds(part2, getOdds(part2)) : 0;
+  const p2Won = part2.isVoid || part2.won;
+  const p2Placed = part2.isVoid || part2.placed || part2.won;
+
+  let atcReturn = 0;
+  if (eachWay) {
+    const halfStake = atcStake / 2;
+    if (p2Won) atcReturn += halfStake * effectiveOdds(part2, part2.winOdds);
+    if (p2Placed) atcReturn += halfStake * effectiveOdds(part2, part2.placeOdds);
+  } else if (p2Won) {
+    atcReturn += atcStake * effectiveOdds(part2, part2.winOdds);
+  }
+
   return leftover + atcReturn;
 };
 
-const partReturn = (
-  legA: UpAndDownLeg,
-  legB: UpAndDownLeg,
-  unit: number,
-  multiplier: number,
-  getOdds: (l: UpAndDownLeg) => number,
-  getSuccess: (l: UpAndDownLeg) => boolean,
-): number =>
-  directionReturn(legA, legB, unit, multiplier, getOdds, getSuccess) +
-  directionReturn(legB, legA, unit, multiplier, getOdds, getSuccess);
-
 /**
- * Gross (stake-inclusive) return for one Up-and-Down pair.
+ * Gross (stake-inclusive) return for one Up-and-Down pair (both directions).
  *
- * SSA: Part-2 ATC stake = min(unit, Part-1 return).
- * DSA: Part-2 ATC stake = min(2*unit, Part-1 return).
- * Each-way: win part (win odds, won) + place part (place odds, placed), each with its own ATC cap.
+ * SSA: ATC stake multiplier = 1. DSA: multiplier = 2.
+ * Each-way is a single each-way any-to-come (see directionReturn): the winning/
+ * placed leg's full each-way return funds an each-way single on the other leg.
  */
 export const calculateUpAndDownReturn = (
   style: UpAndDownStyle,
@@ -75,26 +89,8 @@ export const calculateUpAndDownReturn = (
   eachWay: boolean,
 ): number => {
   const multiplier = style === 'dsa' ? 2 : 1;
-
-  const winPart = partReturn(
-    legA,
-    legB,
-    unitStake,
-    multiplier,
-    (l) => l.winOdds,
-    (l) => l.won,
+  return (
+    directionReturn(legA, legB, unitStake, multiplier, eachWay) +
+    directionReturn(legB, legA, unitStake, multiplier, eachWay)
   );
-
-  if (!eachWay) return winPart;
-
-  const placePart = partReturn(
-    legA,
-    legB,
-    unitStake,
-    multiplier,
-    (l) => l.placeOdds,
-    (l) => l.placed || l.won,
-  );
-
-  return winPart + placePart;
 };

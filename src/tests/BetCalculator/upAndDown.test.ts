@@ -55,11 +55,14 @@ describe('Up-and-Down SSA each-way, A(win3/place2) B(win2/place1.5), unit=10', (
   it('all win (won & placed) -> 130 (win 80 + place 50)', () => {
     expect(calculateUpAndDownReturn('ssa', A(true, true), B(true, true), S, true)).toBeCloseTo(130, 6);
   });
-  it('A win+placed, B placed-only -> 70 (win 20 + place 50)', () => {
-    expect(calculateUpAndDownReturn('ssa', A(true, true), B(false, true), S, true)).toBeCloseTo(70, 6);
+  // Each-way = ONE each-way any-to-come (AceOdds): the placed leg's full each-way
+  // return funds an each-way single on the other leg. A wins@3/places@2 -> part-1
+  // return 50; ATC each-way stake capped at 2*unit=20 (10 win + 10 place); B places@1.5.
+  it('A win+placed, B placed-only -> 82.5', () => {
+    expect(calculateUpAndDownReturn('ssa', A(true, true), B(false, true), S, true)).toBeCloseTo(82.5, 6);
   });
-  it('both placed-only -> 50 (win 0 + place 50)', () => {
-    expect(calculateUpAndDownReturn('ssa', A(false, true), B(false, true), S, true)).toBeCloseTo(50, 6);
+  it('both placed-only -> 30', () => {
+    expect(calculateUpAndDownReturn('ssa', A(false, true), B(false, true), S, true)).toBeCloseTo(30, 6);
   });
   it('both lose -> 0', () => {
     expect(calculateUpAndDownReturn('ssa', A(false, false), B(false, false), S, true)).toBeCloseTo(0, 6);
@@ -85,5 +88,18 @@ describe('Up-and-Down SSA each-way regression: won leg without explicit placed',
     const A = leg({ winOdds: 3, placeOdds: 2, won: true, placed: false });
     const B = leg({ winOdds: 2, placeOdds: 1.5, won: true, placed: false });
     expect(calculateUpAndDownReturn('ssa', A, B, S, true)).toBeCloseTo(130, 6);
+  });
+});
+
+describe('Up-and-Down each-way ATC — reported staging bets (BO 26713/26716/26717)', () => {
+  // A "Rathmeehan Judi" WON: win 2.375, place (2.375-1)/4+1 = 1.34375
+  // B "Non Stop Tommy" PLACED-only: win 1.55, place (1.55-1)/5+1 = 1.11
+  const A = leg({ winOdds: 2.375, placeOdds: 1.34375, won: true, placed: true });
+  const B = leg({ winOdds: 1.55, placeOdds: 1.11, won: false, placed: true });
+  it('BO 26716 SSA each-way, unit 1 -> 4.8927', () => {
+    expect(calculateUpAndDownReturn('ssa', A, B, 1, true)).toBeCloseTo(4.8927, 4);
+  });
+  it('BO 26717 DSA each-way, unit 1 -> 4.1278', () => {
+    expect(calculateUpAndDownReturn('dsa', A, B, 1, true)).toBeCloseTo(4.1278, 4);
   });
 });
