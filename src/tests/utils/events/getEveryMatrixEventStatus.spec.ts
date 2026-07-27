@@ -69,3 +69,19 @@ describe('getEveryMatrixEventStatus', () => {
     });
   });
 });
+
+describe('getEveryMatrixEventStatus - canonical status mapping', () => {
+  const started = { eventStartTime: '2000-01-01T00:00:00.000Z', now: '2000-01-01T01:00:00.000Z' };
+
+  it.each<[string, SportEventStatuses, string]>([
+    ['4', SportEventStatuses.INTERRUPTED, 'Interrupted'],
+    ['5', SportEventStatuses.CANCELLED, 'Cancelled'],
+    ['6', SportEventStatuses.WALKOVER, 'Walkover'],
+    ['7', SportEventStatuses.ABANDONED, 'Abandoned'],
+    ['8', SportEventStatuses.RETIRED, 'Retired'],
+  ])('maps EveryMatrix status id "%s" to %s regardless of part id', (eventStatusId, current_status, current_phase) => {
+    const result = getEveryMatrixEventStatus({ eventStatusId, eventPartId: 9999, ...started });
+
+    expect(result).toEqual({ current_status, current_phase });
+  });
+});

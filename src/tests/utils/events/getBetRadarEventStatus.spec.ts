@@ -1,70 +1,26 @@
 import { getBetRadarEventStatus } from '../../../utils';
 import { SportEventStatuses } from '../../../common';
-import type { GetBetRadarEventStatusDto } from '../../../common';
 
 describe('getBetRadarEventStatus', () => {
-  it('should return Pre Match status when eventStatusId is 1', () => {
-    const payload: GetBetRadarEventStatusDto = {
-      eventStatusId: '1',
-    };
-
-    const result = getBetRadarEventStatus(payload);
-
-    expect(result).toEqual({
-      current_phase: 'In Play',
-      current_status: SportEventStatuses.IN_PLAY,
-    });
+  it.each<[string, SportEventStatuses, string]>([
+    ['0', SportEventStatuses.PRE_MATCH, 'Pre Match'],
+    ['1', SportEventStatuses.IN_PLAY, 'In Play'],
+    ['2', SportEventStatuses.FINISHED, 'Finished'],
+    ['3', SportEventStatuses.SUSPENDED, 'Suspended'],
+    ['4', SportEventStatuses.CANCELLED, 'Cancelled'],
+    ['5', SportEventStatuses.INTERRUPTED, 'Interrupted'],
+    ['6', SportEventStatuses.POSTPONED, 'Postponed'],
+    ['7', SportEventStatuses.DELAYED, 'Delayed'],
+    ['8', SportEventStatuses.ABANDONED, 'Abandoned'],
+    ['9', SportEventStatuses.RESCHEDULED, 'Rescheduled'],
+  ])('maps BetRadar status id "%s" to %s', (eventStatusId, current_status, current_phase) => {
+    expect(getBetRadarEventStatus({ eventStatusId })).toEqual({ current_status, current_phase });
   });
 
-  it('should return In Play status when eventStatusId is 2', () => {
-    const payload: GetBetRadarEventStatusDto = {
-      eventStatusId: '0',
-    };
-
-    const result = getBetRadarEventStatus(payload);
-
-    expect(result).toEqual({
-      current_phase: 'Pre Match',
+  it('falls back to pre_match for an unrecognised status id', () => {
+    expect(getBetRadarEventStatus({ eventStatusId: '999' })).toEqual({
       current_status: SportEventStatuses.PRE_MATCH,
-    });
-  });
-
-  it('should return Finished status when eventStatusId is 3', () => {
-    const payload: GetBetRadarEventStatusDto = {
-      eventStatusId: '3',
-    };
-
-    const result = getBetRadarEventStatus(payload);
-
-    expect(result).toEqual({
-      current_phase: 'Finished',
-      current_status: SportEventStatuses.FINISHED,
-    });
-  });
-
-  it('should return Closed status when eventStatusId is 4', () => {
-    const payload: GetBetRadarEventStatusDto = {
-      eventStatusId: '4',
-    };
-
-    const result = getBetRadarEventStatus(payload);
-
-    expect(result).toEqual({
-      current_phase: 'Closed',
-      current_status: SportEventStatuses.CLOSED,
-    });
-  });
-
-  it('should return Unknown status when eventStatusId is not recognized', () => {
-    const payload: GetBetRadarEventStatusDto = {
-      eventStatusId: '999',
-    };
-
-    const result = getBetRadarEventStatus(payload);
-
-    expect(result).toEqual({
       current_phase: 'Pre Match',
-      current_status: SportEventStatuses.PRE_MATCH,
     });
   });
 });

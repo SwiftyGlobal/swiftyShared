@@ -30,14 +30,20 @@ export const EventStatuses = {
     '3': SportEventStatuses.FINISHED,
     '4': SportEventStatuses.INTERRUPTED,
     '5': SportEventStatuses.CANCELLED,
-    '6': SportEventStatuses.CANCELLED,
+    '6': SportEventStatuses.WALKOVER,
     '7': SportEventStatuses.ABANDONED,
-    '8': SportEventStatuses.CANCELLED,
+    '8': SportEventStatuses.RETIRED,
   },
   BET_RADAR: {
-    '0': SportEventStatuses.PRE_MATCH,
-    '1': SportEventStatuses.IN_PLAY,
-    '3': SportEventStatuses.FINISHED,
-    '4': SportEventStatuses.CLOSED,
+    '0': SportEventStatuses.PRE_MATCH, // not_started
+    '1': SportEventStatuses.IN_PLAY, // live
+    '2': SportEventStatuses.FINISHED, // ended
+    '3': SportEventStatuses.SUSPENDED,
+    '4': SportEventStatuses.CANCELLED,
+    '5': SportEventStatuses.INTERRUPTED,
+    '6': SportEventStatuses.POSTPONED,
+    '7': SportEventStatuses.DELAYED,
+    '8': SportEventStatuses.ABANDONED,
+    '9': SportEventStatuses.RESCHEDULED,
   },
 } as const;
