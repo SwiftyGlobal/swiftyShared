@@ -23,4 +23,13 @@ describe('getLsportEventStatus', () => {
       current_phase: 'In Play',
     });
   });
+
+  it.each(['0', '99'])('should fall back to pre_match for unknown status id %s', (eventStatusId) => {
+    const result = getLsportEventStatus({ eventStatusId });
+
+    expect(result).toEqual({
+      current_status: SportEventStatuses.PRE_MATCH,
+      current_phase: 'Pre Match',
+    });
+  });
 });

@@ -1,43 +1,21 @@
 import type { EventPhaseStatus } from '../../types';
 import type { GetBetRadarEventStatusDto } from '../../common';
-import { EventStatuses, SportEventStatuses } from '../../common';
+import { EventStatuses, SportEventStatuses, SportEventStatusLabels } from '../../common';
 
 /**
- * @description Determines the status of a BetRadar sports event based on the provided parameters.
- * @param payload {GetBetRadarEventStatusDto} payload - The payload containing the event status ID.
- * @param payload.eventStatusId {number} eventStatusId - The ID of the event status.
- * @return {EventPhaseStatus} - The status of the BetRadar sports event, including the current status and phase.
+ * @description Maps a BetRadar numeric event status id to the canonical SportEventStatus and its label.
+ * @param payload {GetBetRadarEventStatusDto} - The payload containing the event status id.
+ * @param payload.eventStatusId {string} - The BetRadar status id (see EventStatuses.BET_RADAR).
+ * @return {EventPhaseStatus} - The canonical status slug plus the human-readable phase label.
  * @example
- * getBetRadarEventStatus({ eventStatusId: 1 }); // { current_status: 'PRE_MATCH', current_phase: 'Pre Match' }
- * getBetRadarEventStatus({ eventStatusId: 2 }); // { current_status: 'IN_PLAY', current_phase: 'In Play' }
- * getBetRadarEventStatus({ eventStatusId: 3 }); // { current_status: 'FINISHED', current_phase: 'Finished' }
- * getBetRadarEventStatus({ eventStatusId: 4 }); // { current_status: 'CLOSED', current_phase: 'Closed' }
- * getBetRadarEventStatus({ eventStatusId: 5 }); // { current_status: 'Unknown', current_phase: 'Unknown' }
+ * getBetRadarEventStatus({ eventStatusId: '1' }); // { current_status: 'in_play',   current_phase: 'In Play' }
+ * getBetRadarEventStatus({ eventStatusId: '4' }); // { current_status: 'cancelled', current_phase: 'Cancelled' }
+ * getBetRadarEventStatus({ eventStatusId: '99' }); // unknown -> { current_status: 'pre_match', current_phase: 'Pre Match' }
  */
 export const getBetRadarEventStatus = (payload: GetBetRadarEventStatusDto): EventPhaseStatus => {
   const { eventStatusId } = payload;
 
-  const currentStatus = EventStatuses.BET_RADAR[eventStatusId];
+  const current_status = EventStatuses.BET_RADAR[eventStatusId] ?? SportEventStatuses.PRE_MATCH;
 
-  let currentPhase: string;
-
-  switch (currentStatus) {
-    case SportEventStatuses.PRE_MATCH:
-      currentPhase = 'Pre Match';
-      break;
-    case SportEventStatuses.IN_PLAY:
-      currentPhase = 'In Play';
-      break;
-    case SportEventStatuses.FINISHED:
-      currentPhase = 'Finished';
-      break;
-    case SportEventStatuses.CLOSED:
-      currentPhase = 'Closed';
-      break;
-    default:
-      currentPhase = 'Pre Match'; // Default phase for unrecognized statuses
-      break;
-  }
-
-  return { current_status: currentStatus || SportEventStatuses.PRE_MATCH, current_phase: currentPhase };
+  return { current_status, current_phase: SportEventStatusLabels[current_status] };
 };

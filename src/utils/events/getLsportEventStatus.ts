@@ -5,13 +5,10 @@ import type { GetLSportEventStatusDto } from '../../common';
 export const getLsportEventStatus = (payload: GetLSportEventStatusDto): EventPhaseStatus => {
   const { eventStatusId } = payload;
 
-  const currentStatus = EventStatuses.LSPORTS[eventStatusId];
+  // Unknown/unmapped status ids (e.g. 0) fall back to pre_match, matching getBetRadarEventStatus.
+  const currentStatus = EventStatuses.LSPORTS[eventStatusId] ?? SportEventStatuses.PRE_MATCH;
 
-  const currentPhase = currentStatus
-    ? currentStatus === SportEventStatuses.PRE_MATCH
-      ? 'Pre Match'
-      : 'In Play'
-    : 'Pre Match';
+  const currentPhase = currentStatus === SportEventStatuses.PRE_MATCH ? 'Pre Match' : 'In Play';
 
-  return { current_status: EventStatuses.LSPORTS[eventStatusId], current_phase: currentPhase };
+  return { current_status: currentStatus, current_phase: currentPhase };
 };
