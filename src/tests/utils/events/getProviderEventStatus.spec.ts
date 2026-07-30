@@ -2,12 +2,14 @@ import { getProviderEventStatus } from '../../../utils';
 import { getBetRadarEventStatus, getManualEventPhaseStatus } from '../../../utils';
 import { getLsportEventStatus } from '../../../utils';
 import { getEveryMatrixEventStatus } from '../../../utils';
+import { getSwiftyFeedEventStatus } from '../../../utils';
 import { getProviderWithoutId } from '../../../utils';
 import type {
   GetBetRadarEventStatusDto,
   GetEveryMatrixEventStatusDto,
   GetLSportEventStatusDto,
   GetManualEventStatusDto,
+  GetSwiftyFeedEventStatusDto,
 } from '../../../common';
 import { SportEventStatuses } from '../../../common';
 import type { EventPhaseStatus } from '../../../types';
@@ -17,6 +19,7 @@ jest.mock('../../../utils/events/getManualEventStatus');
 jest.mock('../../../utils/events/getLsportEventStatus');
 jest.mock('../../../utils/events/getEveryMatrixEventStatus');
 jest.mock('../../../utils/events/getBetRadarEventStatus');
+jest.mock('../../../utils/events/getSwiftyFeedEventStatus');
 
 describe('getProviderEventStatus', () => {
   const mockGetProviderWithoutId = getProviderWithoutId as jest.Mock;
@@ -24,6 +27,7 @@ describe('getProviderEventStatus', () => {
   const mockGetLsportEventStatus = getLsportEventStatus as jest.Mock;
   const mockGetEveryMatrixEventStatus = getEveryMatrixEventStatus as jest.Mock;
   const mockGetBetRadarEventStatus = getBetRadarEventStatus as jest.Mock;
+  const mockGetSwiftyFeedEventStatus = getSwiftyFeedEventStatus as jest.Mock;
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -93,6 +97,24 @@ describe('getProviderEventStatus', () => {
 
     expect(mockGetProviderWithoutId).toHaveBeenCalledWith('g-123');
     expect(mockGetBetRadarEventStatus).toHaveBeenCalledWith(payload);
+    expect(result).toEqual(expectedResult);
+  });
+
+  it('should call getSwiftyFeedEventStatus for provider s', () => {
+    mockGetProviderWithoutId.mockReturnValue('s');
+    const payload: GetSwiftyFeedEventStatusDto = { eventStatusId: 2 };
+
+    const expectedResult: EventPhaseStatus = {
+      current_phase: 'In Play',
+      current_status: SportEventStatuses.IN_PLAY,
+    };
+
+    mockGetSwiftyFeedEventStatus.mockReturnValue(expectedResult);
+
+    const result = getProviderEventStatus('s-180', payload);
+
+    expect(mockGetProviderWithoutId).toHaveBeenCalledWith('s-180');
+    expect(mockGetSwiftyFeedEventStatus).toHaveBeenCalledWith(payload);
     expect(result).toEqual(expectedResult);
   });
 
