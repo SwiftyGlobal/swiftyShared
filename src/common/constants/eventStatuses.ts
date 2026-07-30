@@ -46,4 +46,9 @@ export const EventStatuses = {
     '8': SportEventStatuses.ABANDONED,
     '9': SportEventStatuses.RESCHEDULED,
   },
+  SWIFTY_FEED: {
+    '1': SportEventStatuses.PRE_MATCH, // scheduled
+    '2': SportEventStatuses.IN_PLAY, // in_progress
+    '3': SportEventStatuses.FINISHED, // completed
+  },
 } as const;

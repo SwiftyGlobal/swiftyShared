@@ -8,10 +8,12 @@ import type {
   GetLSportEventStatusDto,
   GetManualEventStatusDto,
   GetProviderEventStatusDto,
+  GetSwiftyFeedEventStatusDto,
 } from '../../common';
 import { SportEventStatuses } from '../../common';
 import { getProviderWithoutId } from '../getProviderWithoutId';
 import { getBetRadarEventStatus } from './getBetRadarEventStatus';
+import { getSwiftyFeedEventStatus } from './getSwiftyFeedEventStatus';
 
 export const getProviderEventStatus = (
   eventId: IdWithProvider,
@@ -28,6 +30,8 @@ export const getProviderEventStatus = (
       return getEveryMatrixEventStatus(payload as GetEveryMatrixEventStatusDto);
     case 'g':
       return getBetRadarEventStatus(payload as GetBetRadarEventStatusDto);
+    case 's':
+      return getSwiftyFeedEventStatus(payload as GetSwiftyFeedEventStatusDto);
     default:
       return { current_phase: 'Pre Match', current_status: SportEventStatuses.PRE_MATCH };
   }
