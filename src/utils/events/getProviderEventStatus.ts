@@ -10,7 +10,7 @@ import type {
   GetProviderEventStatusDto,
   GetSwiftyFeedEventStatusDto,
 } from '../../common';
-import { SportEventStatuses } from '../../common';
+import { SportEventStatuses, SportEventStatusLabels } from '../../common';
 import { getProviderWithoutId } from '../getProviderWithoutId';
 import { getBetRadarEventStatus } from './getBetRadarEventStatus';
 import { getSwiftyFeedEventStatus } from './getSwiftyFeedEventStatus';
@@ -33,6 +33,6 @@ export const getProviderEventStatus = (
     case 's':
       return getSwiftyFeedEventStatus(payload as GetSwiftyFeedEventStatusDto);
     default:
-      return { current_phase: 'Pre Match', current_status: SportEventStatuses.PRE_MATCH };
+      return { current_phase: SportEventStatusLabels[SportEventStatuses.PRE_MATCH], current_status: SportEventStatuses.PRE_MATCH };
   }
 };

@@ -23,10 +23,17 @@ export enum SportEventStatuses {
  *
  * Typed as `Record<SportEventStatuses, string>` on purpose: adding a status to the enum
  * without giving it a label here is a compile error.
+ *
+ * These strings are not cosmetic: `current_phase` is persisted (CMS `event_settings` /
+ * `custom_events`) and matched on downstream — SwiftyGamingBackend's `formStatusFromPhases`,
+ * the CMS upcoming-event filter, and the back-office phase-override dropdown all key off them.
+ * PRE_MATCH/IN_PLAY are therefore hyphenated to match that stored vocabulary; the earlier
+ * spaced spellings ("Pre Match"/"In Play") were a second name for the same status and matched
+ * nothing downstream (#123). Do not re-space them without migrating those consumers.
  */
 export const SportEventStatusLabels: Record<SportEventStatuses, string> = {
-  [SportEventStatuses.PRE_MATCH]: 'Pre Match',
-  [SportEventStatuses.IN_PLAY]: 'In Play',
+  [SportEventStatuses.PRE_MATCH]: 'Pre-Match',
+  [SportEventStatuses.IN_PLAY]: 'In-Play',
   [SportEventStatuses.FINISHED]: 'Finished',
   [SportEventStatuses.ABANDONED]: 'Abandoned',
   [SportEventStatuses.SUSPENDED]: 'Suspended',

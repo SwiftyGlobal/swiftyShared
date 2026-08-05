@@ -8,9 +8,9 @@ import { EventStatuses, SportEventStatuses, SportEventStatusLabels } from '../..
  * @param payload.eventStatusId {string} - The BetRadar status id (see EventStatuses.BET_RADAR).
  * @return {EventPhaseStatus} - The canonical status slug plus the human-readable phase label.
  * @example
- * getBetRadarEventStatus({ eventStatusId: '1' }); // { current_status: 'in_play',   current_phase: 'In Play' }
+ * getBetRadarEventStatus({ eventStatusId: '1' }); // { current_status: 'in_play',   current_phase: 'In-Play' }
  * getBetRadarEventStatus({ eventStatusId: '4' }); // { current_status: 'cancelled', current_phase: 'Cancelled' }
- * getBetRadarEventStatus({ eventStatusId: '99' }); // unknown -> { current_status: 'pre_match', current_phase: 'Pre Match' }
+ * getBetRadarEventStatus({ eventStatusId: '99' }); // unknown -> { current_status: 'pre_match', current_phase: 'Pre-Match' }
  */
 export const getBetRadarEventStatus = (payload: GetBetRadarEventStatusDto): EventPhaseStatus => {
   const { eventStatusId } = payload;

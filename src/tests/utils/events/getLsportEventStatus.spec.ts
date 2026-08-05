@@ -9,7 +9,7 @@ describe('getLsportEventStatus', () => {
 
     expect(result).toEqual({
       current_status: SportEventStatuses.PRE_MATCH,
-      current_phase: 'Pre Match',
+      current_phase: 'Pre-Match',
     });
   });
 
@@ -20,8 +20,18 @@ describe('getLsportEventStatus', () => {
 
     expect(result).toEqual({
       current_status: SportEventStatuses.IN_PLAY,
-      current_phase: 'In Play',
+      current_phase: 'In-Play',
     });
+  });
+
+  // Previously every non-PRE_MATCH status was labelled "In Play"; the phase now carries the
+  // status's own canonical label so an ended/cancelled L-Sports event no longer reads as live (#123).
+  it.each([
+    ['3', SportEventStatuses.FINISHED, 'Finished'],
+    ['4', SportEventStatuses.CANCELLED, 'Cancelled'],
+    ['8', SportEventStatuses.COVERAGE_LOST, 'Coverage Lost'],
+  ])('should label status id %s with its own canonical phase', (eventStatusId, current_status, current_phase) => {
+    expect(getLsportEventStatus({ eventStatusId })).toEqual({ current_status, current_phase });
   });
 
   it.each(['0', '99'])('should fall back to pre_match for unknown status id %s', (eventStatusId) => {
@@ -29,7 +39,7 @@ describe('getLsportEventStatus', () => {
 
     expect(result).toEqual({
       current_status: SportEventStatuses.PRE_MATCH,
-      current_phase: 'Pre Match',
+      current_phase: 'Pre-Match',
     });
   });
 });
