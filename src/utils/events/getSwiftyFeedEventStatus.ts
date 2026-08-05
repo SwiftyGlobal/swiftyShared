@@ -10,9 +10,9 @@ import { EventStatuses, SportEventStatuses, SportEventStatusLabels } from '../..
  * @param payload.eventStatusId {string | number} - The feed status id (see EventStatuses.SWIFTY_FEED).
  * @return {EventPhaseStatus} - The canonical status slug plus the human-readable phase label.
  * @example
- * getSwiftyFeedEventStatus({ eventStatusId: 2 });   // { current_status: 'in_play',  current_phase: 'In Play' }
+ * getSwiftyFeedEventStatus({ eventStatusId: 2 });   // { current_status: 'in_play',  current_phase: 'In-Play' }
  * getSwiftyFeedEventStatus({ eventStatusId: '3' }); // { current_status: 'finished', current_phase: 'Finished' }
- * getSwiftyFeedEventStatus({ eventStatusId: 99 });  // unknown -> { current_status: 'pre_match', current_phase: 'Pre Match' }
+ * getSwiftyFeedEventStatus({ eventStatusId: 99 });  // unknown -> { current_status: 'pre_match', current_phase: 'Pre-Match' }
  */
 export const getSwiftyFeedEventStatus = (payload: GetSwiftyFeedEventStatusDto): EventPhaseStatus => {
   const { eventStatusId } = payload;

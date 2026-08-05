@@ -25,7 +25,7 @@ export const getEveryMatrixEventStatus = (payload: GetEveryMatrixEventStatusDto)
   let current_phase: string;
 
   if (current_status === SportEventStatuses.IN_PLAY) {
-    // Granular live phase from the part id, else the generic "In Play" label.
+    // Granular live phase from the part id, else the canonical "In-Play" label.
     current_phase = EveryMatrixPhase[eventPartId] || SportEventStatusLabels[SportEventStatuses.IN_PLAY];
   } else {
     current_phase = SportEventStatusLabels[current_status];

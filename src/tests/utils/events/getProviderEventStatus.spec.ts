@@ -87,7 +87,7 @@ describe('getProviderEventStatus', () => {
     };
 
     const expectedResult: EventPhaseStatus = {
-      current_phase: 'Pre Match',
+      current_phase: 'Pre-Match',
       current_status: SportEventStatuses.PRE_MATCH,
     };
 
@@ -105,7 +105,7 @@ describe('getProviderEventStatus', () => {
     const payload: GetSwiftyFeedEventStatusDto = { eventStatusId: 2 };
 
     const expectedResult: EventPhaseStatus = {
-      current_phase: 'In Play',
+      current_phase: 'In-Play',
       current_status: SportEventStatuses.IN_PLAY,
     };
 
@@ -128,7 +128,7 @@ describe('getProviderEventStatus', () => {
 
     expect(mockGetProviderWithoutId).toHaveBeenCalledWith('x-123');
     expect(result).toEqual({
-      current_phase: 'Pre Match',
+      current_phase: 'Pre-Match',
       current_status: SportEventStatuses.PRE_MATCH,
     });
   });

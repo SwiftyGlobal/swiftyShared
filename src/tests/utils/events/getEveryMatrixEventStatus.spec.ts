@@ -14,7 +14,7 @@ describe('getEveryMatrixEventStatus', () => {
     const result = getEveryMatrixEventStatus(payload);
 
     expect(result).toEqual({
-      current_phase: 'Pre Match',
+      current_phase: 'Pre-Match',
       current_status: SportEventStatuses.PRE_MATCH,
     });
   });
@@ -30,7 +30,7 @@ describe('getEveryMatrixEventStatus', () => {
     const result = getEveryMatrixEventStatus(payload);
 
     expect(result).toEqual({
-      current_phase: EveryMatrixPhase[5] ?? 'In Play',
+      current_phase: EveryMatrixPhase[5] ?? 'In-Play',
       current_status: SportEventStatuses.IN_PLAY,
     });
   });
@@ -64,7 +64,7 @@ describe('getEveryMatrixEventStatus', () => {
     const result = getEveryMatrixEventStatus(payload);
 
     expect(result).toEqual({
-      current_phase: 'In Play',
+      current_phase: 'In-Play',
       current_status: SportEventStatuses.IN_PLAY,
     });
   });
