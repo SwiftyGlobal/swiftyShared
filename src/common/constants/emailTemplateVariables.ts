@@ -55,5 +55,8 @@ export const EMAIL_TEMPLATE_SETTINGS_VARIABLES: string[] = [
   'company_twitter_url',
   'company_url',
   'customer_service_email',
+  // Bare website domain of the brand, e.g. 'brillbet.co.uk' — distinct from
+  // company_url, which holds the full URL including the scheme.
+  'domain',
   'media_assets_url',
 ];
