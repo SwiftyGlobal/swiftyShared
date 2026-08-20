@@ -23,3 +23,4 @@ export * from './errorCodes';
 export * from './transactions';
 export * from './boostType';
 export * from './emailTemplateVariables';
+export * from './betRadarMatchStatus';
