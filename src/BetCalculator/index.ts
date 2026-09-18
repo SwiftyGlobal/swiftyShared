@@ -6,3 +6,6 @@ export * from './luckyBoost';
 export * from './oddAdjustments';
 export * from './combination-engine';
 export * from './upAndDown';
+export * from './castConstants';
+export * from './castCalculator';
+export * from './freeBetSnr';
