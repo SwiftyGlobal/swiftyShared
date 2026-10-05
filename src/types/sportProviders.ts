@@ -12,9 +12,10 @@ import type { ObjectKeys } from './objectKeys';
  * g - bet radar (stored under bet_radar)
  * h - racing and sports (stored under ras)
  * s - swifty feed (stored under swifty_feed)
+ * r - swifty feed racing (stored under swifty_feed, racing_* tables)
  */
 export type SportProviders = ObjectKeys<typeof ProviderPrefixes>;
 
-export type RacingSportProviders = Extract<SportProviders, 'c' | 'd' | 'h'>;
+export type RacingSportProviders = Extract<SportProviders, 'c' | 'd' | 'h' | 'r'>;
 
 export type RegularSportProviders = Exclude<SportProviders, RacingSportProviders>;
