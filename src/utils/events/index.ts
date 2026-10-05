@@ -7,3 +7,4 @@ export * from './getBetRadarEventStatus';
 export * from './getProviderEventStatus';
 export * from './getRasEventStatus';
 export * from './getSwiftyFeedEventStatus';
+export * from './getSwiftyFeedRacingEventStatus';
