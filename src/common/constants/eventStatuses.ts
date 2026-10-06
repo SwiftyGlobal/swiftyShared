@@ -73,4 +73,11 @@ export const EventStatuses = {
     '2': SportEventStatuses.IN_PLAY, // in_progress
     '3': SportEventStatuses.FINISHED, // completed
   },
+  /** The Swifty feed's racing event words (`racing_events.status`), stored as the feed sends them. */
+  SWIFTY_FEED_RACING: {
+    scheduled: SportEventStatuses.PRE_MATCH,
+    in_progress: SportEventStatuses.IN_PLAY,
+    completed: SportEventStatuses.FINISHED,
+    cancelled: SportEventStatuses.ABANDONED,
+  },
 } as const;

@@ -7,3 +7,4 @@ export * from './getBetRadarEventStatus.dto';
 export * from './getProviderEventStatus.dto';
 export * from './getRasEventStatus.dto';
 export * from './getSwiftyFeedEventStatus.dto';
+export * from './getSwiftyFeedRacingEventStatus.dto';

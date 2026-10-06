@@ -133,7 +133,7 @@ export class CastCalculator {
    * of the declared runner count — unlike the field-size gate, an abandoned race can still
    * have 3+ declared runners, so that gate never catches it.
    *
-   * @param bet_provider - "d" (PA Media), "c" (SIS) or "h" (RAS).
+   * @param bet_provider - "d" (PA Media), "c" (SIS), "h" (RAS) or "r" (Swifty feed racing).
    * @param status - The provider event/race status from getEventDetails.
    * @returns true if the event is abandoned/void and the cast must be voided.
    */

@@ -16,6 +16,7 @@ const CastCalculatorService = new CastCalculator();
  *     - PA  ("d"): "Abandoned", "RaceVoid", "Race Void"
  *     - SIS ("c"): "A", "V"
  *     - RAS ("h"): "ABANDONED"
+ *     - Swifty feed racing ("r"): "cancelled"
  */
 describe('shouldVoidCastForAbandonedEvent', () => {
   describe('voids when the feed reports the race abandoned/void', () => {
@@ -26,6 +27,7 @@ describe('shouldVoidCastForAbandonedEvent', () => {
       ['c', 'A'],
       ['c', 'V'],
       ['h', 'ABANDONED'],
+      ['r', 'cancelled'],
     ];
     ABANDONED.forEach(([bet_provider, status]) => {
       it(`voids provider "${bet_provider}" with status "${status}"`, () => {
@@ -45,6 +47,8 @@ describe('shouldVoidCastForAbandonedEvent', () => {
       ['h', 'RESULT'],
       ['h', 'OPEN'],
       ['h', 'FINISHED'],
+      ['r', 'completed'],
+      ['r', 'scheduled'],
     ];
     NOT_ABANDONED.forEach(([bet_provider, status]) => {
       it(`does NOT void provider "${bet_provider}" with status "${status}"`, () => {

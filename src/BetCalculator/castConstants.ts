@@ -75,7 +75,7 @@ export enum CastResultType {
 
 /**
  * Feed event/race statuses that mean the race was abandoned or voided (never run), per
- * provider: "d" (PA Media), "c" (SIS), "h" (RAS). Mirrors the per-feed abandoned handlers
+ * provider: "d" (PA Media), "c" (SIS), "h" (RAS), "r" (Swifty feed racing). Mirrors the per-feed abandoned handlers
  * (PAEventAbandoned / SISEventAbandoned / RASEventAbandoned) which void the single legs;
  * the cast worker uses the same set to void the whole cast market.
  */
@@ -83,6 +83,8 @@ export const ABANDONED_EVENT_STATUSES: Record<string, string[]> = {
   d: ['Abandoned', 'RaceVoid', 'Race Void'],
   c: ['A', 'V'],
   h: ['ABANDONED'],
+  // Swifty feed racing: the feed's own word for an abandoned race.
+  r: ['cancelled'],
 };
 
 /**
