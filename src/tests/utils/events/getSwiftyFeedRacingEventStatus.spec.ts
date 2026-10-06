@@ -92,4 +92,46 @@ describe('getSwiftyFeedRacingEventStatus', () => {
       }),
     ).toBe(SportEventStatuses.PRE_MATCH);
   });
+
+  it('suspend-at-off does not override cancelled: ABANDONED once the start time has passed', () => {
+    expect(
+      getSwiftyFeedRacingEventStatus({
+        status: 'cancelled',
+        eventOffTime: null,
+        eventStartTime: '2020-06-24 10:00:00',
+        suspendAtEventOffTime: true,
+      }),
+    ).toBe(SportEventStatuses.ABANDONED);
+  });
+
+  it('suspend-at-off does not override completed or resulted: FINISHED once the start time has passed', () => {
+    expect(
+      getSwiftyFeedRacingEventStatus({
+        status: 'completed',
+        eventOffTime: null,
+        eventStartTime: '2020-06-24 10:00:00',
+        suspendAtEventOffTime: true,
+      }),
+    ).toBe(SportEventStatuses.FINISHED);
+    expect(
+      getSwiftyFeedRacingEventStatus({
+        status: 'in_progress',
+        resulted: 1,
+        eventOffTime: null,
+        eventStartTime: '2020-06-24 10:00:00',
+        suspendAtEventOffTime: true,
+      }),
+    ).toBe(SportEventStatuses.FINISHED);
+  });
+
+  it('suspend-at-off before the start time leaves in_progress as IN_PLAY', () => {
+    expect(
+      getSwiftyFeedRacingEventStatus({
+        status: 'in_progress',
+        eventOffTime: null,
+        eventStartTime: '2099-06-24 10:00:00',
+        suspendAtEventOffTime: true,
+      }),
+    ).toBe(SportEventStatuses.IN_PLAY);
+  });
 });
